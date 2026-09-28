@@ -1,7 +1,7 @@
 # Human inputs and confirmed decisions
 
 Confirmed on 2026-09-28:
-- Ivan has a TypeSafe/Jev API key. It has not been installed in any AI OS runtime or used in a live test.
+- Ivan has a TypeSafe/Jev API key. The Mac smoke test succeeded on 2026-09-28 (HTTP 200; Jev returned `ROUTED` for a synthetic engineering request). The script takes the key through a hidden prompt and does not persist it; no always-on runtime is configured yet.
 - OpenClaw 2026.9.5 (commit ec9c1a13) runs as a Mac LaunchAgent, with a local Gateway and a Telegram channel. The terminal log indicates the default model changed several times; the final effective model should be verified from the current config.
 - The Telegram channel is routed to the `main` agent; private DMs use an allowlist. Host `exec` was ultimately denied at the tool level. Do not assume a plugin can run shell commands on the Mac.
 - Obsidian vault name: `Obsidian Notes` (filesystem path and sync arrangement unknown).
@@ -9,7 +9,7 @@ Confirmed on 2026-09-28:
 
 ## Next inputs
 
-1. Once a local or VPS Gateway runtime is selected, put the Jev key there through a local secret mechanism. Do not send it in chat or commit it.
+1. To test the OpenClaw adapter on the Mac, run `bash scripts/mac-jev-smoke.sh --stay` in the repository root, then follow `hooks/openclaw/ivan-route/README.md` in another terminal. Enter the Jev key only at the hidden prompt; do not send it in chat or commit it. A later persistent runtime will need its own local secret mechanism.
 2. Share the **redacted** output of `openclaw config get agents.defaults.model --json`, `openclaw config get channels.telegram --json` and `openclaw config get tools --json` if needed for wiring. Review it manually before sharing, especially nested channel credentials.
 3. Provide the local path to the `Obsidian Notes` vault when we connect it. The name is enough for current planning.
 4. VPS purchase and billing stay with Ivan. Prepare a specific deployment proposal before purchase.
