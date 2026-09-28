@@ -2,6 +2,13 @@ import { permissionQuestion, MIN_ALLOW_CONFIDENCE, MIN_ALLOW_PROBABILITY } from 
 
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
 
+export class ProviderError extends Error {
+  constructor(code) {
+    super(code);
+    this.code = code;
+  }
+}
+
 export async function decideWithProvider({ action, policies }) {
   const provider = process.env.JEV_PROVIDER || "mock";
   if (policies.length === 0) return review("gateway", policies, "No applicable policies supplied; action requires review.");
@@ -31,9 +38,11 @@ async function callJev({ action, policies }) {
 
 export async function askTypeSafe(state, questions) {
   const apiKey = process.env.TYPESAFE_API_KEY;
-  if (!apiKey) throw new Error("TYPESAFE_API_KEY is required for JEV_PROVIDER=jev");
+  if (!apiKey) throw new ProviderError("TYPESAFE_KEY_MISSING");
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), Number(process.env.JEV_TIMEOUT_MS || 3000));
+  const configuredTimeout = Number(process.env.JEV_TIMEOUT_MS || 8000);
+  const timeoutMs = Number.isFinite(configuredTimeout) ? Math.max(1000, Math.min(30000, configuredTimeout)) : 8000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(ENDPOINT, {
       method: "POST",
@@ -41,8 +50,13 @@ export async function askTypeSafe(state, questions) {
       body: JSON.stringify({ state, model: process.env.JEV_MODEL || "jev-latest", questions }),
       signal: controller.signal
     });
-    if (!response.ok) throw new Error(`TypeSafe HTTP ${response.status}`);
-    return await response.json();
+    if (!response.ok) throw new ProviderError(`TYPESAFE_HTTP_${response.status}`);
+    try { return await response.json(); }
+    catch { throw new ProviderError("TYPESAFE_INVALID_JSON"); }
+  } catch (error) {
+    if (error instanceof ProviderError) throw error;
+    if (controller.signal.aborted) throw new ProviderError("TYPESAFE_TIMEOUT");
+    throw new ProviderError("TYPESAFE_NETWORK_ERROR");
   } finally {
     clearTimeout(timeout);
   }
