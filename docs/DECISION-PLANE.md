@@ -9,6 +9,7 @@ The gateway speaks the official TypeSafe System One API: `POST https://api.types
 - `JEV_PROVIDER=jev` calls the official API with `TYPESAFE_API_KEY`; outages, malformed responses and insufficient confidence never grant permission.
 - Only action intent/tool/risk and policy IDs/descriptions go to TypeSafe. Do not put secrets or personal data into `intent` or policy descriptions. Tool arguments are not transmitted.
 - Input requires explicit risk flags. Empty policy lists return `REVIEW`.
+- `POST /v1/route` batches a Choice (six managers), a Noul (clarity) and a Score (urgency) in one TypeSafe call. Mock mode or uncertainty returns REVIEW. This is advisory and does not launch workers.
 
 ## Security boundary and next work
 
@@ -18,9 +19,9 @@ Before enforcing decisions: classify concrete tool calls in trusted code, select
 
 ## Activation checklist
 
-1. Create a TypeSafe API key yourself and set `TYPESAFE_API_KEY` in the runtime secret store. Do not commit it or paste it in chat.
+1. Ivan confirmed he has a TypeSafe API key. Set `TYPESAFE_API_KEY` in the runtime secret store on the machine that runs this Gateway. Do not commit it or paste it in chat.
 2. Set `JEV_PROVIDER=jev` only in the private runtime after checking API access and cost. There is no live Jev test in CI.
 3. Run `cd services/jev-gateway && npm test` (Node 22+). Review `questions.js` and tune thresholds on labeled examples before treating classifications as useful.
-4. Obtain a redacted OpenClaw configuration and the Mac vault path before planning local sync. `Obsidian Notes` is the vault name; neither its path nor its contents are known to this repository.
+4. OpenClaw 2026.9.5 is running locally on the Mac. Its exact redacted config and the path to `Obsidian Notes` are still needed before deployment or vault sync.
 
 Official reference: https://docs.typesafe.ai/llms.txt and https://docs.typesafe.ai/api.
