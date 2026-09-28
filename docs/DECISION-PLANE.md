@@ -9,7 +9,7 @@ The gateway speaks the official TypeSafe System One API: `POST https://api.types
 - `JEV_PROVIDER=jev` calls the official API with `TYPESAFE_API_KEY`; outages, malformed responses and insufficient confidence never grant permission.
 - Only action intent/tool/risk and policy IDs/descriptions go to TypeSafe. Do not put secrets or personal data into `intent` or policy descriptions. Tool arguments are not transmitted.
 - Input requires explicit risk flags. Empty policy lists return `REVIEW`.
-- `POST /v1/route` batches a Choice (six managers), a Noul (clarity) and a Score (urgency) in one TypeSafe call. Mock mode or uncertainty returns REVIEW. This is advisory and does not launch workers.
+- `POST /v1/route` batches a Choice (six managers), a Noul (whether execution needs details) and a Score (urgency) in one TypeSafe call. A known domain can be routed even when execution needs more detail. Mock mode or uncertain domain selection returns REVIEW. This is advisory and does not launch workers.
 
 ## Security boundary and next work
 
