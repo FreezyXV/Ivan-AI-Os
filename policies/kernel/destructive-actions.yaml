@@ -1,0 +1,8 @@
+id: kernel.destructive-actions
+version: 1
+priority: 950
+scope: global
+effect: require_human
+description: High-impact destructive operations require explicit approval unless a narrower pre-approved policy authorizes a reversible sandbox equivalent.
+fail_mode: closed
+mutable_by_agents: false
