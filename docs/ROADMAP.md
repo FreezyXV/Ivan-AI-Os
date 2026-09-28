@@ -11,8 +11,9 @@
 - [x] Conservative mock mode, low-confidence review, malformed-response tests
 - [x] TypeSafe API access confirmed by Ivan; no key stored in this repository
 - [x] Live Jev route smoke from Ivan's Mac with a hidden, ephemeral API key (HTTP 200, engineering ROUTED); persistent runtime remains pending
-- [ ] Trusted policy selection from the repository, not from caller-supplied lists
-- [ ] Server authentication, deterministic classification from concrete tool calls, redacted audit events
+- [x] Shadow evaluator loads global kernel policies from the repository and rejects caller policy lists; catalog revision recorded
+- [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative concrete-call classification and bounded redacted audit; 24 local tests pass (see `docs/TRUSTED-EVALUATION.md`)
+- [ ] Activate private authenticated runtime and trusted native call capture; legacy endpoints remain advisory/unauthenticated
 - [ ] Calibration on labeled requests and permission scenarios
 
 ## Phase 2 — Agent integration
@@ -20,7 +21,7 @@
 - [x] Interactive local Jev smoke mode to keep the Gateway available for OpenClaw integration testing
 - [x] Install the linked plugin on Ivan's Mac and inspect runtime registration (`Status: loaded`, `Tools: ivan_route`)
 - [x] Direct OpenClaw Gateway `tools.invoke` reached the linked plugin and returned a live Jev engineering route (`provider: jev`); the CLI required `--timeout 45000`
-- [ ] Confirm an actual Telegram message calls `ivan_route` and returns a live `provider: jev` result
+- [x] Actual Telegram DM calls `ivan_route` and returns live `provider: jev`; verified 2026-09-28 at 19:26 UTC with explicit dynamic-tool discovery (see `docs/TELEGRAM-VERIFICATION.md`)
 - [ ] Reassess the official TypeSafe decision plugin once a compatible OpenClaw release and package are available (host 2026.9.6+)
 - [ ] Native OpenClaw `before_tool_call` policy gate, based on trusted tool metadata
 - [ ] Claude Code and Codex adapters verified against their current runtime hook contracts

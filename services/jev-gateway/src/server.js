@@ -3,54 +3,80 @@ import { performance } from "node:perf_hooks";
 import { evaluateKernel } from "./kernel.js";
 import { decideWithProvider, ProviderError } from "./provider.js";
 import { routeRequest } from "./routing.js";
+import { pathToFileURL } from "node:url";
+import { createTrustedEvaluator } from "./trusted-evaluator.js";
 
 const port = Number(process.env.PORT || 4310);
 const host = process.env.HOST || "127.0.0.1";
 
-const server = http.createServer(async (req, res) => {
-  if (req.method === "GET" && req.url === "/health") return json(res, 200, { ok: true, service: "jev-gateway", provider: process.env.JEV_PROVIDER || "mock" });
+export function createGatewayServer({ trustedEvaluator = null } = {}) {
+  return http.createServer(async (req, res) => {
+    if (req.method === "GET" && req.url === "/health") return json(res, 200, { ok: true, service: "jev-gateway", provider: process.env.JEV_PROVIDER || "mock" });
 
-  if (req.method === "POST" && req.url === "/v1/route") {
-    try {
-      const payload = await readJson(req);
-      if (typeof payload?.text !== "string" || !payload.text.trim() || payload.text.length > 2000) {
-        throw new InputError("Expected a nonempty text field (maximum 2000 characters).");
+    if (req.method === "POST" && req.url === "/v1/evaluate-tool") {
+      if (!trustedEvaluator) return json(res, 503, { decision: "ESCALATE", reason_code: "TRUSTED_EVALUATION_DISABLED", advisory: true, executable: false });
+      if (!trustedEvaluator.authenticate(req.headers.authorization)) return json(res, 401, { decision: "ESCALATE", reason_code: "UNAUTHORIZED", advisory: true, executable: false });
+      let payload;
+      try { payload = await readJson(req); }
+      catch { payload = null; }
+      const result = await trustedEvaluator.evaluate(payload);
+      return json(res, result.status, result.body);
+    }
+
+    if (req.method === "POST" && req.url === "/v1/route") {
+      try {
+        const payload = await readJson(req);
+        if (typeof payload?.text !== "string" || !payload.text.trim() || payload.text.length > 2000) {
+          throw new InputError("Expected a nonempty text field (maximum 2000 characters).");
+        }
+        return json(res, 200, await routeRequest(payload.text));
+      } catch (error) {
+        return json(res, error instanceof InputError ? 400 : 503, {
+          status: "REVIEW", manager: null,
+          error_code: error instanceof InputError ? "INVALID_REQUEST" : error instanceof ProviderError ? error.code : "GATEWAY_ERROR",
+          reason: error instanceof InputError ? error.message : "Router unavailable"
+        });
       }
-      return json(res, 200, await routeRequest(payload.text));
-    } catch (error) {
-      return json(res, error instanceof InputError ? 400 : 503, {
-        status: "REVIEW", manager: null,
-        error_code: error instanceof InputError ? "INVALID_REQUEST" : error instanceof ProviderError ? error.code : "GATEWAY_ERROR",
-        reason: error instanceof InputError ? error.message : "Router unavailable"
-      });
     }
-  }
 
-  if (req.method === "POST" && req.url === "/v1/decide") {
-    const started = performance.now();
-    try {
-      const payload = await readJson(req);
-      validate(payload);
-      const { action, policies } = payload;
-      const kernel = evaluateKernel(action);
-      const result = kernel || await decideWithProvider({ action, policies });
-      result.latency_ms = Math.round(performance.now() - started);
-      return json(res, 200, result);
-    } catch (error) {
-      // The HTTP status is also fail-closed; clients must never interpret a
-      // transport error, malformed request or provider outage as permission.
-      return json(res, error instanceof InputError ? 400 : 503, {
-        decision: "ESCALATE", confidence: 1,
-        reasons: [error instanceof InputError ? error.message : "Decision gateway unavailable"],
-        policies: [], provider: "gateway", fallback_used: true,
-        latency_ms: Math.round(performance.now() - started)
-      });
+    if (req.method === "POST" && req.url === "/v1/decide") {
+      const started = performance.now();
+      try {
+        const payload = await readJson(req);
+        validate(payload);
+        const { action, policies } = payload;
+        const kernel = evaluateKernel(action);
+        const result = kernel || await decideWithProvider({ action, policies });
+        result.latency_ms = Math.round(performance.now() - started);
+        return json(res, 200, result);
+      } catch (error) {
+        // The HTTP status is also fail-closed; clients must never interpret a
+        // transport error, malformed request or provider outage as permission.
+        return json(res, error instanceof InputError ? 400 : 503, {
+          decision: "ESCALATE", confidence: 1,
+          reasons: [error instanceof InputError ? error.message : "Decision gateway unavailable"],
+          policies: [], provider: "gateway", fallback_used: true,
+          latency_ms: Math.round(performance.now() - started)
+        });
+      }
     }
-  }
-  return json(res, 404, { error: "not_found" });
-});
+    return json(res, 404, { error: "not_found" });
+  });
+}
 
-server.listen(port, host, () => console.log(`jev-gateway listening on ${host}:${port}`));
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    const trustedEvaluator = process.env.IVAN_DECISION_TOKEN ? createTrustedEvaluator({
+      token: process.env.IVAN_DECISION_TOKEN,
+      workspaceRoot: process.env.IVAN_WORKSPACE_ROOT,
+      auditPath: process.env.IVAN_AUDIT_PATH
+    }) : null;
+    createGatewayServer({ trustedEvaluator }).listen(port, host, () => console.log(`jev-gateway listening on ${host}:${port}`));
+  } catch {
+    console.error("Gateway startup refused: invalid trusted evaluation configuration.");
+    process.exitCode = 1;
+  }
+}
 
 class InputError extends Error {}
 
