@@ -5,23 +5,25 @@ const MANAGERS = Object.keys(routingQuestions.manager.criteria);
 
 export async function routeRequest(text) {
   if ((process.env.JEV_PROVIDER || "mock") !== "jev") {
-    return { status: "REVIEW", manager: null, urgency: null, unclear_probability: null, provider: "mock" };
+    return { status: "REVIEW", manager: null, manager_confidence: null, urgency: null, needs_details_probability: null, provider: "mock" };
   }
   const raw = await askTypeSafe(text, routingQuestions);
-  const { manager, unclear, urgency } = raw?.answers || {};
+  const { manager, needs_details, urgency } = raw?.answers || {};
   if (manager?.type !== "choice" || !MANAGERS.includes(manager.choice) ||
       !Number.isFinite(manager.confidence) || manager.confidence < 0 || manager.confidence > 1 ||
-      unclear?.type !== "noul" || !Number.isFinite(unclear.noul) || unclear.noul < 0 || unclear.noul > 1 ||
+      needs_details?.type !== "noul" || !Number.isFinite(needs_details.noul) || needs_details.noul < 0 || needs_details.noul > 1 ||
       urgency?.type !== "score" || !Number.isFinite(urgency.score) || urgency.score < 0 || urgency.score > 2) {
     throw new Error("Invalid TypeSafe routing response");
   }
-  // The router only proposes an assignment; an unclear request or uncertain
-  // manager selection goes to review rather than launching an agent.
+  // Missing execution details do not prevent assigning a clear specialist.
+  // Only an uncertain domain, or a vague request classified as system, needs
+  // review before dispatch. This is still advisory: no agent is launched here.
   return {
-    status: unclear.noul >= 0.7 || manager.confidence < 0.7 ? "REVIEW" : "ROUTED",
+    status: manager.confidence < 0.7 || (manager.choice === "system" && needs_details.noul >= 0.7) ? "REVIEW" : "ROUTED",
     manager: manager.choice,
+    manager_confidence: manager.confidence,
     urgency: urgency.score,
-    unclear_probability: unclear.noul,
+    needs_details_probability: needs_details.noul,
     provider: "jev"
   };
 }
