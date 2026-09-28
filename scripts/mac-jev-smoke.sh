@@ -2,6 +2,11 @@
 # Run from the repository root on Ivan's Mac. No secret is persisted.
 set -euo pipefail
 
+if [ "$#" -gt 1 ] || { [ "$#" -eq 1 ] && [ "$1" != "--stay" ]; }; then
+  printf 'Usage: bash scripts/mac-jev-smoke.sh [--stay]\n' >&2
+  exit 2
+fi
+
 if ! command -v node >/dev/null || ! command -v curl >/dev/null; then
   printf 'Node.js 22+ and curl are required.\n' >&2
   exit 1
@@ -32,6 +37,7 @@ cleanup() {
   unset TYPESAFE_API_KEY
 }
 trap cleanup EXIT
+trap 'exit 130' INT TERM
 
 attempt=0
 until curl -fsS http://127.0.0.1:4310/health >/dev/null 2>&1; do
@@ -44,7 +50,12 @@ until curl -fsS http://127.0.0.1:4310/health >/dev/null 2>&1; do
 done
 
 printf 'Live Jev routing response for a synthetic request:\n'
-curl -sS -i --max-time 25 -X POST http://127.0.0.1:4310/v1/route \
+curl -fsS -i --max-time 25 -X POST http://127.0.0.1:4310/v1/route \
   -H 'content-type: application/json' \
   -d '{"text":"Write a test for a Node.js function in my project"}'
 printf '\n'
+
+if [ "${1:-}" = "--stay" ]; then
+  printf 'Jev Gateway is running at http://127.0.0.1:4310. Test OpenClaw in another terminal; press Ctrl+C here to stop.\n'
+  wait "$gateway_pid"
+fi
