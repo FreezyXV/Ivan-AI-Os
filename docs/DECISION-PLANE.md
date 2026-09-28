@@ -26,4 +26,6 @@ Before enforcing decisions: classify concrete tool calls in trusted code, select
 
 On Ivan's Mac, run `bash scripts/mac-jev-smoke.sh` from the repository root for one **real** TypeSafe routing call. It prompts for the key without echo and discards it when the script exits. The prompt text sent to TypeSafe is synthetic. This test does not install a plugin or change OpenClaw settings. Share only the response after checking it contains no secrets.
 
+On a non-200 result, the smoke test prints the HTTP status and a bounded `error_code` such as `TYPESAFE_HTTP_422`, `TYPESAFE_TIMEOUT`, `TYPESAFE_NETWORK_ERROR` or `TYPESAFE_ROUTING_RESPONSE_INVALID`. Provider response bodies and keys are never returned by this diagnostic. The default TypeSafe timeout is 8 seconds.
+
 Official reference: https://docs.typesafe.ai/llms.txt and https://docs.typesafe.ai/api.
