@@ -1,0 +1,12 @@
+id: kernel.human-approval
+version: 1
+priority: 1000
+scope: global
+effect: require_human
+match:
+  any:
+    - financial_action: true
+    - external_contact: true
+description: Money movement and communications to third parties require explicit human approval.
+fail_mode: closed
+mutable_by_agents: false
