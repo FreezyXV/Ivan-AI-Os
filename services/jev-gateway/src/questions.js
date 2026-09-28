@@ -25,9 +25,13 @@ export const routingQuestions = {
       system: "Agent configuration, memory, tools, policies, infrastructure or unclear request."
     }
   },
-  unclear: {
+  needs_details: {
     type: "noul",
-    instructions: "Is the user's objective too unclear to choose a useful first action without asking for details?"
+    instructions: "Does the specialist need additional concrete details before carrying out this request? Judge execution readiness, not whether the specialist domain can be selected.",
+    criteria: {
+      true: "The specialist is identifiable, but a file, subject, scope or other essential input is missing before execution.",
+      false: "The request contains enough detail for the specialist to start the requested work."
+    }
   },
   urgency: {
     type: "score",
