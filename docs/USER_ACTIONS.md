@@ -1,18 +1,23 @@
 # Human inputs and confirmed decisions
 
 Confirmed on 2026-09-28:
-- OpenClaw runs on Ivan's Mac and is connected to an existing Telegram bot using GPT.
+- Ivan has a TypeSafe/Jev API key. It has not been installed in any AI OS runtime or used in a live test.
+- OpenClaw 2026.9.5 (commit ec9c1a13) runs as a Mac LaunchAgent, with a local Gateway and a Telegram channel. The terminal log indicates the default model changed several times; the final effective model should be verified from the current config.
+- The Telegram channel is routed to the `main` agent; private DMs use an allowlist. Host `exec` was ultimately denied at the tool level. Do not assume a plugin can run shell commands on the Mac.
 - Obsidian vault name: `Obsidian Notes` (filesystem path and sync arrangement unknown).
 - A 24/7 VPS around €10–15/month is acceptable in principle. Provider, exact plan and any purchase remain to be selected/approved.
-- TypeSafe documentation has been provided. An active API account/key has **not** been confirmed.
 
 ## Next inputs
 
-1. Confirm whether you can create an API key in https://console.typesafe.ai/keys. Keep the key out of chat and Git; the runtime secret store is not set up yet.
-2. On the Mac, share only the redacted OpenClaw configuration layout, installed version, and how it starts. Remove bot token, model keys, personal IDs and any other secrets before sharing.
-3. Provide the local path to the `Obsidian Notes` vault when we are ready to connect it. Vault name alone is enough for current planning.
+1. Once a local or VPS Gateway runtime is selected, put the Jev key there through a local secret mechanism. Do not send it in chat or commit it.
+2. Share the **redacted** output of `openclaw config get agents.defaults.model --json`, `openclaw config get channels.telegram --json` and `openclaw config get tools --json` if needed for wiring. Review it manually before sharing, especially nested channel credentials.
+3. Provide the local path to the `Obsidian Notes` vault when we connect it. The name is enough for current planning.
 4. VPS purchase and billing stay with Ivan. Prepare a specific deployment proposal before purchase.
+
+## Existing credential exposure
+
+A Telegram bot credential appeared in the shared terminal transcript and a Gateway credential was visible in a screenshot. Replace both before connecting the AI OS to additional tools or exposing the Gateway. Do not copy either credential into this repository.
 
 ## Approval boundary
 
-Research, source changes and drafts can proceed. Ivan approves purchases, payments, transactions and third-party contact. Do not ask for or place secrets in this repository or chat.
+Research, source changes and drafts can proceed. Ivan approves purchases, payments, transactions and third-party contact.
