@@ -2,11 +2,26 @@ import http from "node:http";
 import { performance } from "node:perf_hooks";
 import { evaluateKernel } from "./kernel.js";
 import { decideWithProvider } from "./provider.js";
+import { routeRequest } from "./routing.js";
 
 const port = Number(process.env.PORT || 4310);
 
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/health") return json(res, 200, { ok: true, service: "jev-gateway", provider: process.env.JEV_PROVIDER || "mock" });
+
+  if (req.method === "POST" && req.url === "/v1/route") {
+    try {
+      const payload = await readJson(req);
+      if (typeof payload?.text !== "string" || !payload.text.trim() || payload.text.length > 2000) {
+        throw new InputError("Expected a nonempty text field (maximum 2000 characters).");
+      }
+      return json(res, 200, await routeRequest(payload.text));
+    } catch (error) {
+      return json(res, error instanceof InputError ? 400 : 503, {
+        status: "REVIEW", manager: null, reason: error instanceof InputError ? error.message : "Router unavailable"
+      });
+    }
+  }
 
   if (req.method === "POST" && req.url === "/v1/decide") {
     const started = performance.now();
