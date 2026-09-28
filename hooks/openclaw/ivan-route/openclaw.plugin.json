@@ -1,0 +1,11 @@
+{
+  "id": "ivan-ai-os-route",
+  "name": "Ivan AI OS Route",
+  "description": "Advisory Jev domain routing via the local Decision Plane",
+  "configSchema": {
+    "type": "object",
+    "properties": { "gatewayUrl": { "type": "string", "pattern": "^https?://" } },
+    "required": ["gatewayUrl"],
+    "additionalProperties": false
+  }
+}
