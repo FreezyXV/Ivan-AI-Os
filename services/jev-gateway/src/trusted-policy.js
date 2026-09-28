@@ -73,15 +73,17 @@ export function classifyToolCall(call, workspaceRoot) {
   if (!workspaceRoot || !path.isAbsolute(workspaceRoot)) return { action, reason: "WORKSPACE_NOT_CONFIGURED" };
   const root = realpathSync(workspaceRoot);
   const resolved = path.resolve(root, requestedPath);
+  // Check the requested path before resolution so a missing secret file is
+  // still reported as sensitive rather than PATH_NOT_RESOLVED.
+  const denySensitive = { action, hardDecision: "DENY", reason: "SENSITIVE_PATH" };
+  if (sensitivePath(resolved)) return denySensitive;
   let canonical;
   try { canonical = realpathSync(resolved); }
   catch { return { action, reason: "PATH_NOT_RESOLVED" }; }
+  if (sensitivePath(canonical)) return denySensitive;
   const paths = [resolved, canonical];
-  if (paths.some(p => /(?:^|\/)(?:\.env(?:\.[^/]*)?|secrets?|credentials?|auth-profiles\.json|openclaw\.json|\.ssh|\.aws|\.gnupg)(?:\/|$)|\.(?:pem|key)$/i.test(p))) {
-    return { action, hardDecision: "DENY", reason: "SENSITIVE_PATH" };
-  }
   if (paths.some(p => outside(root, p))) return { action, reason: "OUTSIDE_WORKSPACE" };
-  if (tool !== "read" && paths.some(p => /(?:^|\/)(?:policies|constitution|\.git|\.agents|\.codex)(?:\/|$)|(?:^|\/)AGENTS\.md$/i.test(p))) {
+  if (tool !== "read" && paths.some(p => /(?:^|\/)(?:policies|constitution|hooks|\.git|\.github|\.agents|\.codex|\.claude)(?:\/|$)|(?:^|\/)(?:AGENTS|CLAUDE)\.md$/i.test(p))) {
     return { action: { ...action, policy_mutation: true }, reason: "PROTECTED_PROJECT_METADATA" };
   }
   return {
@@ -90,6 +92,9 @@ export function classifyToolCall(call, workspaceRoot) {
   };
 }
 
+function sensitivePath(p) {
+  return /(?:^|\/)(?:\.env(?:\.[^/]*)?|secrets?|credentials?|auth-profiles\.json|openclaw\.json|\.ssh|\.aws|\.gnupg)(?:\/|$)|\.(?:pem|key)$/i.test(p);
+}
 function outside(root, target) {
   const relative = path.relative(root, target);
   return relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative);
