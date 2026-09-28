@@ -18,9 +18,6 @@ function review(provider, policies, reason) {
 }
 
 async function callJev({ action, policies }) {
-  const apiKey = process.env.TYPESAFE_API_KEY;
-  if (!apiKey) throw new Error("TYPESAFE_API_KEY is required for JEV_PROVIDER=jev");
-
   // Tool arguments and raw output may contain credentials or personal data.
   // The gateway never sends them to the provider.
   const state = {
@@ -29,17 +26,23 @@ async function callJev({ action, policies }) {
     risk: action.risk,
     policies: policies.map(({ id, description }) => ({ id, description }))
   };
+  return normalize(await askTypeSafe(state, { permission: permissionQuestion }), policies);
+}
+
+export async function askTypeSafe(state, questions) {
+  const apiKey = process.env.TYPESAFE_API_KEY;
+  if (!apiKey) throw new Error("TYPESAFE_API_KEY is required for JEV_PROVIDER=jev");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.JEV_TIMEOUT_MS || 3000));
   try {
     const response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ state, model: process.env.JEV_MODEL || "jev-latest", questions: { permission: permissionQuestion } }),
+      body: JSON.stringify({ state, model: process.env.JEV_MODEL || "jev-latest", questions }),
       signal: controller.signal
     });
     if (!response.ok) throw new Error(`TypeSafe HTTP ${response.status}`);
-    return normalize(await response.json(), policies);
+    return await response.json();
   } finally {
     clearTimeout(timeout);
   }
