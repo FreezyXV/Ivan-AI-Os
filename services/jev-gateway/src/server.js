@@ -5,6 +5,7 @@ import { decideWithProvider } from "./provider.js";
 import { routeRequest } from "./routing.js";
 
 const port = Number(process.env.PORT || 4310);
+const host = process.env.HOST || "127.0.0.1";
 
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/health") return json(res, 200, { ok: true, service: "jev-gateway", provider: process.env.JEV_PROVIDER || "mock" });
@@ -47,7 +48,7 @@ const server = http.createServer(async (req, res) => {
   return json(res, 404, { error: "not_found" });
 });
 
-server.listen(port, "0.0.0.0", () => console.log(`jev-gateway listening on :${port}`));
+server.listen(port, host, () => console.log(`jev-gateway listening on ${host}:${port}`));
 
 class InputError extends Error {}
 
