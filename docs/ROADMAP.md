@@ -18,7 +18,8 @@
 ## Phase 2 — Agent integration
 - [x] Source-only OpenClaw 2026.9.5 advisory routing tool with mocked tests
 - [x] Interactive local Jev smoke mode to keep the Gateway available for OpenClaw integration testing
-- [ ] Install/test that tool on Ivan's Mac after local Gateway and plugin config are available
+- [x] Install the linked plugin on Ivan's Mac and inspect runtime registration (`Status: loaded`, `Tools: ivan_route`)
+- [ ] Confirm an actual Telegram message calls `ivan_route` and returns a live `provider: jev` result
 - [ ] Reassess the official TypeSafe decision plugin once a compatible OpenClaw release and package are available (host 2026.9.6+)
 - [ ] Native OpenClaw `before_tool_call` policy gate, based on trusted tool metadata
 - [ ] Claude Code and Codex adapters verified against their current runtime hook contracts
