@@ -14,3 +14,7 @@ test("routes request to the local decision gateway", async () => {
 test("rejects malformed routing response", async () => {
   await assert.rejects(routeWithGateway("x", "http://127.0.0.1:4310", async () => ({ ok: true, json: async () => ({ status: "ROUTED", manager: "payments" }) })), /Invalid gateway response/);
 });
+
+test("never sends an unauthenticated routing request to a remote host", async () => {
+  await assert.rejects(routeWithGateway("x", "https://example.com", async () => { throw new Error("should not fetch"); }), /local loopback/);
+});
