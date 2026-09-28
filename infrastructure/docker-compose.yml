@@ -5,6 +5,8 @@ services:
     command: ["node", "src/server.js"]
     env_file:
       - ../.env
+    environment:
+      HOST: "0.0.0.0" # Within container only; host port stays loopback.
     volumes:
       - ../services/jev-gateway:/app:ro
     ports:
