@@ -14,10 +14,10 @@ The synthetic smoke must return HTTP 200 before you continue. In terminal B, fro
 
 ```bash
 npm install --prefix hooks/openclaw/ivan-route --legacy-peer-deps
-openclaw plugins install --link ./hooks/openclaw/ivan-route --no-enable
+openclaw plugins install --link ./hooks/openclaw/ivan-route --force
 ```
 
-Set the local endpoint before enabling the plugin, then inspect its registration:
+OpenClaw 2026.9.5 does not support the newer `plugins install --no-enable` flag. If that older command was already tried, the `plugin not found` warning means the install did not run; the configuration entry is preserved. The install above should resolve it. Stop and inspect its output before continuing. Then set the local endpoint (if it was not already set), enable the plugin, and inspect its registration:
 
 ```bash
 openclaw config set plugins.entries.ivan-ai-os-route.config.gatewayUrl http://127.0.0.1:4310
