@@ -1,4 +1,4 @@
-import { askTypeSafe } from "./provider.js";
+import { askTypeSafe, ProviderError } from "./provider.js";
 import { routingQuestions } from "./questions.js";
 
 const MANAGERS = Object.keys(routingQuestions.manager.criteria);
@@ -13,7 +13,7 @@ export async function routeRequest(text) {
       !Number.isFinite(manager.confidence) || manager.confidence < 0 || manager.confidence > 1 ||
       needs_details?.type !== "noul" || !Number.isFinite(needs_details.noul) || needs_details.noul < 0 || needs_details.noul > 1 ||
       urgency?.type !== "score" || !Number.isFinite(urgency.score) || urgency.score < 0 || urgency.score > 2) {
-    throw new Error("Invalid TypeSafe routing response");
+    throw new ProviderError("TYPESAFE_ROUTING_RESPONSE_INVALID");
   }
   // Missing execution details do not prevent assigning a clear specialist.
   // Only an uncertain domain, or a vague request classified as system, needs
