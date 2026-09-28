@@ -1,6 +1,6 @@
 import { Type } from "typebox";
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { routeWithGateway } from "./client.js";
+import { GatewayClientError, routeWithGateway } from "./client.js";
 
 export default definePluginEntry({
   id: "ivan-ai-os-route",
@@ -17,8 +17,9 @@ export default definePluginEntry({
         try {
           const result = await routeWithGateway(params.text, gatewayUrl);
           return { content: [{ type: "text", text: JSON.stringify(result) }], details: result };
-        } catch {
-          const fallback = { status: "REVIEW", manager: null, provider: "gateway-unavailable" };
+        } catch (error) {
+          const fallback = { status: "REVIEW", manager: null, provider: "gateway-unavailable",
+            error_code: error instanceof GatewayClientError ? error.code : "GATEWAY_UNAVAILABLE" };
           return { content: [{ type: "text", text: JSON.stringify(fallback) }], details: fallback };
         }
       }
