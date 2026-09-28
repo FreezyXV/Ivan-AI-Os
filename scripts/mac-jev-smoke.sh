@@ -34,7 +34,7 @@ cleanup() {
 trap cleanup EXIT
 
 attempt=0
-until curl -fsS http://127.0.0.1:4310/health >/dev/null; do
+until curl -fsS http://127.0.0.1:4310/health >/dev/null 2>&1; do
   attempt=$((attempt+1))
   if [ "$attempt" -ge 20 ]; then
     printf 'Gateway did not start. Check Node.js version and repository files.\n' >&2
