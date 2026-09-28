@@ -10,14 +10,16 @@
 - [x] Batched Choice/Noul/Score request router for the six domains
 - [x] Conservative mock mode, low-confidence review, malformed-response tests
 - [x] TypeSafe API access confirmed by Ivan; no key stored in this repository
-- [ ] Live Jev test from an isolated runtime with a locally installed secret
+- [x] Live Jev route smoke from Ivan's Mac with a hidden, ephemeral API key (HTTP 200, engineering ROUTED); persistent runtime remains pending
 - [ ] Trusted policy selection from the repository, not from caller-supplied lists
 - [ ] Server authentication, deterministic classification from concrete tool calls, redacted audit events
 - [ ] Calibration on labeled requests and permission scenarios
 
 ## Phase 2 — Agent integration
 - [x] Source-only OpenClaw 2026.9.5 advisory routing tool with mocked tests
+- [x] Interactive local Jev smoke mode to keep the Gateway available for OpenClaw integration testing
 - [ ] Install/test that tool on Ivan's Mac after local Gateway and plugin config are available
+- [ ] Reassess the official TypeSafe decision plugin once a compatible OpenClaw release and package are available (host 2026.9.6+)
 - [ ] Native OpenClaw `before_tool_call` policy gate, based on trusted tool metadata
 - [ ] Claude Code and Codex adapters verified against their current runtime hook contracts
 - [ ] Human approvals bound to exact proposed actions
