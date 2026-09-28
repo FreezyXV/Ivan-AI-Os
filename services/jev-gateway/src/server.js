@@ -1,7 +1,7 @@
 import http from "node:http";
 import { performance } from "node:perf_hooks";
 import { evaluateKernel } from "./kernel.js";
-import { decideWithProvider } from "./provider.js";
+import { decideWithProvider, ProviderError } from "./provider.js";
 import { routeRequest } from "./routing.js";
 
 const port = Number(process.env.PORT || 4310);
@@ -19,7 +19,9 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, await routeRequest(payload.text));
     } catch (error) {
       return json(res, error instanceof InputError ? 400 : 503, {
-        status: "REVIEW", manager: null, reason: error instanceof InputError ? error.message : "Router unavailable"
+        status: "REVIEW", manager: null,
+        error_code: error instanceof InputError ? "INVALID_REQUEST" : error instanceof ProviderError ? error.code : "GATEWAY_ERROR",
+        reason: error instanceof InputError ? error.message : "Router unavailable"
       });
     }
   }
