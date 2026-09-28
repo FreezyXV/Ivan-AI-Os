@@ -2,6 +2,8 @@
   "id": "ivan-ai-os-route",
   "name": "Ivan AI OS Route",
   "description": "Advisory Jev domain routing via the local Decision Plane",
+  "contracts": { "tools": ["ivan_route"] },
+  "activation": { "onStartup": true },
   "configSchema": {
     "type": "object",
     "properties": { "gatewayUrl": { "type": "string", "pattern": "^http://(127\\.0\\.0\\.1|localhost|\\[::1\\])(:[0-9]+)?/?$" } },
