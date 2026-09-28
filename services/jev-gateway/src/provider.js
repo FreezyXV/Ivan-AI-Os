@@ -1,62 +1,69 @@
+import { permissionQuestion, MIN_ALLOW_CONFIDENCE, MIN_ALLOW_PROBABILITY } from "./questions.js";
+
+const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
+
 export async function decideWithProvider({ action, policies }) {
   const provider = process.env.JEV_PROVIDER || "mock";
+  if (policies.length === 0) return review("gateway", policies, "No applicable policies supplied; action requires review.");
+  if (provider === "mock") return review("mock", policies, "TypeSafe API is not configured.");
+  if (provider !== "jev") throw new Error("Unsupported JEV_PROVIDER");
+  return callJev({ action, policies });
+}
 
-  if (provider === "mock") {
-    return {
-      decision: "REVIEW",
-      confidence: 0.5,
-      reasons: ["Jev provider is not configured; non-kernel action requires review."],
-      policies: policies.map((p) => p.id).filter(Boolean),
-      provider: "mock",
-      fallback_used: true
-    };
-  }
-
-  if (provider === "jev") return callJev({ action, policies });
-  throw new Error(`Unsupported JEV_PROVIDER: ${provider}`);
+function review(provider, policies, reason) {
+  return {
+    decision: "REVIEW", confidence: 0, reasons: [reason],
+    policies: policies.map((p) => p.id), provider, fallback_used: provider === "mock"
+  };
 }
 
 async function callJev({ action, policies }) {
-  const url = process.env.JEV_API_URL;
-  const apiKey = process.env.JEV_API_KEY;
-  if (!url || !apiKey) throw new Error("JEV_API_URL and JEV_API_KEY are required");
+  const apiKey = process.env.TYPESAFE_API_KEY;
+  if (!apiKey) throw new Error("TYPESAFE_API_KEY is required for JEV_PROVIDER=jev");
 
+  // Tool arguments and raw output may contain credentials or personal data.
+  // The gateway never sends them to the provider.
+  const state = {
+    intent: action.intent,
+    tool: action.tool,
+    risk: action.risk,
+    policies: policies.map(({ id, description }) => ({ id, description }))
+  };
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.JEV_TIMEOUT_MS || 3000));
-
   try {
-    const response = await fetch(url, {
+    const response = await fetch(ENDPOINT, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({ action, policies }),
+      headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ state, model: process.env.JEV_MODEL || "jev-latest", questions: { permission: permissionQuestion } }),
       signal: controller.signal
     });
-    if (!response.ok) throw new Error(`Jev provider returned HTTP ${response.status}`);
-    return normalizeProviderResult(await response.json());
+    if (!response.ok) throw new Error(`TypeSafe HTTP ${response.status}`);
+    return normalize(await response.json(), policies);
   } finally {
     clearTimeout(timeout);
   }
 }
 
-function normalizeProviderResult(raw) {
-  const allowed = new Set(["ALLOW", "DENY", "REQUIRE_HUMAN", "ESCALATE", "REVIEW"]);
-  const decision = String(raw.decision || "").toUpperCase();
-  if (!allowed.has(decision)) throw new Error("Invalid Jev decision");
-
+function normalize(raw, policies) {
+  const answer = raw?.answers?.permission;
+  if (answer?.type !== "choice" || !["ALLOW", "REVIEW", "DENY"].includes(answer.choice)) {
+    throw new Error("Invalid TypeSafe choice answer");
+  }
+  const { probabilities, confidence } = answer;
+  if (!probabilities || !Number.isFinite(confidence) || confidence < 0 || confidence > 1 ||
+      !["ALLOW", "REVIEW", "DENY"].every((key) => Number.isFinite(probabilities[key]) && probabilities[key] >= 0 && probabilities[key] <= 1) ||
+      Math.abs(Object.values(probabilities).reduce((sum, value) => sum + value, 0) - 1) > 0.03) {
+    throw new Error("Invalid TypeSafe probability distribution");
+  }
+  let decision = answer.choice;
+  if (decision === "ALLOW" && (confidence < MIN_ALLOW_CONFIDENCE || probabilities.ALLOW < MIN_ALLOW_PROBABILITY)) {
+    decision = "REVIEW";
+  }
   return {
-    decision,
-    confidence: clamp(Number(raw.confidence ?? 0)),
-    reasons: Array.isArray(raw.reasons) ? raw.reasons.map(String) : [],
-    policies: Array.isArray(raw.policies) ? raw.policies.map(String) : [],
-    provider: "jev",
-    fallback_used: false
+    decision, confidence, reasons: [decision === "REVIEW" && answer.choice === "ALLOW"
+      ? "TypeSafe allow score is below the configured threshold."
+      : `TypeSafe classified this action as ${decision}.`],
+    policies: policies.map((p) => p.id), provider: "jev", fallback_used: false
   };
-}
-
-function clamp(v) {
-  if (!Number.isFinite(v)) return 0;
-  return Math.min(1, Math.max(0, v));
 }
