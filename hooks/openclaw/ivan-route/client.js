@@ -1,6 +1,7 @@
 export async function routeWithGateway(text, gatewayUrl, fetchImpl = fetch) {
   const base = new URL(gatewayUrl);
-  if (base.username || base.password || base.search || base.hash) throw new Error("Invalid gateway URL");
+  if (base.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(base.hostname) ||
+      base.username || base.password || base.search || base.hash) throw new Error("Gateway must be local loopback");
   const url = new URL("/v1/route", base);
   const response = await fetchImpl(url, {
     method: "POST",
