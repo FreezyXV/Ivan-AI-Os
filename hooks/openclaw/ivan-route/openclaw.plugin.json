@@ -4,7 +4,7 @@
   "description": "Advisory Jev domain routing via the local Decision Plane",
   "configSchema": {
     "type": "object",
-    "properties": { "gatewayUrl": { "type": "string", "pattern": "^https?://" } },
+    "properties": { "gatewayUrl": { "type": "string", "pattern": "^http://(127\\.0\\.0\\.1|localhost|\\[::1\\])(:[0-9]+)?/?$" } },
     "required": ["gatewayUrl"],
     "additionalProperties": false
   }
