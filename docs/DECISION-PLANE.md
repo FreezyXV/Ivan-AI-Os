@@ -24,4 +24,6 @@ Before enforcing decisions: classify concrete tool calls in trusted code, select
 3. Run `cd services/jev-gateway && npm test` (Node 22+). Review `questions.js` and tune thresholds on labeled examples before treating classifications as useful.
 4. OpenClaw 2026.9.5 is running locally on the Mac. Its exact redacted config and the path to `Obsidian Notes` are still needed before deployment or vault sync.
 
+On Ivan's Mac, run `bash scripts/mac-jev-smoke.sh` from the repository root for one **real** TypeSafe routing call. It prompts for the key without echo and discards it when the script exits. The prompt text sent to TypeSafe is synthetic. This test does not install a plugin or change OpenClaw settings. Share only the response after checking it contains no secrets.
+
 Official reference: https://docs.typesafe.ai/llms.txt and https://docs.typesafe.ai/api.
