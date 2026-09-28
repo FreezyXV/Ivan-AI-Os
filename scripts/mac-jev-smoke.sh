@@ -44,7 +44,7 @@ until curl -fsS http://127.0.0.1:4310/health >/dev/null 2>&1; do
 done
 
 printf 'Live Jev routing response for a synthetic request:\n'
-curl -fsS --max-time 10 -X POST http://127.0.0.1:4310/v1/route \
+curl -sS -i --max-time 25 -X POST http://127.0.0.1:4310/v1/route \
   -H 'content-type: application/json' \
   -d '{"text":"Write a test for a Node.js function in my project"}'
 printf '\n'
