@@ -54,3 +54,10 @@ test("an empty policy set and mock mode never authorize", async () => {
   try { assert.equal((await decideWithProvider({ action, policies })).decision, "REVIEW"); }
   finally { if (saved === undefined) delete process.env.JEV_PROVIDER; else process.env.JEV_PROVIDER = saved; }
 });
+
+test("provider HTTP failures expose only a bounded diagnostic code", async () => {
+  await withProvider({}, async () => {
+    globalThis.fetch = async () => ({ ok: false, status: 422 });
+    await assert.rejects(decideWithProvider({ action, policies }), (error) => error.code === "TYPESAFE_HTTP_422");
+  });
+});
