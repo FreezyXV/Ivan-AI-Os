@@ -1,0 +1,20 @@
+{
+  "skill": "revue-croisee",
+  "version": 1,
+  "positifs": [
+    "Relis le travail non commité de Codex sans le gêner",
+    "Vérifie ce qu'a fait Claude sur sa branche et dis-moi si c'est fusionnable",
+    "Aide Codex sur sa PR sans toucher à son répertoire"
+  ],
+  "negatifs": [
+    {
+      "demande": "Écris une nouvelle fonctionnalité d'export CSV",
+      "attendu": "dev-studio"
+    },
+    {
+      "demande": "Est-ce que ce diff contient un secret ?",
+      "attendu": "revue-securite-diff"
+    }
+  ],
+  "livrable": "Rapport avec tests OK/KO chiffrés, constats classés avec preuve exécutable, aucun changement dans le répertoire de l'autre agent."
+}

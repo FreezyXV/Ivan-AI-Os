@@ -1,0 +1,20 @@
+{
+  "skill": "rapport-telegram",
+  "version": 1,
+  "positifs": [
+    "Préviens Ivan sur Telegram que le lot Anakalypto 12 est validé",
+    "Envoie-moi un résumé de la veille business de ce matin sur Telegram",
+    "Le déploiement a échoué, notifie Ivan et demande-lui s'il faut revenir en arrière"
+  ],
+  "negatifs": [
+    {
+      "demande": "Rédige un rapport d'audit de 10 pages sur l'infrastructure",
+      "attendu": "gros-document"
+    },
+    {
+      "demande": "Écris un message LinkedIn à une recruteuse d'ESN",
+      "attendu": "recruiter-outreach"
+    }
+  ],
+  "livrable": "Message ≤ 600 caractères, un seul sujet, statut en tête, action attendue explicite (→), aucun tableau ni donnée client."
+}
