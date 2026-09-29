@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { AGENT_ROOT, add, init, list, parseNote, resolveVault, verify } from "../memoire-obsidian/scripts/memoire.mjs";
@@ -48,13 +48,20 @@ test("notes are proposals with provenance, deduplicated and never overwritten", 
   const journal = add(v, note({ type: "journal", titre: "Fin de lot 12", sensibilite: "interne" }));
   assert.equal(journal, path.join(AGENT_ROOT, "journal", "2026-09-29-fin-de-lot-12.md"));
   assert.deepEqual(verify(v), []);
+  assert.equal(statSync(path.join(v, rel)).mode & 0o777, 0o600);
+  assert.equal(statSync(path.join(v, AGENT_ROOT, "journal")).mode & 0o777, 0o700);
+  assert.equal(statSync(path.join(v, AGENT_ROOT, "LISEZ-MOI.md")).mode & 0o777, 0o600);
 });
 
 test("missing provenance, sensitivity, credentials and linked agent areas are refused", t => {
   const v = vault(t);
   for (const [extra, code] of [[{ sources: [] }, /SOURCE_REQUIRED/], [{ sensibilite: undefined }, /SENSITIVITY_REQUIRED/],
     [{ type: "autre" }, /TYPE_INVALID/], [{ agent: "" }, /AGENT_REQUIRED/], [{ confiance: "2" }, /CONFIDENCE_INVALID/],
-    [{ body: "clé sk-" + "a".repeat(24) }, /CREDENTIAL_REFUSED/], [{ titre: "***" }, /TITLE_INVALID/]]) {
+    [{ body: "clé sk-" + "a".repeat(24) }, /CREDENTIAL_REFUSED/], [{ titre: "***" }, /TITLE_INVALID/],
+    // Synthetic shapes from Codex's review: Telegram bot token and bearer header.
+    [{ body: `bot ${"1".repeat(9)}:${"A".repeat(35)}` }, /CREDENTIAL_REFUSED/],
+    [{ body: `Authorization: Bearer ${"b".repeat(40)}` }, /CREDENTIAL_REFUSED/],
+    [{ sources: [`https://api.example.org/?h=Bearer ${"c".repeat(30)}`] }, /CREDENTIAL_REFUSED/]]) {
     assert.throws(() => add(v, note(extra)), code);
   }
   const outside = mkdtempSync(path.join(tmpdir(), "ivan-outside-"));

@@ -13,7 +13,14 @@ export const AGENT_ROOT = "Ivan AI OS";
 export const FOLDERS = { connaissance: "connaissances", decision: "decisions", journal: "journal", inbox: "inbox" };
 export const SENSITIVITY = ["public", "interne", "confidentiel"];
 const REQUIRED = ["type", "titre", "sources", "sensibilite", "agent", "cree", "statut"];
-const CREDENTIALS = [/\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}/, /\bgh[pousr]_[A-Za-z0-9]{20,}/, /\bAKIA[0-9A-Z]{16}\b/, /-----BEGIN [A-Z ]*PRIVATE KEY-----/];
+// Defensive, not exhaustive: common credential shapes only. A note must still never
+// receive a secret on purpose; this catches accidents, it does not prove absence.
+const CREDENTIALS = [
+  /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}/, /\bgh[pousr]_[A-Za-z0-9]{20,}/, /\bAKIA[0-9A-Z]{16}\b/,
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /\b\d{8,10}:[A-Za-z0-9_-]{35}\b/, // Telegram bot token
+  /\bBearer\s+[A-Za-z0-9._~+/-]{20,}=*/i, /\bxox[abprs]-[A-Za-z0-9-]{10,}/, // bearer header, Slack
+  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/ // JWT
+];
 
 export class MemoryError extends Error {}
 
@@ -47,7 +54,7 @@ export function init(vault) {
   const created = [];
   for (const folder of Object.values(FOLDERS)) {
     const dir = agentDir(vault, folder);
-    if (!existsSync(dir)) { mkdirSync(dir, { recursive: true }); created.push(path.relative(vault, dir)); }
+    if (!existsSync(dir)) { mkdirSync(dir, { recursive: true, mode: 0o700 }); created.push(path.relative(vault, dir)); }
   }
   const readme = path.join(agentDir(vault), "LISEZ-MOI.md");
   if (!existsSync(readme)) {
@@ -63,7 +70,7 @@ Seul dossier du coffre où les agents écrivent. Tes autres notes ne sont jamais
 Sensibilité : \`public\`, \`interne\`, \`confidentiel\`. Les notes confidentielles ne sont jamais lues par
 OpenClaw ni envoyées à Jev ; seul Claude y accède.
 Pour valider une proposition : passe \`statut: propose\` à \`statut: valide\` et déplace-la.
-`, { flag: "wx" });
+`, { flag: "wx", mode: 0o600 });
     created.push(path.relative(vault, readme));
   }
   return created;
@@ -117,7 +124,7 @@ export function add(vault, { type, titre, sources = [], sensibilite, agent, conf
   // Journals are records; knowledge and decisions start as proposals for Ivan to validate.
   const folder = type === "journal" ? FOLDERS.journal : FOLDERS.inbox;
   const dir = agentDir(vault, folder);
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
   const front = [
     "---", `type: ${type}`, `titre: "${titre.replace(/"/g, "'")}"`, "sources:", ...sources.map(s => `  - ${s.trim()}`),
     `sensibilite: ${sensibilite}`, `agent: ${agent}`, `cree: ${date}`,
@@ -125,7 +132,8 @@ export function add(vault, { type, titre, sources = [], sensibilite, agent, conf
     `statut: ${type === "journal" ? "journal" : "propose"}`, "---", ""
   ].join("\n");
   const file = path.join(dir, name);
-  writeFileSync(file, `${front}# ${titre}\n\n${body.trim()}\n`, { flag: "wx" });
+  // New agent notes and folders are private to Ivan (0600/0700); the rest of the vault is untouched.
+  writeFileSync(file, `${front}# ${titre}\n\n${body.trim()}\n`, { flag: "wx", mode: 0o600 });
   return path.relative(vault, file);
 }
 
