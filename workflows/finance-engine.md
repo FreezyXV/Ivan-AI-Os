@@ -10,7 +10,7 @@ Status: v1 public watch (this file). Personal DCA/drift module: next, Claude-onl
 | 1 | Collect ECB (deposit rate, HICP, core HICP, EUR/USD), FRED (US 10y), Kraken (BTC, ETH) | `veille.mjs collecter` (code) | 0 |
 | 2 | Private dated snapshot `~/.ivan-ai-os/finance/snapshots/` (0700/0600) | code | 0 |
 | 3 | Alerts by fixed thresholds vs previous snapshot | `veille.mjs alertes` (code) | 0 |
-| 4 | **Jev importance gate** on each "important" alert: worth an explanation to Ivan? | Jev `alerte.importante` (future) | cents |
+| 4 | **Jev importance gate** (live): routine moves downgraded to notes; Jev outage keeps the alert | `rapport --jev` → Jev `alerte.importante` | cents |
 | 5 | Short explanation with primary sources, only if step 4 says yes | worker LLM | premium, rare |
 | 6 | Brief to Telegram (one info per message) + journal note | `rapport-telegram`, `memoire-obsidian` | 0 |
 

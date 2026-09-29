@@ -1,11 +1,12 @@
 // Finance Engine, public watch: deterministic collection, snapshots and alerts. No LLM, no key,
 // no portfolio data. Snapshots stay private in ~/.ivan-ai-os/finance/ (0700/0600), outside Git.
-// Usage: node veille.mjs collecter | alertes | rapport
+// Usage: node veille.mjs collecter | alertes [--jev] | rapport [--jev]
 // Env: IVAN_FINANCE_DIR overrides the private directory (tests).
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { classify, pool } from "../../jev-decision/scripts/classify.mjs";
 
 const ECB = key => `https://data-api.ecb.europa.eu/service/data/${key}?lastNObservations=1&format=jsondata`;
 // Cadence decides staleness: daily data older than 7 days, monthly older than 70 days;
@@ -103,17 +104,29 @@ export function alerts(current, previous) {
     const age = Math.round((today - new Date(`${i.date_obs.length === 7 ? `${i.date_obs}-01` : i.date_obs}T00:00:00Z`)) / 864e5);
     if (i.cadence !== "evenement" && age > SEUILS.stale_jours[i.cadence]) out.push({ id: i.id, niveau: "info", texte: `${i.libelle} : dernière donnée du ${i.date_obs} (${age} j), à vérifier à la source.` });
     const prev = before.get(i.id);
-    if (i.id === "bce_taux_depot" && prev && prev.valeur !== i.valeur) out.push({ id: i.id, niveau: "important", texte: `${i.libelle} : ${prev.valeur} % → ${i.valeur} %.` });
-    if (i.extra && Math.abs(i.extra.variation_7j_pct) >= SEUILS.crypto_7j_pct) out.push({ id: i.id, niveau: "important", texte: `${i.libelle} : ${i.extra.variation_7j_pct > 0 ? "+" : ""}${i.extra.variation_7j_pct} % sur 7 jours.` });
-    if (i.id === "eur_usd" && prev && Math.abs(i.valeur / prev.valeur - 1) * 100 >= SEUILS.change_pct) out.push({ id: i.id, niveau: "important", texte: `${i.libelle} : ${prev.valeur} → ${i.valeur}.` });
+    if (i.id === "bce_taux_depot" && prev && prev.valeur !== i.valeur) out.push({ id: i.id, niveau: "important", texte: `${i.libelle} : ${prev.valeur} % → ${i.valeur} %.`, ancien: prev.valeur, nouveau: i.valeur, seuil: "tout changement" });
+    if (i.extra && Math.abs(i.extra.variation_7j_pct) >= SEUILS.crypto_7j_pct) out.push({ id: i.id, niveau: "important", texte: `${i.libelle} : ${i.extra.variation_7j_pct > 0 ? "+" : ""}${i.extra.variation_7j_pct} % sur 7 jours.`, ancien: "7 jours avant", nouveau: `${i.extra.variation_7j_pct} %`, seuil: `±${SEUILS.crypto_7j_pct} % sur 7 jours` });
+    if (i.id === "eur_usd" && prev && Math.abs(i.valeur / prev.valeur - 1) * 100 >= SEUILS.change_pct) out.push({ id: i.id, niveau: "important", texte: `${i.libelle} : ${prev.valeur} → ${i.valeur}.`, ancien: prev.valeur, nouveau: i.valeur, seuil: `±${SEUILS.change_pct} %` });
     if (["inflation_zone_euro", "inflation_sous_jacente", "us_10_ans"].includes(i.id) && prev && prev.valeur !== i.valeur && prev.date_obs !== i.date_obs) out.push({ id: i.id, niveau: "info", texte: `${i.libelle} : ${prev.valeur} % → ${i.valeur} % (${i.date_obs}).` });
   }
   for (const e of current.erreurs) out.push({ id: e.id, niveau: "info", texte: `${e.id} : source indisponible (${e.code}).` });
   return out;
 }
 
-export function report(current, previous) {
-  const list = alerts(current, previous);
+// Jev decides whether a threshold alert is worth Ivan's attention (`alerte.importante`, public
+// data only). Routine → downgraded to a note; Jev unavailable → the alert stays important.
+export async function judge(list, { classifyImpl = classify, seuil = 0.5 } = {}) {
+  const important = list.filter(a => a.niveau === "important");
+  const results = await pool(important, a => classifyImpl("alerte.importante",
+    { indicateur: a.id, ancien: String(a.ancien), nouveau: String(a.nouveau), seuil: String(a.seuil) }));
+  results.forEach((r, i) => {
+    if (r.ok) Object.assign(important[i], { jev: r.value.decision, ...(r.value.decision < seuil ? { niveau: "info", texte: `${important[i].texte} (Jev : variation de routine)` } : {}) });
+  });
+  return list;
+}
+
+export function report(current, previous, judged) {
+  const list = judged ?? alerts(current, previous);
   const lines = [`# Veille finance publique — ${current.date}`, "", "## À surveiller", ""];
   const important = list.filter(a => a.niveau === "important");
   lines.push(...(important.length ? important.map(a => `- ${a.texte}`) : ["- Rien d'important depuis le dernier relevé."]), "", "## Indicateurs", "", "| Indicateur | Valeur | Date | Variation |", "|---|---|---|---|");
@@ -140,7 +153,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.a
       const all = snapshots(dir);
       if (!all.length) fail("NO_SNAPSHOT: lancer d'abord « collecter »");
       const [current, previous] = [all.at(-1), all.at(-2)];
-      console.log(command === "alertes" ? JSON.stringify(alerts(current, previous), null, 2) : report(current, previous));
+      const judged = process.argv.includes("--jev") ? await judge(alerts(current, previous)) : undefined;
+      console.log(command === "alertes" ? JSON.stringify(judged ?? alerts(current, previous), null, 2) : report(current, previous, judged));
     } else fail("USAGE: collecter | alertes | rapport");
   } catch (error) {
     console.error(error instanceof FinanceError ? error.message : "FINANCE_ERROR");
