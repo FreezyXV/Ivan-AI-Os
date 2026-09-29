@@ -4,6 +4,7 @@
 - [x] Private repository, constitution, schemas and policy catalog skeleton
 - [x] Jev Gateway skeleton and Docker control-plane skeleton
 - [ ] VPS provisioned; runtime secrets configured
+- [x] Prepare a Linux systemd Jev gateway candidate with private credentials, persistent budget and authenticated startup probe; local mock integration tested, VPS not provisioned
 
 ## Phase 1 — Decision plane
 - [x] Correct TypeSafe System One request/response adapter for Choice
