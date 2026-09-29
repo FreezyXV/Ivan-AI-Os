@@ -1,7 +1,9 @@
 import { constants, openSync, closeSync, readSync, fstatSync, lstatSync, realpathSync, opendirSync } from "node:fs";
 import path from "node:path";
 
-const FOLDERS = ["inbox", "connaissances", "decisions", "journal"];
+// Search order: validated knowledge first, proposals last. Journals are never "valide",
+// so scanning them would only consume the file budget without ever returning a note.
+const SEARCH_FOLDERS = ["connaissances", "decisions", "inbox"];
 const ID = /^(inbox|connaissances|decisions|journal)\/[a-z0-9][a-z0-9-]{0,100}\.md$/;
 const MAX_BYTES = 65536, MAX_HEADER = 8192, MAX_FILES = 200, MAX_BODY = 4000;
 // Defensive shapes only, not a claim that arbitrary prose is free of secrets.
@@ -82,20 +84,22 @@ function note(vaultPath, id, withBody) {
 export function readNote(vaultPath, id) { return note(vaultPath, id, true); }
 export function searchNotes(vaultPath, query, limit = 3) {
   if (typeof query !== "string" || !query.trim() || query.length > 80 || /[\x00-\x1f]/.test(query) || credentials.test(query) || !Number.isInteger(limit) || limit < 1 || limit > 3) fail("MEMORY_QUERY_INVALID");
-  const root = rootFor(vaultPath), ids = []; let scanned = 0;
-  for (const folder of FOLDERS) {
+  const root = rootFor(vaultPath), ids = []; let scanned = 0, truncated = false;
+  scan: for (const folder of SEARCH_FOLDERS) {
     const file = path.join(root, folder);
     if (!lstatSync(file, { throwIfNoEntry: false })) continue;
     directory(file);
     const dir = opendirSync(file);
     try { for (let entry; (entry = dir.readSync());) {
-      if (++scanned > MAX_FILES) fail("MEMORY_INDEX_LIMIT");
+      // Bounded work: past the budget, answer from what was scanned rather than failing.
+      if (++scanned > MAX_FILES) { truncated = true; break scan; }
       const id = `${folder}/${entry.name}`;
       if (entry.isFile() && ID.test(id)) ids.push(id);
     } } finally { dir.closeSync(); }
   }
   const words = normalize(query.trim()).split(/\s+/), hits = [];
-  for (const id of ids.sort()) {
+  // Keep folder priority; sort only within a folder for stable results.
+  for (const id of ids.sort((a, b) => SEARCH_FOLDERS.indexOf(a.split("/")[0]) - SEARCH_FOLDERS.indexOf(b.split("/")[0]) || (a < b ? -1 : a > b ? 1 : 0))) {
     try {
       const entry = note(vaultPath, id, false), title = normalize(entry.title);
       if (words.every(word => title.includes(word))) hits.push(entry);
@@ -104,5 +108,5 @@ export function searchNotes(vaultPath, query, limit = 3) {
     }
     if (hits.length === limit) break;
   }
-  return { notes: hits, title_search_only: true, body_read: false };
+  return { notes: hits, title_search_only: true, body_read: false, ...(truncated ? { index_truncated: true } : {}) };
 }
