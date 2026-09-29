@@ -1,3 +1,16 @@
+## Reprise Codex — exploitation et suivi des missions (2026-09-29)
+
+Lire docs/MISSION-TRACKING.md : état opérationnel et preuves sur quatre domaines.
+Mémoire #14 @7ebf0f4 active ; service Mac #20 @12a82a5 actif ; chef #21 @df5ba19 corrigé,
+13/13 tests et CI 6/6 verte, Telegram C livré automatiquement à 14:22:22 UTC.
+Finance public également livré sans relance à 14:28:21 UTC, trois affirmations/sources BCE-AMF.
+Jev : 52 appels, 0,001461 EUR estimé ; aucun plafond de 500 appels.
+Source ivan-missions sur agent/codex/mission-ledger : 5 tests et chargeur/hooks natifs isolés.
+Outil de statut et persistance prêts, non activés ; aucune reconstitution des missions antérieures.
+L'ancien relais ci-dessous contient des états dépassés : les composants ci-dessus sont actifs.
+Claude : worktree propre @92cbdf1, aucune revue #21 observée ; ne pas modifier son périmètre.
+Prochaine livraison : runtime Linux OVH préparé sans achat ; suivi live après revue du contrat.
+
 # Session handoff — 2026-09-29
 
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan

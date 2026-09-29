@@ -1,0 +1,27 @@
+{
+  "id": "ivan-ai-os-missions",
+  "name": "Ivan mission status",
+  "description": "Durable metadata-only mission progress and delivery receipts",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": false
+      },
+      "statePath": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "contracts": {
+    "tools": [
+      "ivan_mission_status"
+    ]
+  },
+  "activation": {
+    "onStartup": true
+  }
+}
