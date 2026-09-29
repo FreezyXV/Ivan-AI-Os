@@ -75,6 +75,33 @@ test("filesystem inspection catches secrets, protected writes, symlinks and esca
   assert.equal(requests.length, 0);
 });
 
+test("agent instructions, CI workflows and hooks are protected against writes", async t => {
+  const { evaluator, workspace, requests } = fixture(t);
+  for (const dir of [".claude", ".github/workflows", "hooks/openclaw"]) mkdirSync(path.join(workspace, dir), { recursive: true });
+  const files = ["CLAUDE.md", ".claude/settings.json", ".github/workflows/ci.yml", "hooks/openclaw/index.js"];
+  for (const file of files) writeFileSync(path.join(workspace, file), "fixture");
+  for (const file of files) {
+    const write = await evaluator.evaluate({ tool: "write", arguments: { path: file, content: sensitive } });
+    assert.equal(write.body.decision, "REQUIRE_HUMAN", file);
+    assert.equal(write.body.reason_code, "PROTECTED_PROJECT_METADATA", file);
+    const read = await evaluator.evaluate({ tool: "read", arguments: { path: file } });
+    assert.equal(read.body.reason_code, "ENFORCEMENT_NOT_ENABLED", file);
+  }
+  assert.equal(requests.length, files.length);
+});
+
+test("missing sensitive paths are denied before resolution", async t => {
+  const { evaluator, requests } = fixture(t);
+  for (const file of [".env.production", "secrets/api.txt", "credentials/token.json", "certs/server.pem", ".ssh/id_ed25519"]) {
+    for (const tool of ["read", "write"]) {
+      const result = await evaluator.evaluate({ tool, arguments: { path: file, content: sensitive } });
+      assert.equal(result.body.decision, "DENY", file);
+      assert.equal(result.body.reason_code, "SENSITIVE_PATH", file);
+    }
+  }
+  assert.equal(requests.length, 0);
+});
+
 test("provider only receives trusted metadata and local policies; ALLOW never authorizes", async t => {
   const { evaluator, requests, journal } = fixture(t);
   const result = await evaluator.evaluate({ tool: "read", arguments: { path: "note.md", content: sensitive, intent: sensitive } });
