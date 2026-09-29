@@ -12,6 +12,9 @@ const ENUMS = {
   profil: ["oui", "non"],
   statut: ["actif", "brouillon"]
 };
+// Ivan's decision (2026-09-29): clients and personal finances never reach OpenClaw.
+export const OPENCLAW_DROPPED_SECTIONS = ["Clients", "Cadre d'investissement"];
+export const OPENCLAW_EXCLUDED_MANAGERS = ["finance"];
 const REQUIRED_METADATA = ["version", "famille", "manager", "risque", "profil", "statut", "provenance"];
 // Credentials and direct personal identifiers never belong in a shared skill.
 const FORBIDDEN = [

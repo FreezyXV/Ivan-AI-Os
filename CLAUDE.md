@@ -19,7 +19,8 @@ The shared rules above (`AGENTS.md`, then `constitution/CONSTITUTION.md` and
 
 ## Skills
 - Project skills are linked in `.claude/skills/` (system and engineering only). Validate any
-  change with `node skills/tools/registry.mjs` and `node --test 'skills/test/*.test.mjs'`.
+  change with `node skills/tools/registry.mjs`, `node agents/tools/managers.mjs` and
+  `node --test 'skills/test/*.test.mjs' 'agents/test/*.test.mjs'`.
 - Personal data stays in `~/.ivan-ai-os/profil.md`, never in the repository.
 
 ## Defaults

@@ -15,3 +15,17 @@ Persistent agents are limited to managers. Workers should be ephemeral.
 Every worker receives one objective, bounded context, allowed tools, applicable policies, output schema and stop condition.
 
 Workers do not retain durable hidden state. Useful outputs are promoted to memory after validation.
+
+## Definitions (v1 draft, 2026-09-29)
+
+`agents/managers/<name>.md` defines each manager: `route` (Jev routing label, or `orchestrator`
+for the Chief of Staff), allowed `skills`, `runtimes`, mission, flow, approval boundary and stop
+condition. The Opportunity Manager above is the `business` route.
+
+```bash
+node agents/tools/managers.mjs          # every skill owned by its manager; OpenClaw data rule
+node --test 'agents/test/*.test.mjs'
+node skills/tools/package.mjs --openclaw --manager career --out <dir>   # one manager's skills
+```
+
+Finance runs on claude.ai only: clients and personal finances never reach OpenClaw (Ivan, 2026-09-29).

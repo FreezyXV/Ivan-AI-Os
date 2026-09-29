@@ -1,18 +1,20 @@
 // Package skills for runtimes that cannot read the repository (claude.ai upload,
 // OpenClaw skills folder). Profile skills get the private profile copied in.
-// Usage: node skills/tools/package.mjs [--out DIR] [--profile FILE] [--openclaw] [name ...]
+// Usage: node skills/tools/package.mjs [--out DIR] [--profile FILE] [--openclaw] [--manager ROUTE] [name ...]
+// --manager keeps only the skills listed by that manager in agents/managers/.
 // --openclaw (Ivan's decision 2026-09-29): drop the "Clients" and "Cadre d'investissement"
 // profile sections and exclude finance skills; clients and personal finances stay on Claude.
 import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { SKILLS_ROOT, buildRegistry, privateTermsFrom } from "./registry.mjs";
+import { OPENCLAW_DROPPED_SECTIONS, OPENCLAW_EXCLUDED_MANAGERS, SKILLS_ROOT, buildRegistry, privateTermsFrom } from "./registry.mjs";
+import { skillsForRoute } from "../../agents/tools/managers.mjs";
+
+export { OPENCLAW_DROPPED_SECTIONS, OPENCLAW_EXCLUDED_MANAGERS };
 
 const REPO_ROOT = path.resolve(SKILLS_ROOT, "..");
 
-export const OPENCLAW_DROPPED_SECTIONS = ["Clients", "Cadre d'investissement"];
-export const OPENCLAW_EXCLUDED_MANAGERS = ["finance"];
 
 export function withoutSections(text, headings) {
   return headings.reduce((result, heading) => {
@@ -52,8 +54,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const take = flag => { const i = args.indexOf(flag); return i < 0 ? undefined : args.splice(i, 2)[1]; };
   const out = take("--out") ?? path.join(homedir(), ".ivan-ai-os", "skills-dist");
   const profile = take("--profile") ?? process.env.IVAN_PROFILE_PATH ?? path.join(homedir(), ".ivan-ai-os", "profil.md");
+  const route = take("--manager");
   const openclaw = args.includes("--openclaw");
-  const result = packageSkills({ out, profile, openclaw, names: args.filter(a => a !== "--openclaw") });
+  let names = args.filter(a => a !== "--openclaw");
+  if (route) names = skillsForRoute(route);
+  const result = packageSkills({ out, profile, openclaw, names });
   console.log(JSON.stringify(result, null, 2));
   if (result.skipped.length) console.error(`Skipped (profile missing or excluded for OpenClaw): ${result.skipped.join(", ")}`);
 }

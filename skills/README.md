@@ -59,9 +59,10 @@ shows its sections. Skills with `profil: "oui"` read it at runtime.
 ```bash
 node skills/tools/registry.mjs                        # validate every skill
 IVAN_PROFILE_PATH=~/.ivan-ai-os/profil.md node skills/tools/registry.mjs   # + private-name leak check
-node --test 'skills/test/*.test.mjs'                  # registry, packaging, Anakalypto validator
+node --test 'skills/test/*.test.mjs' 'agents/test/*.test.mjs'   # registry, packaging, managers, Anakalypto
 node skills/tools/package.mjs [--out DIR] [name…]     # claude.ai: ~/.ivan-ai-os/skills-dist (full profile)
 node skills/tools/package.mjs --openclaw --out ~/.ivan-ai-os/skills-openclaw   # no clients/finances, no finance skills
+node skills/tools/package.mjs --openclaw --manager career --out DIR          # one manager's skills only
 ```
 
 Packages are written outside the repository only. Upload a packaged folder to claude.ai, or copy it

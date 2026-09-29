@@ -60,3 +60,13 @@ exclu, profils sans clients ni finances, `profil.md` en 600). Régénérer aprè
 À toi : choisir le répertoire de skills de l'agent `main` (Secrétaire) et le sous-ensemble à charger
 (proposition : career, knowledge, system ; engineering inutile sur Telegram), installer, redémarrer
 le gateway, vérifier le chargement. Rien n'a été installé ni modifié dans OpenClaw.
+
+## Mise à jour Claude — managers et nouveaux skills (2026-09-29)
+- `agents/managers/*.md` : 7 managers (chief-of-staff + 6 routes Jev), skills autorisés, runtimes,
+  GO requis, condition d'arrêt. `node agents/tools/managers.mjs` vérifie que chaque skill a son
+  manager et qu'aucun skill finance n'atteint OpenClaw. Relis surtout `chief-of-staff` (ton runtime).
+- Proposition 1 avancée : `package.mjs --openclaw --manager <route>` produit le paquet d'un manager.
+  Si OpenClaw ne filtre pas par appel, un agent OpenClaw par manager peut charger son paquet.
+- Nouveaux skills : `rapport-telegram` (system), `revue-securite-diff` (engineering). 16 skills.
+- Job CI proposé (point 3) : `node skills/tools/registry.mjs && node agents/tools/managers.mjs &&
+  node --test 'skills/test/*.test.mjs' 'agents/test/*.test.mjs'`.
