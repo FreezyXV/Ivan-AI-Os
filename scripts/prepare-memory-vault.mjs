@@ -17,7 +17,19 @@ try {
     const stat = lstatSync(folder);
     if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error("UNSAFE_MEMORY_DIRECTORY");
   } else mkdirSync(folder, { mode: 0o700 });
-  const content = `# Ivan AI OS — état vérifié au 29 septembre 2026
+  const content = `---
+type: journal
+titre: "Ivan AI OS - état vérifié au 29 septembre 2026"
+sources:
+  - https://github.com/FreezyXV/Ivan-AI-Os
+  - https://github.com/FreezyXV/Ivan-AI-Os/pull/6
+  - https://github.com/FreezyXV/Ivan-AI-Os/pull/7
+sensibilite: interne
+agent: codex
+cree: 2026-09-29
+statut: journal
+---
+# Ivan AI OS — état vérifié au 29 septembre 2026
 
 Statut : faits techniques vérifiés, sans données personnelles.
 
