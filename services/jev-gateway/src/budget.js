@@ -112,9 +112,10 @@ let runtime, runtimeKey;
 export function getRuntimeBudget() {
   const filename = process.env.IVAN_JEV_BUDGET_PATH;
   const conversion = Number(process.env.JEV_USD_TO_EUR_BUDGET_RATE || 1);
+  if (!Number.isFinite(conversion) || conversion < 1 || conversion > 2) throw new BudgetError("BUDGET_NOT_CONFIGURED");
   const key = `${filename}\0${conversion}`;
   if (!runtime || runtimeKey !== key) {
-    runtime = createJevBudget({ filename, usdToEurMillis: conversion * 1000 });
+    runtime = createJevBudget({ filename, usdToEurMillis: Math.round(conversion * 1000) });
     runtimeKey = key;
   }
   return runtime;

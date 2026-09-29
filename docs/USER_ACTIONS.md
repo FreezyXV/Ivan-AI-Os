@@ -31,3 +31,8 @@ OpenClaw skill packages exclude clients and personal investments; the public car
 as chosen in option A. The full private profile stays outside Git and is reserved for Claude.
 The complete virtual enterprise remains the target: chief of staff, six managers and ephemeral
 workers. Source contracts and seven definitions must be followed by observed runtime dispatch.
+
+Ivan subsequently chose Finance on both Claude and OpenClaw: public macro, information and
+opportunities on Telegram; personal assets and objectives remain in Claude. Seven private
+workspaces are prepared and their native configuration validated, not activated. Cross-reviews
+are complete for PR #2/#3/#4/#5; their reserved merge GO and coordinated activation remain pending.

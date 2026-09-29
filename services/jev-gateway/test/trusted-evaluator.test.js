@@ -135,6 +135,22 @@ test("new protected files require approval, including destinations through an ex
   assert.equal(requests.length, 0);
 });
 
+test("absolute workspace aliases preserve protected, ordinary and sensitive classifications", async t => {
+  const { evaluator, workspace, root, requests } = fixture(t);
+  const alias = path.join(root, "workspace-alias");
+  symlinkSync(workspace, alias);
+  mkdirSync(path.join(workspace, "hooks"));
+  const protectedFile = await evaluator.evaluate({ tool: "write", arguments: { path: path.join(alias, "hooks/new.js") } });
+  assert.equal(protectedFile.body.decision, "REQUIRE_HUMAN");
+  assert.equal(protectedFile.body.reason_code, "PROTECTED_PROJECT_METADATA");
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: path.join(alias, "note.md") } })).body.reason_code, "ENFORCEMENT_NOT_ENABLED");
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: path.join(alias, ".env") } })).body.decision, "DENY");
+  writeFileSync(path.join(root, "outside.md"), "outside");
+  symlinkSync(path.join(root, "outside.md"), path.join(workspace, "escape.md"));
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: path.join(alias, "escape.md") } })).body.reason_code, "OUTSIDE_WORKSPACE");
+  assert.equal(requests.length, 1);
+});
+
 test("provider only receives trusted metadata and local policies; ALLOW never authorizes", async t => {
   const { evaluator, requests, journal } = fixture(t);
   const result = await evaluator.evaluate({ tool: "read", arguments: { path: "note.md", content: sensitive, intent: sensitive } });

@@ -91,7 +91,10 @@ export function classifyToolCall(call, workspaceRoot) {
   }
   if (sensitivePath(canonical, root)) return denySensitive;
   const paths = [resolved, canonical];
-  if (paths.some(p => outside(root, p))) return { action, reason: "OUTSIDE_WORKSPACE" };
+  // Workspace membership follows the actual destination. An absolute alias
+  // (macOS /var -> /private/var, for example) is not an escape; outward links
+  // still fail this canonical check. Both names retain sensitivity/protection.
+  if (outside(root, canonical)) return { action, reason: "OUTSIDE_WORKSPACE" };
   if (tool !== "read" && paths.some(protectedPath)) return protectedWrite(action);
   if (!exists) return { action, reason: "PATH_NOT_RESOLVED" };
   return {
