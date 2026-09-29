@@ -1,0 +1,125 @@
+name: foundation
+
+on:
+  pull_request:
+  push:
+    branches: [main, foundation/v1]
+
+permissions:
+  contents: read
+
+jobs:
+  jev-gateway:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/jev-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  linux-runtime:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/linux-runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  openclaw-route-adapter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hooks/openclaw/ivan-route
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  openclaw-observer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hooks/openclaw/ivan-observer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  openclaw-memory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test --prefix hooks/openclaw/ivan-memory
+
+  openclaw-engine-briefs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hooks/openclaw/ivan-engine-briefs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  openclaw-config-switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test scripts/switch-openclaw-config.test.mjs
+
+  skills-and-managers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Claude's reviewed registry arrives in a separate PR. These steps become
+      # active when it is present, without making this stacked PR depend on it.
+      - if: ${{ hashFiles('skills/tools/registry.mjs') != '' }}
+        run: node skills/tools/registry.mjs
+      - if: ${{ hashFiles('agents/tools/managers.mjs') != '' }}
+        run: node agents/tools/managers.mjs
+      - if: ${{ hashFiles('skills/test/*.test.mjs') != '' }}
+        run: node --test skills/test/*.test.mjs
+      - if: ${{ hashFiles('agents/test/*.test.mjs') != '' }}
+        run: node --test agents/test/*.test.mjs
+
+  manager-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test --prefix services/manager-runtime
+
+  claude-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - if: ${{ hashFiles('hooks/claude/test/*.test.mjs') != '' }}
+        run: node --test hooks/claude/test/*.test.mjs

@@ -1,0 +1,32 @@
+[Unit]
+Description=Ivan AI OS authenticated Jev gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=ivan-ai-os
+Group=ivan-ai-os
+WorkingDirectory=/opt/ivan-ai-os/current
+Environment=PORT=4311
+Environment=JEV_PROVIDER=jev
+Environment=JEV_USD_TO_EUR_BUDGET_RATE=1
+StateDirectory=ivan-ai-os/jev-gateway
+StateDirectoryMode=0700
+LoadCredential=typesafe.key:/etc/ivan-ai-os/typesafe.key
+LoadCredential=decision-token:/etc/ivan-ai-os/decision-token
+ExecStart=/usr/bin/node /opt/ivan-ai-os/current/services/linux-runtime/runtime.mjs
+ExecStartPost=/usr/bin/node /opt/ivan-ai-os/current/services/linux-runtime/health.mjs
+TimeoutStartSec=45
+TimeoutStopSec=20
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

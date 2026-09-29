@@ -1,0 +1,20 @@
+{
+  "skill": "veille-niches",
+  "version": 1,
+  "positifs": [
+    "Évalue cette idée de SaaS pour les dentistes",
+    "Est-ce que cette niche vaut le coup ?",
+    "Note cette idée de side-project"
+  ],
+  "negatifs": [
+    {
+      "demande": "Lance le cycle business de la semaine",
+      "attendu": "business-engine"
+    },
+    {
+      "demande": "Construis le MVP",
+      "attendu": "dev-studio"
+    }
+  ],
+  "livrable": "Note sur 30 avec preuve par critère, éliminatoires appliqués, avis tranché, plan de validation 7 jours avec seuil chiffré."
+}

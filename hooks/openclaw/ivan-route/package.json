@@ -1,0 +1,10 @@
+{
+  "name": "ivan-ai-os-route",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "openclaw": { "extensions": ["./index.ts"] },
+  "dependencies": { "typebox": "^1.1.38" },
+  "peerDependencies": { "openclaw": ">=2026.9.5" },
+  "scripts": { "test": "node --test" }
+}

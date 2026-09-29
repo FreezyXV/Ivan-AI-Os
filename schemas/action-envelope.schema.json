@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ivan-ai-os.local/schemas/action-envelope.schema.json",
+  "title": "ActionEnvelope",
+  "type": "object",
+  "required": ["id", "actor", "intent", "tool", "risk", "requested_at", "external_contact", "financial_action", "destructive", "policy_mutation"],
+  "properties": {
+    "id": { "type": "string" },
+    "actor": { "type": "string" },
+    "manager": { "type": "string" },
+    "workflow": { "type": "string" },
+    "intent": { "type": "string" },
+    "tool": { "type": "string" },
+    "arguments": { "type": "object" },
+    "risk": { "enum": ["low", "medium", "high", "critical"] },
+    "external_contact": { "type": "boolean" },
+    "financial_action": { "type": "boolean" },
+    "destructive": { "type": "boolean" },
+    "policy_mutation": { "type": "boolean" },
+    "requested_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}
