@@ -23,7 +23,7 @@ async function listen(t, options) {
 test("all decision endpoints are disabled without auth configuration while health remains available", async t => {
   const url = await listen(t);
   assert.equal((await fetch(`${url}/health`)).status, 200);
-  for (const endpoint of ["evaluate-tool", "route", "decide"]) {
+  for (const endpoint of ["evaluate-tool", "route", "decide", "classify"]) {
     const response = await fetch(`${url}/v1/${endpoint}`, { method: "POST" });
     assert.equal(response.status, 503);
     assert.equal((await response.json()).reason_code, "TRUSTED_EVALUATION_DISABLED");

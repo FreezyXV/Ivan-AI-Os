@@ -15,6 +15,7 @@
 - [x] Shadow evaluator loads global kernel policies from the repository and rejects caller policy lists; catalog revision recorded
 - [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative classification, bounded redacted audit and keyed action correlation; 43 local tests pass on the follow-up review branch (see `docs/TRUSTED-EVALUATION.md`)
 - [x] Activate private authenticated Mac runtime on 4311 with the metadata contract and estimated 10 EUR/month budget, on Ivan's GO (see docs/ACTIVATION-2026-09-29.md)
+- [x] Activate authenticated `/v1/classify` with ten registered questions and the shared Jev budget; real Noul and Choice replies verified on public inputs (see docs/CLASSIFY-GATEWAY.md)
 - [ ] Activate trusted native call capture; observer pilot remains separate
 - [x] Source on the secure-gateway branch authenticates decision endpoints, rejects routing prose and shares a durable estimated 10 EUR/month Jev budget; 54 tests and isolated native verification pass (see `docs/SECURE-GATEWAY.md`)
 - [ ] Calibration on labeled requests and permission scenarios
@@ -75,7 +76,8 @@ Topic → sources → claims → fact-check → pedagogy → visuals → interac
 - [x] Coded evidence rules and visual router (#25); v2 short visual cards, 19 domains, reconstruction series (#26)
 - [x] Topic discovery by code: Wikimedia trends + seven science feeds, deals dropped (#33)
 - [x] First reconstruction card drafted end-to-end; publication blocked until Jev answers (by design)
-- [ ] Mandatory Jev gates live (`sujet.captivant`, `sujet.domaine`, `publication.prete`) — needs `/v1/classify`
+- [x] Mandatory Jev gates live (`sujet.captivant`, `sujet.domaine`, `publication.prete`) and first glass card validated without publication
+- [ ] Bind Anakalypto publication receipts to the gateway audit before any automatic publication
 
 ## Phase 9 — System Steward
 Prompt bloat, skills, policy conflicts, token telemetry and controlled resets.
