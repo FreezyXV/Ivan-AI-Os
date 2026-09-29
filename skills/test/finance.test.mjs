@@ -64,3 +64,22 @@ test("a quiet day says so and keeps sources linked", async () => {
   assert.match(md, /Rien d'important depuis le dernier relevé/);
   assert.match(md, /\]\(https:\/\/data-api\.ecb\.europa\.eu/);
 });
+
+import { drift, split, toTarget, validateAllocation } from "../finance-engine/scripts/dca.mjs";
+const allocation = { version: 1, montant_reference_eur: 1000, lignes: [
+  { id: "A", reel_pct: 48.9, cible_pct: 45 }, { id: "B", reel_pct: 21.1, cible_pct: 20 }, { id: "C", reel_pct: 14.1, cible_pct: 15 },
+  { id: "D", reel_pct: 8.5, cible_pct: 10 }, { id: "E", reel_pct: 7.4, cible_pct: 10 }] };
+
+test("DCA: drift, buy-only split that never sells, and the contribution needed to reach target", () => {
+  assert.deepEqual(drift(allocation).map(l => l.ecart_pts), [3.9, 1.1, -0.9, -1.5, -2.6]);
+  assert.equal(toTarget(allocation), 86.67);
+  const small = split(allocation, 50);
+  assert.equal(small.reduce((s, l) => s + l.achat_eur, 0).toFixed(2), "50.00");
+  assert.deepEqual(small.map(l => l.achat_eur >= 0), [true, true, true, true, true]);
+  assert.equal(small[0].achat_eur, 0, "the overweight line gets nothing while gaps remain");
+  const big = split(allocation, 1000);
+  assert.equal(big.reduce((s, l) => s + l.achat_eur, 0).toFixed(2), "1000.00");
+  for (const l of big) assert.ok(Math.abs(l.apres_pct - l.cible_pct) < 0.01, `${l.id} reaches target`);
+  assert.throws(() => validateAllocation({ ...allocation, lignes: allocation.lignes.slice(1) }), /SOMME_REEL_PCT/);
+  assert.throws(() => split(allocation, 0), /MONTANT_INVALID/);
+});

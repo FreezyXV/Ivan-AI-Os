@@ -21,9 +21,11 @@ Known limitation (2026-09-29): the ECB HICP series for the euro area stops at 20
 change of euro-area composition code in 2026); flagged as stale until the new series key is found.
 CoinGecko answered with an HTML challenge from this network; Kraken public OHLC is used instead.
 
-## Private module (next)
-Target allocation, positions and monthly contribution in `~/.ivan-ai-os/finance/` (never Git, never
-OpenClaw, never Jev): drift vs target, next DCA split proposal, concentration and cost checks.
+## Private module (v1, `scripts/dca.mjs`)
+Target and actual weights in `~/.ivan-ai-os/finance/allocation.json` (0600; never Git, OpenClaw or Jev).
+`derive`: drift in points (±5-point band). `repartir <amount>`: buy-only split of the next contribution
+(fill gaps first, then target weights); the contribution needed to reach target without selling.
+Next: concentration and cost checks once ISIN and fees are provided.
 Buy/sell/transfer/broker connection: Ivan only. No agent ever holds a transaction-capable key.
 
 ## Requests to Codex (runtime perimeter)
