@@ -67,10 +67,15 @@ export const QUESTIONS = Object.freeze({
   },
   "tache.categorie": {
     fields: ["titre", "extensions"], required: ["titre"],
-    prompt: choice("Choose the specialist domain for this public task title and file-extension metadata only.", {
-      business: "Customer, revenue or market opportunity.", career: "Career or professional positioning.",
-      finance: "Public market research or financial monitoring.", knowledge: "Research, education or Anakalypto.",
-      engineering: "Code, repository or software delivery.", system: "Agent, memory, policy or infrastructure operation."
+    // Technical categories used by the engineering factory to pick a builder
+    // (skills/usine-logicielle); manager routing already exists via /v1/route.
+    prompt: choice("Choose the technical category of this public software task from its title and file-extension metadata only.", {
+      frontend: "User interface, styling or client-side behaviour.", backend: "Server logic, APIs or data processing.",
+      securite: "Authentication, secrets, permissions or hardening.", infra: "Deployment, services, runtime or operating system configuration.",
+      integration: "Connecting two systems, plugins, hooks or adapters.", tests: "Test suites, fixtures or calibration corpora.",
+      outillage: "Developer tooling, scripts, packaging or validators.", architecture: "Structure, contracts or cross-cutting design decisions.",
+      debug: "Diagnosing and fixing a reported defect.", docs: "Documentation, READMEs or handoff notes.",
+      data: "Datasets, schemas, migrations or data quality."
     })
   },
   "constat.severite": {
