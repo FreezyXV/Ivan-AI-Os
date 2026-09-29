@@ -2,7 +2,8 @@
 // Signals and opportunities stay private in ~/.ivan-ai-os/business/ (0700/0600), outside Git.
 // Usage:
 //   node signals.mjs ajouter < signals.jsonl        add/dedupe public signals
-//   node signals.mjs sujets [--min 2]               recurring subjects (importance by recurrence)
+//   node signals.mjs trier                          Jev signal.pertinent on untriaged signals
+//   node signals.mjs sujets [--min 2]               recurring subjects, Jev-rejected signals excluded
 //   node signals.mjs noter < opportunity.json       score /30, eliminators, Cash/Venture, decision
 //   node signals.mjs rapport [--top 3]              Markdown brief of the best scored opportunities
 // Env: IVAN_BUSINESS_DIR overrides the private directory (tests).
@@ -11,6 +12,7 @@ import { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpat
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { classify, pool } from "../../jev-decision/scripts/classify.mjs";
 
 export const TYPES = ["douleur", "demande", "offre", "tendance"];
 export const CRITERES = ["demande", "paiement", "concurrence", "fit", "delai_mvp", "cout_acquisition"];
@@ -78,16 +80,44 @@ export function addSignals(dir, signals, now = new Date()) {
 }
 
 // Recurrence across distinct sources is the cheapest importance signal.
+// Jev triage (`signal.pertinent`, public title/excerpt/type only): decisions are appended to
+// jev.jsonl; a signal already triaged is never sent twice. Failures stay untriaged (retried later).
+export async function triage(dir, { classifyImpl = classify, concurrency = 4 } = {}) {
+  const decided = new Set(readJsonl(path.join(dir, "jev.jsonl")).map(d => d.id));
+  // Offers prove that people pay (supply side); they are payment evidence, not a customer
+  // problem, so they are not submitted to a "problem" relevance question.
+  const todo = readJsonl(path.join(dir, "signals.jsonl")).filter(s => !decided.has(s.id) && s.type !== "offre");
+  const results = await pool(todo, s => classifyImpl("signal.pertinent",
+    { titre: s.titre, extrait: s.extrait ?? s.titre, type: s.type }), concurrency);
+  const lines = results.flatMap((r, i) => r.ok ? [{ id: todo[i].id, pertinent: r.value.decision, confidence: r.value.confidence, request_id: r.value.request_id }] : []);
+  if (lines.length) appendFileSync(path.join(dir, "jev.jsonl"), lines.map(l => JSON.stringify(l)).join("\n") + "\n", { mode: 0o600 });
+  return { tries: lines.length, en_attente_jev: results.filter(r => !r.ok).length, deja_tries: decided.size };
+}
+
+// Demand signals Jev rejects (< rejet) stop counting; 0.4-0.6 is Jev's hesitation band, kept but
+// flagged. Offers are counted apart as payment evidence and never as demand.
+export const JEV_BANDS = { rejet: 0.4, confiant: 0.6 };
 export function subjects(dir, min = 2) {
   const groups = new Map();
+  const jev = new Map(readJsonl(path.join(dir, "jev.jsonl")).map(d => [d.id, d.pertinent]));
   for (const s of readJsonl(path.join(dir, "signals.jsonl"))) {
+    const score = jev.get(s.id);
+    if (s.type !== "offre" && score !== undefined && score < JEV_BANDS.rejet) continue;
+    if (s.type === "offre") {
+      const g = groups.get(s.sujet) ?? { sujet: s.sujet, signaux: 0, sources: new Set(), types: {}, preuve_paiement: false, dernier: s.date };
+      g.offres = (g.offres ?? 0) + 1; g.preuve_paiement ||= s.preuve_paiement;
+      groups.set(s.sujet, g);
+      continue;
+    }
     const g = groups.get(s.sujet) ?? { sujet: s.sujet, signaux: 0, sources: new Set(), types: {}, preuve_paiement: false, dernier: s.date };
     g.signaux++; g.sources.add(new URL(s.url).hostname.replace(/^www\./, ""));
+    if (score !== undefined && score < JEV_BANDS.confiant) g.incertains = (g.incertains ?? 0) + 1;
+    if (score === undefined) g.non_tries = (g.non_tries ?? 0) + 1;
     g.types[s.type] = (g.types[s.type] ?? 0) + 1;
     g.preuve_paiement ||= s.preuve_paiement; if (s.date > g.dernier) g.dernier = s.date;
     groups.set(s.sujet, g);
   }
-  return [...groups.values()].map(g => ({ ...g, sources: g.sources.size }))
+  return [...groups.values()].map(g => ({ ...g, sources: g.sources.size, offres: g.offres ?? 0, incertains: g.incertains ?? 0, non_tries: g.non_tries ?? 0 }))
     .filter(g => g.signaux >= min).sort((a, b) => b.sources - a.sources || b.signaux - a.signaux);
 }
 
@@ -153,10 +183,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.a
     let input = "";
     if (["ajouter", "noter"].includes(command)) for await (const chunk of process.stdin) input += chunk;
     if (command === "ajouter") console.log(JSON.stringify(addSignals(dir, input.split("\n").filter(l => l.trim()).map(l => JSON.parse(l)))));
+    else if (command === "trier") console.log(JSON.stringify(await triage(dir)));
     else if (command === "sujets") console.log(JSON.stringify(subjects(dir, opt("--min", 2)), null, 2));
     else if (command === "noter") console.log(JSON.stringify(recordOpportunity(dir, JSON.parse(input)), null, 2));
     else if (command === "rapport") console.log(report(dir, opt("--top", 3)));
-    else fail("USAGE: ajouter | sujets | noter | rapport");
+    else fail("USAGE: ajouter | trier | sujets | noter | rapport");
   } catch (error) {
     console.error(error instanceof BusinessError ? error.message : error instanceof SyntaxError ? "JSON_INVALID" : "BUSINESS_ERROR");
     process.exitCode = 1;

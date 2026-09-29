@@ -9,7 +9,7 @@ Owner: Claude (contract; skills `encyclopedie-anakalypto`, `verification-affirma
 | 0b | **Jev topic gate (mandatory)**: `sujet.captivant` then `sujet.domaine` (19 domains), ordered by domain deficit | Jev | < 1 cent / 150 titles |
 | 1 | Plan: sub-topics, 3–5 questions per card | worker LLM | premium, short |
 | 2 | Sources: 3–5 searches per article, primary first | worker LLM + web | premium |
-| 3 | **Jev source gate**: is this page a reliable source for this claim? | Jev `source.fiable` (future) | cents |
+| 3 | **Jev source gate**: `fiable` / `incertaine` / `non_fiable` for this claim type | Jev `source.fiable` | cents |
 | 4 | Draft + claims ledger (numbers, dates, definitions, relations with their sources) | worker LLM | premium |
 | 5 | Evidence rules: tiers A/B/C, 2 independent domains for numbers/dates, divergence ⇒ contested | `affirmations.mjs verifier` (code) | 0 |
 | 6 | Targeted fix of each "to verify"/"contested" claim, or removal | worker LLM | premium, bounded |
