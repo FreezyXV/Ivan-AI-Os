@@ -200,3 +200,23 @@ test("audit exhaustion, weak permissions and symlinks cannot produce successful 
   assert.throws(() => writer({ test: true }));
   assert.deepEqual(readFileSync(journal), prior);
 });
+
+
+test("known source templates and the kernel secret policy are readable without granting broad exceptions", async t => {
+  const { evaluator, workspace } = fixture(t);
+  mkdirSync(path.join(workspace, "policies/kernel"), { recursive: true });
+  mkdirSync(path.join(workspace, "src"));
+  for (const file of [".env.example", "policies/kernel/secrets.yaml", "src/secret-scanner.js"]) {
+    writeFileSync(path.join(workspace, file), "public synthetic source");
+    const result = await evaluator.evaluate({ tool: "read", arguments: { path: file } });
+    assert.equal(result.body.reason_code, "ENFORCEMENT_NOT_ENABLED", file);
+  }
+  assert.equal((await evaluator.evaluate({ tool: "write", arguments: { path: "policies/kernel/secrets.yaml" } })).body.decision, "REQUIRE_HUMAN");
+  for (const file of ["policies/credentials.json", "secrets.example.yaml", ".env.sample", "decision-token"]) {
+    assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: file } })).body.decision, "DENY", file);
+  }
+  // An exempt template name must not hide a symlink to an actual credential.
+  rmSync(path.join(workspace, ".env.example"));
+  symlinkSync(path.join(workspace, ".env"), path.join(workspace, ".env.example"));
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: ".env.example" } })).body.decision, "DENY");
+});

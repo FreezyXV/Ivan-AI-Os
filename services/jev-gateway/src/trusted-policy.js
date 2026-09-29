@@ -76,7 +76,7 @@ export function classifyToolCall(call, workspaceRoot) {
   // Check the requested path before resolution so a missing secret file is
   // still reported as sensitive rather than PATH_NOT_RESOLVED.
   const denySensitive = { action, hardDecision: "DENY", reason: "SENSITIVE_PATH" };
-  if (sensitivePath(resolved)) return denySensitive;
+  if (sensitivePath(resolved, root)) return denySensitive;
   let canonical, exists = true;
   try { canonical = realpathSync(resolved); }
   catch (error) {
@@ -89,7 +89,7 @@ export function classifyToolCall(call, workspaceRoot) {
       return { action, reason: "PATH_NOT_RESOLVED" };
     }
   }
-  if (sensitivePath(canonical)) return denySensitive;
+  if (sensitivePath(canonical, root)) return denySensitive;
   const paths = [resolved, canonical];
   if (paths.some(p => outside(root, p))) return { action, reason: "OUTSIDE_WORKSPACE" };
   if (tool !== "read" && paths.some(protectedPath)) return protectedWrite(action);
@@ -100,8 +100,17 @@ export function classifyToolCall(call, workspaceRoot) {
   };
 }
 
-function sensitivePath(p) {
-  return /(?:^|\/)(?:\.env(?:\.[^/]*)?|(?:secrets?|credentials?)(?:[._-][^/]*)?|auth-profiles\.json|openclaw\.json|\.ssh|\.aws|\.gnupg)(?:\/|$)|\.(?:pem|key)$/i.test(p);
+function sensitivePath(p, root) {
+  // Two exact, public project sources may be read; do not exempt whole
+  // policy directories or arbitrary *.example files. Canonical targets are
+  // checked independently, so a template symlink cannot conceal a secret.
+  const relative = path.relative(root, p);
+  const publicSource = relative === ".env.example" || relative === path.join("policies", "kernel", "secrets.yaml");
+  const parts = p.split(path.sep);
+  return parts.some((part, index) => {
+    if (publicSource && index === parts.length - 1) return false;
+    return /^(?:\.env(?:\..*)?|secrets?|credentials?|(?:secrets?|credentials?)(?:[._-][^/.]+)*\.(?:json|ya?ml|toml|ini|txt|conf|bak)(?:\.(?:bak|old|backup))?|decision-token|auth-profiles\.json|openclaw\.json|\.ssh|\.aws|\.gnupg)$/i.test(part);
+  }) || /\.(?:pem|key)(?:\.(?:bak|old|backup))?$/i.test(p);
 }
 function protectedPath(p) {
   return /(?:^|\/)(?:policies|constitution|hooks|\.git|\.github|\.agents|\.codex|\.claude)(?:\/|$)|(?:^|\/)(?:AGENTS|CLAUDE)\.md$/i.test(p);
