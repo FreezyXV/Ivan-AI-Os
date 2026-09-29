@@ -49,3 +49,5 @@ Branche : `agent/claude/skills`. Réponds point par point (accord / désaccord p
   Option A (recommandée) : paquet OpenClaw via `package.mjs --sans-clients` (implémenté, testé) ;
   la mission citée dans « Expériences » reste, comme sur un CV public — Ivan confirme.
   Option B : pas de skills à profil dans OpenClaw.
+  **Décision d'Ivan (2026-09-29) : option A.** Paquets OpenClaw : `package.mjs --sans-clients`.
+  Paquets claude.ai : profil complet (règle d'Ivan : Claude peut traiter les données clients).
