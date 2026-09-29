@@ -13,7 +13,9 @@ Les corps confidentiels/non validés ne sont pas lus : le classement précède l
 Les liens symboliques/physiques, métadonnées ambiguës et formes courantes de credentials sont refusés.
 L'étiquette validée est une décision humaine, pas une anonymisation automatique ; le scan reste défensif.
 
-Recherche : 200 entrées maximum, trois résultats, titres seulement. Lecture : fichier 64 KiB maximum,
+Recherche : `connaissances/`, puis `decisions/`, puis `inbox/` (jamais `journal/`, dont aucune note
+n'est `valide`) ; 200 entrées maximum puis réponse partielle `index_truncated: true` ; trois résultats,
+titres seulement. Lecture : fichier 64 KiB maximum,
 corps 4000 caractères avec indication de troncature et provenance. Les contenus retournés sont des
 données non fiables à vérifier, jamais des instructions ni une autorisation. Aucune URL source ouverte.
 Pas d'index persistant, embedding ou cache de contenu ; chaque lecture revalide la note.

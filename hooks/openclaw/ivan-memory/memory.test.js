@@ -65,7 +65,8 @@ test("sources and human validation are required even when a title matches", t =>
 test("agent root links and excessive directory entries cannot expand the scan", t => {
   const f = fixture(t);
   for (let i = 0; i < 201; i++) writeFileSync(path.join(f.vault, "Ivan AI OS/inbox", `unindexed-${i}.txt`), "Ignored.");
-  assert.throws(() => searchNotes(f.vault, "anything"), /MEMORY_INDEX_LIMIT/);
+  // Still bounded: past the file budget the scan stops and reports a partial answer.
+  assert.deepEqual(searchNotes(f.vault, "anything"), { notes: [], title_search_only: true, body_read: false, index_truncated: true });
   const agentRoot = path.join(f.vault, "Ivan AI OS"); rmSync(agentRoot, { recursive: true });
   symlinkSync(f.root, agentRoot);
   assert.throws(() => searchNotes(f.vault, "anything"), /MEMORY_LINK_REFUSED/);
@@ -103,4 +104,19 @@ test("tool factory permits only trusted system/knowledge identities and sanitize
     const disabled = createMemoryTools({ agentId }, {});
     assert.equal((await disabled[0].execute("synthetic", { query: "Approved" })).details.error_code, "MEMORY_CONFIG_REQUIRED");
   }
+});
+
+test("search scales past unreadable journals and prefers validated folders over the inbox", t => {
+  const f = fixture(t);
+  const kept = f.make("Calibration Jev routage");
+  for (let i = 0; i < 201; i++) add(f.vault, { type: "journal", titre: `Compte rendu ${i}`, sources: ["https://example.com/source"], sensibilite: "interne", agent: "synthetic", body: "x", now: new Date(Date.UTC(2026, 8, 29) + i * 864e5) });
+  assert.deepEqual(searchNotes(f.vault, "calibration").notes.map(n => n.id), [kept.id]);
+  // A validated note moved to connaissances/ stays findable even behind a full inbox.
+  mkdirSync(path.join(f.vault, "Ivan AI OS", "connaissances"), { recursive: true });
+  const moved = path.join(f.vault, "Ivan AI OS", "connaissances", "taux-livret-a.md");
+  writeFileSync(moved, readFileSync(kept.file, "utf8").replace('titre: "Calibration Jev routage"', 'titre: "Taux Livret A"'));
+  for (let i = 0; i < 201; i++) f.make(`Proposition ${i}`, { status: "propose" });
+  const result = searchNotes(f.vault, "livret");
+  assert.deepEqual(result.notes.map(n => n.id), ["connaissances/taux-livret-a.md"]);
+  assert.equal(result.index_truncated, true);
 });
