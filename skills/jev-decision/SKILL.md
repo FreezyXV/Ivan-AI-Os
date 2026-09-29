@@ -2,7 +2,7 @@
 name: jev-decision
 description: Utiliser Jev (TypeSafe System One, via le Jev Gateway d'Ivan-AI-Os) pour les décisions bon marché - routage vers un manager, tri oui/non, notation, choix parmi des options, pré-contrôle d'une action - et concevoir de nouvelles questions Jev. Utiliser dès qu'une tâche demande de classer, trier, noter, filtrer ou router en volume, avant d'appeler un modèle premium pour ça, ou quand Ivan dit "passe par Jev", "fais trier", "note ces éléments".
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   famille: system
   manager: system
   risque: lecture
@@ -29,10 +29,16 @@ Le compteur mesure les tokens d'entrée (`jev-1.13.0`) et refuse avant le résea
 
 ## Cascade (du moins cher au plus cher)
 1. Code déterministe (regex, règle, liste) si la règle s'écrit en 10 lignes.
-2. **Jev** : classer, trier, noter, choisir, router. Budget Ivan : **10 €/mois** ; l'utiliser partout
-   où il remplace un appel de modèle premium.
+2. **Jev** : classer, trier, noter, choisir quand l'entrée est **ambiguë** (texte autorisé, contenu à
+   juger). Budget Ivan : **10 €/mois** ; l'utiliser partout où il remplace un appel premium.
 3. Modèle local, puis premium : seulement pour produire du texte ou raisonner.
 4. Humain : paiement, contact externe, publication, action irréversible. Jev ne l'évite jamais.
+
+## Leçon de la calibration réelle (2026-09-29)
+Si l'entrée est déjà une **étiquette énumérée** (liste fermée, ordre de priorité déclaré), la
+décision est une table : 19/19 pour la table contre 17/19 et 53 % de REVIEW pour Jev sur les cas
+multi-tâches. Avant d'ajouter une question Jev, se demander : « une table ou une règle de 10 lignes
+donnerait-elle la même réponse ? ». Si oui, pas de Jev. Voir la PR #17 (`JEV_ROUTING_MODE=table`).
 
 ## Ce que Jev reçoit
 - Des **métadonnées** construites par le code : intention, outil, risque, catégorie, champs
