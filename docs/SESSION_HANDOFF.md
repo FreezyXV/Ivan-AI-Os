@@ -1,5 +1,33 @@
 # Session handoff — 2026-09-29
 
+## 2026-09-29 — Codex — Business/Finance read tools and restart recovery
+
+Branch `agent/codex/engine-read-tools`, PR #36. A pinned private copy of
+`ivan-ai-os-engine-briefs` is active on the Mac OpenClaw gateway. Native
+`tools.invoke` returned `READY` for `ivan_business_brief` as `ivan-business`
+and `ivan_finance_brief` as `ivan-finance`; `main` was denied. Neither response
+included the private Business profile or personal Finance allocation. Jev 4311,
+the seven roles and Telegram configuration were preserved. No model call was
+needed for these checks. The source CI had seven green jobs at commit 5224721.
+
+The `openclaw gateway restart --preserve-definition` path took about five
+minutes: log evidence shows an active root request during internal shutdown,
+then delayed startup. The gateway recovered without deleting state or locks.
+Direct `launchctl kickstart -k gui/501/ai.openclaw.gateway` was tested:
+command returned in 3.1 s, TCP listened in 12.2 s, authenticated health in
+21.7 s. Future private config switches should use
+`scripts/switch-openclaw-config.mjs` with an expected source hash and a private
+backup directory; it validates first, restarts via launchd, checks health and
+restores the exact prior config on failure. Do not copy config contents into Git
+or logs. An end-to-end switch on a semantically identical private candidate
+returned `ACTIVE`; JSON config equality against its exact backup was true and
+both scoped tools still returned `READY`. This is a bounded rollout path, not
+proof that OpenClaw never stalls.
+Separate non-delivered model turns completed for `ivan-business` and
+`ivan-finance`; each `toolSummary` included its own brief tool and both runs
+ended normally. This verifies manager-side discovery in addition to direct RPC;
+no Telegram message was sent by these tests.
+
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
 
 Lire docs/ACTIVATION-2026-09-29.md : ce bloc remplace les états inactifs plus anciens ci-dessous.

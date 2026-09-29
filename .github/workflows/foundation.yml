@@ -45,6 +45,27 @@ jobs:
           node-version: 22
       - run: npm test
 
+  openclaw-engine-briefs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hooks/openclaw/ivan-engine-briefs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  openclaw-config-switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test scripts/switch-openclaw-config.test.mjs
+
   skills-and-managers:
     runs-on: ubuntu-latest
     steps:
