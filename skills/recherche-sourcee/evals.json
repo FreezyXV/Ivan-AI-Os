@@ -1,0 +1,20 @@
+{
+  "skill": "recherche-sourcee",
+  "version": 1,
+  "positifs": [
+    "Compare les ESN au Luxembourg",
+    "Fais une fiche sur ce concurrent",
+    "Vérifie les salaires de BA à Paris en 2026"
+  ],
+  "negatifs": [
+    {
+      "demande": "Quelle heure est-il à Tokyo ?",
+      "attendu": "aucun"
+    },
+    {
+      "demande": "Fais un cycle d'opportunités business",
+      "attendu": "business-engine"
+    }
+  ],
+  "livrable": "Réponse en 5 lignes avec avis tranché, sources citées au fil du texte, incertitudes listées, données de moins de 12 mois."
+}

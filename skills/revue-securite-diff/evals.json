@@ -1,0 +1,20 @@
+{
+  "skill": "revue-securite-diff",
+  "version": 1,
+  "positifs": [
+    "Vérifie la sécurité de ce diff avant le push",
+    "Est-ce que cette PR expose un secret ?",
+    "Relis la sécurité du nouveau hook"
+  ],
+  "negatifs": [
+    {
+      "demande": "Relis tout le travail de Codex",
+      "attendu": "revue-croisee"
+    },
+    {
+      "demande": "Écris la fonctionnalité",
+      "attendu": "dev-studio"
+    }
+  ],
+  "livrable": "Checklist parcourue, constats prouvés fichier:ligne sans afficher de secret, ou RAS en une ligne."
+}

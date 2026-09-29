@@ -1,0 +1,20 @@
+{
+  "skill": "interview-prep",
+  "version": 1,
+  "positifs": [
+    "J'ai un entretien RH jeudi pour un poste de BA",
+    "Prépare-moi au cas pratique de demain",
+    "Fais une simulation d'entretien"
+  ],
+  "negatifs": [
+    {
+      "demande": "Analyse cette offre de BA",
+      "attendu": "job-application-optimizer"
+    },
+    {
+      "demande": "Remercie le recruteur après l'entretien",
+      "attendu": "recruiter-outreach"
+    }
+  ],
+  "livrable": "Pitch de 60 secondes, dix questions probables avec réponses STAR issues d'expériences réelles, cinq questions à poser, aucun chiffre inventé."
+}

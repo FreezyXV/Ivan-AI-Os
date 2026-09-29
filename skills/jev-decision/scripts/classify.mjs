@@ -13,7 +13,8 @@ export const QUESTIONS = Object.freeze({
   "publication.prete": { type: "noul", fields: ["slug", "resume_verification", "mots", "visuel", "validateur"] },
   "signal.pertinent": { type: "noul", fields: ["titre", "extrait", "type"] },
   "preuve.suffisante": { type: "choice", fields: ["critere", "note", "titre", "extrait"] },
-  "alerte.importante": { type: "noul", fields: ["indicateur", "ancien", "nouveau", "seuil"] }
+  "alerte.importante": { type: "noul", fields: ["indicateur", "ancien", "nouveau", "seuil"] },
+  "memoire.contradiction": { type: "noul", fields: ["titre_a", "titre_b", "valeurs_a", "valeurs_b"] }
 });
 const CREDENTIALS = /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bBearer\s+\S{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
 
