@@ -1,4 +1,4 @@
-# Gateway Mac en service de fond — candidat non activé
+# Gateway Mac en service de fond — pilote activé le 2026-09-29
 
 LaunchAgent de l'utilisateur, sans sudo : Jev démarre à la connexion et launchd le relance
 après arrêt inattendu, avec temporisation de 60 secondes. Le Mac doit rester allumé et éveillé ;
@@ -15,6 +15,21 @@ dossier 0700. Il remplace l'environnement hérité par une liste fermée, écout
 127.0.0.1 et réutilise decision-token, evaluation.jsonl et jev-budget.json du pilote actuel.
 La consommation estimée reste limitée à 10 EUR/mois ; aucun smoke payant lors des redémarrages.
 Le mode table reste désactivé dans le candidat ; il attend sa fusion et son pilote distinct.
+
+## État vérifié du pilote
+
+Sur GO d'activation d'Ivan, la clé déjà provisionnée au gateway a été transférée au Trousseau
+par pipes privés depuis ce seul processus, du même utilisateur. Aucun identifiant dans Git,
+argv ou fichier ordinaire. Le lanceur temporaire est arrêté ; le LaunchAgent est en service.
+Release runtime a58b99f hors checkout, candidat privé `~/.ivan-ai-os/background-a58b99f`.
+Authentification 401 sans jeton, avis déterministe, compteur conservé et empreinte de la
+configuration OpenClaw inchangée : vérifiés. Vrai appel natif ivan_route : Jev/Engineering 0,96.
+Redémarrage natif réel : nouveau PID, nouvelle lecture du Trousseau, compteur conservé à
+48 appels / 0,001349 EUR estimé ; aucun appel fournisseur dans le contrôle de restart.
+Le compte et le job isolés de la preuve native sont supprimés ; le service réel demeure.
+Preuves privées : activation-result.json, native-smoke.json, restart-proof.json ; ne pas publier
+les configurations, le Trousseau, le token ou des exports d'environnement/processus.
+Le code reste sur la branche Codex pour revue ; pas de fusion foundation/v1 déduite du pilote.
 
 ## Préparation avant bascule
 
@@ -50,4 +65,4 @@ sans lire la clé de production ni appeler un endpoint payant.
 
 Références : [agents launchd](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html),
 [Trousseau Apple](https://developer.apple.com/documentation/security/using-the-keychain-to-manage-user-secrets).
-Ces contrats ne prouvent pas l'activation effective du service ; celle-ci exige les contrôles ci-dessus.
+Les contrats Apple complètent les preuves locales ci-dessus ; ils ne garantissent pas un Mac disponible 24/7.

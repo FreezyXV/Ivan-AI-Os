@@ -1,3 +1,30 @@
+## Reprise Codex — service Mac de fond activé (2026-09-29)
+
+Branche agent/codex/mac-background-runtime depuis foundation/v1 @c23597a.
+Six tests mac-runtime passent : auth, environnement fermé, erreurs masquées, restart avec
+compteur conservé. Helper Swift compilé, aller/retour Trousseau synthétique réussi sans
+accéder au compte réel. Release hors checkout mac-background-v1 @a58b99f et proposition
+privée background-a58b99f préparées puis activées sur GO d'Ivan. La preuve native isolée
+passe : Trousseau, lancement, authentification et restart avec compteur conservé, zéro appel
+payant. Le compte/job de test sont supprimés. Le lanceur temporaire 67088 est arrêté.
+Le LaunchAgent utilisateur com.ivan-ai-os.jev est actif, Trousseau provisionné depuis le seul
+gateway déjà autorisé, sans credential dans argv/Git/fichiers ordinaires. Empreinte OpenClaw
+inchangée ; sept rôles et anciens services préservés. Smoke natif Jev/Engineering 0,96.
+Restart réel : nouveau PID, Trousseau relu, 48 appels / 0,001349 EUR estimé conservés.
+Il n'est plus nécessaire de garder la fenêtre du lanceur ; Mac éveillé/connecté reste requis.
+Voir services/mac-runtime/README.md : Trousseau, LaunchAgent de session utilisateur,
+loopback, budget partagé, rollback et limites Mac éveillé/connecté. Pas de VPS provisionné.
+Le gateway réel 4311 demeure sain, désormais indépendant du terminal. Ne pas recopier les clés.
+
+Revue Claude traitée : #16 intégrée avec provenance dans #14, test avant KO et après 10/10 ;
+chargeur mémoire natif revérifié. Candidat corrigé activation-memory-8151c01 validé, non activé.
+#17 favorable après 53/53 ; #18 favorable au principe après 18/18 avec deux précisions de doc.
+Les quatre retours GitHub #14/#17/#18/#19 ont été publiés après autorisation explicite d’Ivan.
+#19 : preuve `node --test effect.test.mjs` en coffre jetable : exit 0, wrote_file:true ;
+ces commandes exécutent du code et ne doivent pas être exemptées comme lectures.
+Hook Claude confirmé actif shadow ; worktrees/règles consultatives restent à traiter séparément.
+Jev reste le fournisseur live ; table #17 désactivée. Pas de nouvelle calibration payante.
+
 # Session handoff — 2026-09-29
 
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
