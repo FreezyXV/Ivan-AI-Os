@@ -19,7 +19,10 @@ command returned in 3.1 s, TCP listened in 12.2 s, authenticated health in
 `scripts/switch-openclaw-config.mjs` with an expected source hash and a private
 backup directory; it validates first, restarts via launchd, checks health and
 restores the exact prior config on failure. Do not copy config contents into Git
-or logs. This is a bounded rollout path, not proof that OpenClaw never stalls.
+or logs. An end-to-end switch on a semantically identical private candidate
+returned `ACTIVE`; JSON config equality against its exact backup was true and
+both scoped tools still returned `READY`. This is a bounded rollout path, not
+proof that OpenClaw never stalls.
 
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
 

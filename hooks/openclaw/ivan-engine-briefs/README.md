@@ -21,6 +21,8 @@ The Mac pilot pins the plugin outside the checkout. The live gateway returned
 `READY` for both manager-scoped RPC calls; `main` could not invoke the Business
 tool. A direct `launchctl kickstart -k` restarted the service in 3 seconds,
 with TCP available after 12 seconds and authenticated RPC health after 22
-seconds. Use `scripts/switch-openclaw-config.mjs` for subsequent private config
-changes; it validates, snapshots, restarts through launchd, checks health and
-rolls back if needed. Snapshot collection and scheduling remain separate work.
+seconds. `scripts/switch-openclaw-config.mjs` also passed an end-to-end Mac
+switch using a semantically identical private config: native validation, exact
+private backup, launchd restart, authenticated health, and both tools still
+`READY`. Future config changes use this path, which rolls back if health fails.
+Snapshot collection and scheduling remain separate work.
