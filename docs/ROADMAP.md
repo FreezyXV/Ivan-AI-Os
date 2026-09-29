@@ -44,25 +44,40 @@
 - [ ] Verify sync permissions and add a bounded OpenClaw read tool; memory skill excluded until then
 - [ ] Markdown ingestion, retrieval and provenance
 - [ ] Embeddings + pgvector only after basic retrieval needs are measured
-- [ ] Controlled Dream consolidation
+- [x] Controlled consolidation, first step: read-only memory gardener (duplicates, possible contradictions, stale proposals) proposing, never rewriting (#27)
+- [ ] Jev `memoire.contradiction` gate and scheduled garden (Codex runtime)
 
 ## Phase 4 — Business Engine
 Signals → dedupe → evidence → validation → Cash/Venture recommendations → Telegram.
+- [x] Signals ledger, recurrence by distinct sources, evidence-first /30 scoring, Cash/Venture, first real cycle (#23)
+- [ ] Jev `signal.pertinent` / `preuve.suffisante` gates and weekly schedule (needs `/v1/classify`)
 
 ## Phase 5 — Career Engine
 Offers → matching → tailored materials → human approval before outreach/application.
 
 ## Phase 6 — Finance Engine
 ETF/DCA + crypto + macro + portfolio drift; propose only, never trade.
+- [x] Public watch by code (ECB, FRED, Kraken), private snapshots, threshold alerts (#24)
+- [x] Private DCA split: 1000 EUR/month by target weights, buy-only rebalancing option (#24, #32)
+- [ ] Daily schedule, Jev `alerte.importante`, Telegram brief (Codex runtime)
 
 ## Phase 7 — Engineering Factory
 Task decomposition → Claude/Codex builder-reviewer → tests → branch/PR.
+- [x] Builder/reviewer routing: files' owner → measured success on reviewed PRs → prior → alternation (#29)
+- [x] Claude Code hook `gate`: level-0 rules, Jev for ambiguous calls, active in this project (#28, #31)
+- [ ] Codex hook on the same rules; Jev `tache.categorie` / `constat.severite`
 
 ## Phase 8 — Anakalypto
 Topic → sources → claims → fact-check → pedagogy → visuals → interactive content → QA.
+- [x] Coded evidence rules and visual router (#25); v2 short visual cards, 19 domains, reconstruction series (#26)
+- [x] Topic discovery by code: Wikimedia trends + seven science feeds, deals dropped (#33)
+- [x] First reconstruction card drafted end-to-end; publication blocked until Jev answers (by design)
+- [ ] Mandatory Jev gates live (`sujet.captivant`, `sujet.domaine`, `publication.prete`) — needs `/v1/classify`
 
 ## Phase 9 — System Steward
 Prompt bloat, skills, policy conflicts, token telemetry and controlled resets.
+- [x] Skills/config auditor (description cost, duplicates, bloat) and evals for every active skill (#27)
+- [ ] Token telemetry per workflow and controlled resets
 
 ## Phase 10 — ROI scheduler
 Measure outcomes and allocate compute to useful workflows.
