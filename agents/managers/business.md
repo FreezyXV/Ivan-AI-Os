@@ -15,6 +15,7 @@ metadata:
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.
+Retour : rapport final non vide au parent (résultat, vérifications, limites), voir `agents/README.md`.
 
 **GO d'Ivan requis pour** : contact de prospects, achat de domaine ou d'outil, publication.
 

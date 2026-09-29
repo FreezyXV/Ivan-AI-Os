@@ -16,6 +16,13 @@ Every worker receives one objective, bounded context, allowed tools, applicable 
 
 Workers do not retain durable hidden state. Useful outputs are promoted to memory after validation.
 
+## Return contract (verified on Telegram, 2026-09-29)
+A manager that delegates owes its parent a final, non-empty report: result, checks performed and
+limits. On OpenClaw, wait with `sessions_yield({ message: … })` carrying that obligation, never
+with `acknowledgment` alone: two pilots answered `NO_REPLY` until the obligation moved to
+`message` (see `docs/ACTIVATION-2026-09-29.md`, `MANAGER_COMPLETION_GUIDANCE`). Proposed tests are
+reported as proposed, never as executed. One worker per objective; no follow-up loops.
+
 ## Definitions (v1 draft, 2026-09-29)
 
 `agents/managers/<name>.md` defines each manager: `route` (Jev routing label, or `orchestrator`
