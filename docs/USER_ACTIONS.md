@@ -13,6 +13,8 @@ Confirmed on 2026-09-28:
 1. Telegram verification is complete. An inactive native observer and authenticated shadow evaluator now correlate captured calls. The follow-up review branch has 43 passing tests, plus isolated checks against the installed hook runner and native loader. A live pilot still needs private secret provisioning and replacement of the previously exposed credentials; exact-action approvals remain unimplemented. See `docs/TRUSTED-EVALUATION.md`, `hooks/openclaw/ivan-observer/README.md` and `docs/RESPONSE-TO-CLAUDE-2026-09-29.md`. The latter contains concrete, unapplied shared-policy proposals and two options for each pending Ivan decision; source work need not stop while those are reviewed.
 2. Model, tools policy, plugin registration and channel connection were inspected locally. No config dump is needed; avoid sharing channel credentials or raw sessions.
 3. Provide the local path to the `Obsidian Notes` vault when we connect it. The name is enough for current planning.
+   Resolved 2026-09-29: Ivan keeps Obsidian; the active vault is
+   `~/Documents/Ivan AI OS Brain/Ivan Ai OS Notes`. Its iCloud/iPhone synchronisation is not verified.
 4. VPS purchase and billing stay with Ivan. Prepare a specific deployment proposal before purchase.
 
 ## Existing credential exposure

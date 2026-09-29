@@ -1,5 +1,24 @@
 # Session handoff — 2026-09-29
 
+## Mise à jour après les fusions Claude et choix Obsidian
+
+Ivan confirme Obsidian et fournit une capture du coffre. Chemin actif vérifié sans lecture des
+notes : ~/Documents/Ivan AI OS Brain/Ivan Ai OS Notes. Lire `docs/MEMORY-CONTRACT.md`.
+Ne pas confondre le parent avec le coffre ; iCloud/iPhone et lien VPS restent non vérifiés.
+Claude peut préparer memoire-obsidian sur ce périmètre ; ne pas modifier son worktree.
+Une note technique a été créée dans Ivan AI OS/2026-09-29 - Etat du systeme.md, hors Git,
+mode 0600 ; une seconde création est refusée et la note reste identique. Aucune note personnelle
+ni configuration Obsidian lue ou modifiée. Script et contrat sur agent/codex/obsidian-bootstrap.
+Les PR #2/#4/#5/#3 sont désormais réellement MERGED dans foundation/v1 : d491262, b5ca9a3,
+971caa2, 653ad59. Finance et README du hook ont été alignés par Claude avant fusion.
+Ces fusions ont été intégrées à notre branche manager-runtime sans conflit. #6/#7 ne sont
+pas couvertes par le GO précédent : attendre la revue Claude puis le GO d'Ivan pour leur fusion.
+Cette intégration réellement présente dans notre checkout passe 79 tests (calibration distincte
+dans #7 : quatre tests supplémentaires). Il ne s'agit pas d'un pilote live.
+Les états « pas encore fusionné » des paragraphes plus anciens ci-dessous sont historiques.
+La bascule live et le pilote shadow ne sont pas activés. Ne pas relancer le bot lié pendant
+la préparation de son contrat ; préserver le service existant jusqu'à migration coordonnée.
+
 ## Dernière continuation : sept espaces et revue Claude
 
 Lire `docs/MANAGER-RUNTIME.md`. Source Codex sur `agent/codex/manager-runtime` : 60 tests

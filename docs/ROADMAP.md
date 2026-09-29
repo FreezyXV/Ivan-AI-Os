@@ -37,7 +37,8 @@
 - [x] Review Claude Code shadow adapter against a real isolated gateway, six tests; PR #5 awaits merge and coordinated activation
 
 ## Phase 3 — Memory
-- [ ] Map `Obsidian Notes` vault path and sync permissions
+- [x] Confirm Obsidian and locate active vault `~/Documents/Ivan AI OS Brain/Ivan Ai OS Notes`
+- [ ] Verify iCloud/iPhone sync and scoped runtime memory access
 - [ ] Markdown ingestion, retrieval and provenance
 - [ ] Embeddings + pgvector only after basic retrieval needs are measured
 - [ ] Controlled Dream consolidation
