@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SKILLS_ROOT, buildRegistry, parseSkill, privateTermsFrom, validateSkill } from "../tools/registry.mjs";
-import { packageSkills, withoutClients } from "../tools/package.mjs";
+import { OPENCLAW_DROPPED_SECTIONS, packageSkills, withoutSections } from "../tools/package.mjs";
 
 const meta = (extra = "") => `metadata:
   version: "1.0.0"
@@ -105,10 +105,16 @@ test("Anakalypto batch validator accepts a conforming article and flags defects"
   }
 });
 
-test("OpenClaw packages can drop the confidential clients section", () => {
-  const text = "# P\n## Positionnement\nBA\n## Clients et données confidentielles\nClients : Acme.\n## Langues\nFR\n";
-  const reduced = withoutClients(text);
-  assert.equal(reduced.includes("Acme"), false);
+test("OpenClaw packages drop clients and personal finances", t => {
+  const text = "# P\n## Positionnement\nBA\n## Clients et données confidentielles\nClients : Acme.\n## Langues\nFR\n## Cadre d'investissement\nDCA\n";
+  const reduced = withoutSections(text, OPENCLAW_DROPPED_SECTIONS);
+  assert.equal(/Acme|DCA|Clients|Cadre/.test(reduced), false);
   assert.ok(reduced.includes("## Positionnement\nBA") && reduced.includes("## Langues\nFR"));
-  assert.equal(withoutClients("# P\n## Clients\nClients : Acme.\n").includes("Acme"), false);
+  const root = scratch(t), out = path.join(scratch(t), "dist"), profile = path.join(root, "profil.md");
+  writeFileSync(profile, text);
+  skill(root, "money", { front: `name: money\ndescription: d\n${meta().replace("system", "finance")}` });
+  skill(root, "career", { front: `name: career\ndescription: d\n${meta().replace('profil: "non"', 'profil: "oui"')}`, body: "Lire `profil.md`." });
+  const result = packageSkills({ out, root, profile, openclaw: true });
+  assert.deepEqual([result.packaged, result.skipped], [["career"], ["money"]]);
+  assert.equal(/Acme|DCA/.test(readFileSync(path.join(out, "career", "profil.md"), "utf8")), false);
 });

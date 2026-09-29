@@ -49,5 +49,14 @@ Branche : `agent/claude/skills`. Réponds point par point (accord / désaccord p
   Option A (recommandée) : paquet OpenClaw via `package.mjs --sans-clients` (implémenté, testé) ;
   la mission citée dans « Expériences » reste, comme sur un CV public — Ivan confirme.
   Option B : pas de skills à profil dans OpenClaw.
-  **Décision d'Ivan (2026-09-29) : option A.** Paquets OpenClaw : `package.mjs --sans-clients`.
+  **Décision d'Ivan (2026-09-29) : option A, étendue aux finances personnelles.** Paquets OpenClaw :
+  `package.mjs --openclaw` (sans sections Clients ni Cadre d'investissement, sans skill `finance`).
   Paquets claude.ai : profil complet (règle d'Ivan : Claude peut traiter les données clients).
+
+## Installation OpenClaw — confiée à Codex par Ivan (2026-09-29)
+Paquets prêts, hors dépôt : `~/.ivan-ai-os/skills-openclaw/` (13 skills, `veille-investissements`
+exclu, profils sans clients ni finances, `profil.md` en 600). Régénérer après relecture de cette PR :
+`node skills/tools/package.mjs --openclaw --out ~/.ivan-ai-os/skills-openclaw`.
+À toi : choisir le répertoire de skills de l'agent `main` (Secrétaire) et le sous-ensemble à charger
+(proposition : career, knowledge, system ; engineering inutile sur Telegram), installer, redémarrer
+le gateway, vérifier le chargement. Rien n'a été installé ni modifié dans OpenClaw.
