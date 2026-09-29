@@ -3,7 +3,7 @@ name: system
 description: Manager System : configuration des agents, skills, mémoire, politiques, budget Jev, santé du runtime et demandes floues.
 metadata:
   route: system
-  skills: "orchestrateur-ia, jev-decision, passation-session, rapport-telegram, revue-securite-diff"
+  skills: "orchestrateur-ia, jev-decision, calibration-jev, memoire-obsidian, passation-session, rapport-telegram, revue-securite-diff"
   runtimes: "claude-code, codex, openclaw"
   statut: brouillon
 ---

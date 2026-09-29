@@ -3,8 +3,8 @@ name: memoire-obsidian
 description: Mémoire durable des agents dans le coffre Obsidian d'Ivan - retrouver ce qui est déjà su avant de chercher, enregistrer un fait sourcé, une décision ou un compte rendu, sans jamais modifier les notes personnelles d'Ivan ni dupliquer. Utiliser dès qu'un résultat mérite d'être retenu, qu'Ivan dit "note ça", "retiens", "mets dans Obsidian", "qu'est-ce qu'on sait déjà sur", ou en fin de tâche de recherche, de veille ou de décision.
 metadata:
   version: "1.0.0"
-  famille: knowledge
-  manager: knowledge
+  famille: memory
+  manager: system
   risque: ecriture-depot
   profil: "non"
   statut: actif
@@ -20,10 +20,13 @@ Coffre : `$IVAN_OBSIDIAN_VAULT` ou `obsidian_vault` dans `~/.ivan-ai-os/config.j
   jamais de lien). Les autres notes d'Ivan : lecture seulement, et seulement celles qu'il désigne.
 - **Chaque note a ses sources** (URL, `[[note]]`, commit, fichier) et une **sensibilité** :
   `public`, `interne` ou `confidentiel` (clients, finances, santé, personnes).
-- **Confidentiel** : jamais lu par OpenClaw ni envoyé à Jev. OpenClaw lit via `lister --max interne`.
+- **Confidentiel** : jamais lu par OpenClaw ni envoyé à Jev ; un futur accès OpenClaw passera par
+  `lister --max interne`.
 - Connaissances et décisions arrivent en `inbox/` avec `statut: propose` ; Ivan valide. Un agent ne
   modifie jamais une note `valide` : il propose une nouvelle note qui la cite.
 - Aucun identifiant, jeton ni clé (refusé par l'outil).
+- **OpenClaw** : pas d'accès tant qu'un outil lecture seule dédié n'existe pas (l'outil exige
+  `exec` et un chemin hors workspace, tous deux refusés aux managers). Ne pas contourner.
 
 ## Avant de chercher ou d'écrire
 1. `lister --max <niveau autorisé>` puis lire les 1 à 3 notes pertinentes : ne pas refaire une
