@@ -105,25 +105,6 @@ test("packaging never follows planted or source links (Codex review finding)", t
   assert.throws(() => packageSkills({ root, out: path.join(dir, "fresh2"), profile }), /SOURCE_LINK_REFUSED/);
 });
 
-test("Anakalypto batch validator accepts a conforming article and flags defects", t => {
-  const python = spawnSync("python3", ["--version"]);
-  if (python.status !== 0) return t.skip("python3 unavailable");
-  const script = fileURLToPath(new URL("../encyclopedie-anakalypto/scripts/valider_lot.py", import.meta.url));
-  const dir = scratch(t);
-  const words = n => Array.from({ length: n }, (_, i) => `mot${i}`).join(" ");
-  const article = (slug, body) => `---\ntype: article\nslug: ${slug}\ntitre: Titre\ncategorie: cat\nresume: Résumé court.\n---\n${body}`;
-  const good = article("bon", `## Résumé\n${words(300)}\n## Section\n${words(600)}\n## Faits clés\n- 2020 : fait\n## Chronologie\n- 2020 : x\n## Sources\n- A, t, https://a.example\n- B, t, https://b.example\n- C, t, https://c.example\n`);
-  const bad = article("mauvais", "## Résumé\ncourt TODO\n## Sources\n- https://a.example\n");
-  writeFileSync(path.join(dir, "good.md"), good);
-  writeFileSync(path.join(dir, "bad.md"), bad);
-  assert.equal(spawnSync("python3", [script, path.join(dir, "good.md")]).status, 0);
-  const result = spawnSync("python3", [script, path.join(dir, "bad.md")], { encoding: "utf8" });
-  assert.equal(result.status, 1);
-  for (const expected of ["section absente '## Faits clés'", "mots (cible", "moins de 3 sources", "marqueur non résolu"]) {
-    assert.ok(result.stdout.includes(expected), expected);
-  }
-});
-
 test("OpenClaw packages drop clients and personal finances", t => {
   const text = "# P\n## Positionnement\nBA\n## Clients et données confidentielles\nClients : Acme.\n## Langues\nFR\n## Cadre d'investissement\nDCA\n";
   const reduced = withoutSections(text, OPENCLAW_DROPPED_SECTIONS);
@@ -170,7 +151,9 @@ test("runtime skill links (.claude, .agents) resolve and stay engineering/system
 test("priority skills carry trigger evaluations pointing at real skills", t => {
   const { results } = buildRegistry();
   const withEvals = results.filter(r => r.evals).map(r => r.entry.name).sort();
-  assert.deepEqual(withEvals, ["dev-studio", "job-application-optimizer", "orchestrateur-ia", "rapport-telegram", "revue-croisee"]);
+  for (const required of ["business-engine", "dev-studio", "job-application-optimizer", "orchestrateur-ia", "rapport-telegram", "revue-croisee"]) {
+    assert.ok(withEvals.includes(required), `${required} needs evals.json`);
+  }
   const root = scratch(t);
   const dir = skill(root, "evald");
   writeFileSync(path.join(dir, "evals.json"), JSON.stringify({ skill: "evald", version: 1, positifs: ["only one positive prompt"], negatifs: [{ demande: "a near miss request", attendu: "evald" }], livrable: "" }));

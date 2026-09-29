@@ -1,0 +1,20 @@
+{
+  "skill": "design-original",
+  "version": 1,
+  "positifs": [
+    "Fais-moi la maquette de la landing page du projet",
+    "Donne une direction artistique à ce dashboard",
+    "Ce composant React est trop générique, améliore son design"
+  ],
+  "negatifs": [
+    {
+      "demande": "Écris les tests de ce composant",
+      "attendu": "dev-studio"
+    },
+    {
+      "demande": "Rédige le cahier des charges du site",
+      "attendu": "gros-document"
+    }
+  ],
+  "livrable": "Dix éléments concrets du sujet, trois directions contrastées dont une justifiée, tokens avant le code, checklist anti-cliché passée."
+}

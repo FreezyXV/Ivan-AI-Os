@@ -109,7 +109,8 @@ export function buildRegistry(root = SKILLS_ROOT, options = {}) {
   const results = skillDirs(root).map(dir => ({ dir, ...validateSkill(dir, options) }));
   const names = new Set(results.map(r => r.entry?.name));
   for (const r of results) for (const n of r.evals?.negatifs ?? []) {
-    if (!names.has(n.attendu)) r.errors.push(`evals.json: unknown expected skill ${n.attendu}`);
+    // "aucun" = the request must trigger no skill at all (plain answer).
+    if (n.attendu !== "aucun" && !names.has(n.attendu)) r.errors.push(`evals.json: unknown expected skill ${n.attendu}`);
   }
   return { ok: results.every(r => !r.errors.length), results };
 }

@@ -1,0 +1,14 @@
+{
+  "skill": "finance-engine",
+  "version": 1,
+  "positifs": [
+    "Fais-moi le brief marché du jour : taux, inflation, crypto",
+    "Quoi de neuf côté BCE et Bitcoin cette semaine ?",
+    "Prépare la veille finance publique pour Telegram"
+  ],
+  "negatifs": [
+    {"demande": "Est-ce que je dois renforcer mon ETF monde ce mois-ci vu ma stratégie ?", "attendu": "veille-investissements"},
+    {"demande": "Trouve des opportunités de business rentables", "attendu": "business-engine"}
+  ],
+  "livrable": "Bref sourcé issu du script (indicateurs, dates d'observation, variations), alertes seulement si seuil franchi, données anciennes signalées, aucun conseil ni transaction."
+}

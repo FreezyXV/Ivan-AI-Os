@@ -2,7 +2,7 @@
 name: recherche-sourcee
 description: Recherche approfondie, sourcée et économe en tokens. Utiliser dès qu'Ivan demande de rechercher, comparer, vérifier, faire une veille, un benchmark, une fiche entreprise, marché, pays, outil ou concurrent (Luxembourg, ESN, salaires, SaaS, IA...), même s'il ne dit pas "recherche". Ne pas utiliser pour une question factuelle simple qui tient en une recherche.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   famille: research
   manager: knowledge
   risque: lecture
@@ -22,7 +22,7 @@ metadata:
    date, titre), ou par Jev dès qu'une question de tri existe (skill `jev-decision`).
 4. **Lire au lieu de survoler** : ouvrir (fetch) les 2–3 pages clés plutôt que se fier aux extraits.
 5. **Vérifier les points critiques** : chiffres, dates, prix, lois → 2 sources concordantes, sinon
-   le signaler.
+   le signaler. Plus de 3 chiffres : registre `verification-affirmations` plutôt qu'une relecture.
 6. **S'arrêter** dès que chaque partie de la réponse est appuyée par une source.
 
 ## Livrable (dans le chat, sauf demande de fichier)

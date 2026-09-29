@@ -16,6 +16,15 @@ export function createTrustedEvaluator({ token, workspaceRoot, auditPath, audit 
     authenticate(header) {
       return typeof header === "string" && header.length < 4096 && timingSafeEqual(expected, digest(header));
     },
+    // The classification endpoint shares the same bounded private journal.
+    // Only registered identifiers and result metadata reach this writer.
+    async auditClassification({ requestId, question, status, decision, confidence, provider, reasonCode, latencyMs }) {
+      await audit({
+        version: 1, request_id: requestId, timestamp: new Date().toISOString(),
+        actor: "local-adapter", tool: "classify", question,
+        status, decision, confidence, provider, reason_code: reasonCode, latency_ms: latencyMs
+      });
+    },
     async evaluate(payload) {
       const started = performance.now();
       const requestId = randomUUID();

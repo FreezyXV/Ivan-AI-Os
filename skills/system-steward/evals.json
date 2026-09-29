@@ -1,0 +1,20 @@
+{
+  "skill": "system-steward",
+  "version": 1,
+  "positifs": [
+    "Fais le ménage dans la mémoire",
+    "Audit du système avant d'ajouter un skill",
+    "Pourquoi les sessions coûtent autant de contexte ?"
+  ],
+  "negatifs": [
+    {
+      "demande": "Note cette décision",
+      "attendu": "memoire-obsidian"
+    },
+    {
+      "demande": "Calibre Jev",
+      "attendu": "calibration-jev"
+    }
+  ],
+  "livrable": "Rapport du jardinier et de l'audit, propositions seulement, aucune note modifiée, résumé Telegram si quelque chose est à corriger."
+}

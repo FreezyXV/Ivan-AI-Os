@@ -99,7 +99,7 @@ export function parseNote(text) {
   return { data, body: match[2] };
 }
 
-function notesUnder(dir) {
+export function notesUnder(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
     const full = path.join(dir, entry.name);

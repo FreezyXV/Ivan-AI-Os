@@ -1,0 +1,20 @@
+{
+  "skill": "veille-investissements",
+  "version": 1,
+  "positifs": [
+    "Revue finance de mes placements",
+    "Qu'est-ce qui a changé côté PEA et fonds euros ?",
+    "Comment répartir mon versement de ce mois ?"
+  ],
+  "negatifs": [
+    {
+      "demande": "Brief marché du jour",
+      "attendu": "finance-engine"
+    },
+    {
+      "demande": "Opportunités business",
+      "attendu": "business-engine"
+    }
+  ],
+  "livrable": "À faire, à surveiller et hors cadre séparés, cadre d'Ivan respecté, dérive calculée par dca.mjs, aucune transaction ni conseil."
+}

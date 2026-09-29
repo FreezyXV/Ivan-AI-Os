@@ -1,3 +1,33 @@
+## Reprise Codex — pilote mémoire et service Mac actifs (2026-09-29)
+
+Lire docs/MEMORY-PILOT-2026-09-29.md : snapshot 8151c01 activé sur GO précis d'Ivan.
+System/Knowledge recherchent et lisent la décision validée ; main/Finance refusés nativement.
+Telegram → Jev/System → lecture → worker isolé → rapport vérifié observé ; reçu visible à 14:14 UTC.
+Deux spawns acceptés et paquet worker reçu ; trace worker autonome nettoyée, pas revendiquée conservée.
+Défaut ouvert : reprise privée du chef sans livraison au canal ; corriger sessions_yield.message
+pour conserver l'obligation de livraison via message et contrôle du reçu, sans nouvelle délégation.
+Jev est maintenant un LaunchAgent Mac avec Trousseau, release a58b99f, budget conservé au restart.
+PR #20 agent/codex/mac-background-runtime @12a82a5 : 6 tests, preuve launchd native, CI 7/7 verte.
+Career : trois questions/critères fictifs visibles sur Telegram après reprise et reçu.
+Retours Claude publiés sur #14/#17/#18/#19 après GO précis ; table #17 non activée, runtime reste Jev.
+Le hook Claude reste shadow ; ni son worktree ni AGENTS/constitution n'ont été modifiés.
+Ces états remplacent les paragraphes historiques « mémoire/service non activés » ci-dessous.
+
+## Reprise Codex — correction mémoire après revue Claude (2026-09-29)
+
+#13 et #15 sont fusionnées par Claude sur GO d’Ivan : foundation/v1 @c23597a.
+Le hook Claude est confirmé actif en shadow, dans ce projet, depuis son snapshot fd2ea04.
+#16 est intégrée avec provenance dans la branche de #14 : le nouveau test échoue avant
+(MEMORY_INDEX_LIMIT), puis 10/10 passent. Les journaux ne saturent plus la recherche ;
+connaissances/decisions précèdent inbox ; dépassement signalé par index_truncated.
+La configuration mémoire privée a été validée mais reste non activée et son snapshot
+initial a660d81 doit être remplacé par la version corrigée avant le pilote.
+Calibration Jev publiée sur #11 : training 18/19, holdout 17/19 (53 % REVIEW), environ
+0,0011 EUR estimé pour les deux jeux. Aucun doublon exécuté par Codex.
+Le routage par table #17 et sa leçon skills #18 attendent la revue ; le runtime reste Jev.
+Le ticket #19 est reçu : node --test/npm test exécutent du code, et ne constituent pas
+une liste de lectures sûres. Le shadow reste actif ; le mode ask ne devient pas enforcement.
+
 ## Reprise Codex — service Mac de fond activé (2026-09-29)
 
 Branche agent/codex/mac-background-runtime depuis foundation/v1 @c23597a.
@@ -26,6 +56,86 @@ Hook Claude confirmé actif shadow ; worktrees/règles consultatives restent à 
 Jev reste le fournisseur live ; table #17 désactivée. Pas de nouvelle calibration payante.
 
 # Session handoff — 2026-09-29
+
+## Dernière continuation — Codex — questions Jev actives sur Mac
+
+`foundation/v1` est à `0b2d93d` après les fusions Claude. La PR #35
+`agent/codex/classify` ajoute `/v1/classify` pour les dix questions
+réellement déclarées dans le client, avec bearer, budget commun et audit
+sans entrée brute ; 52/52 tests et 6/6 CI passent. Le commit de correction
+`6d2add2` adapte la réponse Noul TypeSafe réelle, sans champ `confidence`.
+Source PR encore non fusionnée. L'ancien travail non suivi
+`services/linux-runtime/` est préservé.
+
+Sur GO d'Ivan, copie figée `~/.ivan-ai-os/releases/classify-6d2add2`
+activée par LaunchAgent sur 4311. Keychain, jeton et budget conservés ;
+ancien plist sauvegardé dans `~/.ivan-ai-os/background-classify-6d2add2/`.
+Une première bascule a rencontré une course de `launchctl bootstrap`,
+l'ancien service a été rétabli, puis la bascule réessayée avec attente et
+contrôles a réussi. Jev réel : `sujet.captivant` 0,86 sur La pile de Volta,
+`sujet.domaine` sciences-fondamentales, `publication.prete` 0,75 sur la
+fiche de verre. 56 appels, 0,001549 € estimés au dernier relevé.
+Le lot privé Anakalypto a reçu un `.jev.json` créé sans écrasement ;
+`valider_lot.py` passe. **Aucune publication externe**. Voir
+`docs/CLASSIFY-GATEWAY.md` et `docs/REVIEW-CODEX-CLAUDE-2026-09-29.md` :
+le validateur #26 accepte aussi un reçu forgé, donc l'automatisation de
+publication attend une vérification de provenance codée. #28/#31 relues,
+pilotage gate acceptable. Les PR #14/#20/#21 restent ouvertes et relues.
+Prochains travaux : renforcer la provenance du reçu, planifier les moteurs,
+accès des managers aux outils sans exec, hook Codex, skills OpenClaw, Linux/OVH.
+
+## 2026-09-29 — Codex — lecture mémoire préparée après activation
+
+Branche agent/codex/obsidian-read-tool ; dépend de la livraison d'activation PR #13 @0b6d1c2.
+Lire hooks/openclaw/ivan-memory/README.md : deux outils optionnels, system/knowledge seulement.
+9/9 tests ; chargeur natif 2026.9.5 vérifié en état isolé avec coffre synthétique, aucun modèle.
+Lecture locale de la décision de fusion désignée : valide/interne, une source, corps non affiché.
+Le coffre n'a pas été modifié. Notes personnelles hors Ivan AI OS non explorées ; aucun appel Jev.
+Plugin mémoire non activé, filesystem/exec inchangés. Sources de Claude et fichiers partagés intacts.
+PR #13 : six jobs CI verts ; Jev 4311 et sept rôles actifs, parcours Engineering vérifié.
+Claude informé pour consigne de reprise, hook shadow et deux calibrations ; pas de duplication.
+Prochaine action : revue Claude du plugin mémoire, puis proposition privée épinglée et pilote ciblé.
+
+## 2026-09-29 — Codex — Linux/OVH runtime candidate
+
+Branch `agent/codex/linux-runtime-v2`, PR #37, based on `foundation/v1`.
+`services/linux-runtime/` adds a systemd Jev launcher, a private credential
+contract, persistent budget/audit paths and an authenticated startup probe.
+Four local tests pass, including a real mock gateway on loopback with
+authenticated usage and unauthorized rejection. No real TypeSafe or OVH call,
+purchase, host provisioning or Telegram move. CI includes a Linux test job.
+Read `docs/OVH-DEPLOYMENT-PROPOSAL.md` before a host choice or cutover.
+Important: the Mac and VPS budget files must not count separate 10 EUR monthly
+allowances during migration. The initial VPS proposal is a candidate, not GO
+to purchase. This branch is independent of PRs #35 and #36.
+
+## 2026-09-29 — Codex — Business/Finance read tools and restart recovery
+
+Branch `agent/codex/engine-read-tools`, PR #36. A pinned private copy of
+`ivan-ai-os-engine-briefs` is active on the Mac OpenClaw gateway. Native
+`tools.invoke` returned `READY` for `ivan_business_brief` as `ivan-business`
+and `ivan_finance_brief` as `ivan-finance`; `main` was denied. Neither response
+included the private Business profile or personal Finance allocation. Jev 4311,
+the seven roles and Telegram configuration were preserved. No model call was
+needed for these checks. The source CI had seven green jobs at commit 5224721.
+
+The `openclaw gateway restart --preserve-definition` path took about five
+minutes: log evidence shows an active root request during internal shutdown,
+then delayed startup. The gateway recovered without deleting state or locks.
+Direct `launchctl kickstart -k gui/501/ai.openclaw.gateway` was tested:
+command returned in 3.1 s, TCP listened in 12.2 s, authenticated health in
+21.7 s. Future private config switches should use
+`scripts/switch-openclaw-config.mjs` with an expected source hash and a private
+backup directory; it validates first, restarts via launchd, checks health and
+restores the exact prior config on failure. Do not copy config contents into Git
+or logs. An end-to-end switch on a semantically identical private candidate
+returned `ACTIVE`; JSON config equality against its exact backup was true and
+both scoped tools still returned `READY`. This is a bounded rollout path, not
+proof that OpenClaw never stalls.
+Separate non-delivered model turns completed for `ivan-business` and
+`ivan-finance`; each `toolSummary` included its own brief tool and both runs
+ended normally. This verifies manager-side discovery in addition to direct RPC;
+no Telegram message was sent by these tests.
 
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
 

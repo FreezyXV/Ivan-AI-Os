@@ -2,12 +2,16 @@
 // Modes (IVAN_CLAUDE_HOOK_MODE):
 //   shadow (default) — evaluate and audit on the gateway side; never influences the tool call.
 //   ask              — a DENY/REQUIRE_HUMAN/ESCALATE opinion asks Ivan to confirm the call.
-// Neither mode ever returns "allow": the gateway is advisory and cannot grant permission.
+//   gate             — level-0 rules first (rules.mjs): "never" is refused with its reason (no
+//                      network), "autonome" skips the gateway, the rest goes to the gateway (kernel
+//                      + Jev) and only a negative opinion asks Ivan.
+// No mode ever returns "allow": the runtime's own permission system stays in charge.
 // Any failure (no token, gateway down, timeout, bad response) leaves Claude Code unaffected.
 import { existsSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { readDecisionToken } from "../../services/jev-gateway/src/runtime-token.js";
+import { classifyCommand, classifyPath } from "./rules.mjs";
 
 const DEFAULT_GATEWAY = "http://127.0.0.1:4310";
 const OPINIONS_NEEDING_IVAN = new Set(["DENY", "REQUIRE_HUMAN", "ESCALATE"]);
@@ -70,15 +74,26 @@ export function hookOutput(result, mode) {
   };
 }
 
+export function denyOutput(reason) {
+  return { hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: `Ivan AI OS (règle niveau 0) : ${reason}` } };
+}
+
 export async function run(input, { env = process.env, fetchImpl = fetch, readToken = readDecisionToken } = {}) {
   const call = toToolCall(input);
   if (!call) return null;
+  const mode = ["ask", "gate"].includes(env.IVAN_CLAUDE_HOOK_MODE) ? env.IVAN_CLAUDE_HOOK_MODE : "shadow";
+  if (mode === "gate") {
+    const rule = call.tool === "exec" ? classifyCommand(call.arguments.command) : classifyPath(call.arguments.path);
+    // A refusal with its reason spares the agent retries: the rule is decided by code, not a model.
+    if (rule.verdict === "never") return denyOutput(rule.raison);
+    if (rule.verdict === "autonome") return null;
+  }
   let token;
   try { token = readToken(env); } catch { return null; }
   if (!token) return null;
   try {
     const result = await evaluate(call, { gatewayUrl: env.IVAN_GATEWAY_URL, token, fetchImpl, timeoutMs: Number(env.IVAN_CLAUDE_HOOK_TIMEOUT_MS) || 3000 });
-    return hookOutput(result, env.IVAN_CLAUDE_HOOK_MODE === "ask" ? "ask" : "shadow");
+    return hookOutput(result, mode === "shadow" ? "shadow" : "ask");
   } catch { return null; }
 }
 
