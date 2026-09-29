@@ -116,10 +116,13 @@ export async function classifyRequest(payload, { budget, fetchImpl } = {}) {
   if ((process.env.JEV_PROVIDER || "mock") !== "jev") throw new ProviderError("JEV_UNAVAILABLE");
   const raw = await askTypeSafe(input, { classification: spec.prompt }, { budget, fetchImpl });
   const answer = raw?.answers?.classification;
-  if (!answer || answer.type !== spec.prompt.type || !Number.isFinite(answer.confidence) ||
-      answer.confidence < 0 || answer.confidence > 1) throw new ProviderError("TYPESAFE_CLASSIFICATION_RESPONSE_INVALID");
+  if (!answer || answer.type !== spec.prompt.type) throw new ProviderError("TYPESAFE_CLASSIFICATION_RESPONSE_INVALID");
   const decision = answer.type === "noul" ? answer.noul : answer.choice;
   if (answer.type === "noul" ? !Number.isFinite(decision) || decision < 0 || decision > 1 :
       !Object.hasOwn(spec.prompt.criteria, decision)) throw new ProviderError("TYPESAFE_CLASSIFICATION_RESPONSE_INVALID");
-  return { question, decision, confidence: answer.confidence, provider: "jev" };
+  // TypeSafe's NoulAnswer carries only `noul`, unlike ChoiceAnswer. Express
+  // certainty as distance from an even yes/no split for the common client API.
+  const confidence = answer.type === "noul" ? Math.abs(2 * decision - 1) : answer.confidence;
+  if (!Number.isFinite(confidence) || confidence < 0 || confidence > 1) throw new ProviderError("TYPESAFE_CLASSIFICATION_RESPONSE_INVALID");
+  return { question, decision, confidence, provider: "jev" };
 }

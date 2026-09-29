@@ -42,11 +42,13 @@ test("registered classification uses Jev and the same durable budget; malformed 
   const fetchImpl = async (_url, options) => {
     outbound.push(JSON.parse(options.body));
     return { ok: true, json: async () => ({ model: PRICED_MODEL, usage: { input_tokens: 200 },
-      answers: { classification: { type: "noul", noul: 0.83, confidence: 0.91 } } }) };
+      answers: { classification: { type: "noul", noul: 0.83 } } }) };
   };
-  assert.deepEqual(await classifyRequest(topic, { budget, fetchImpl }), {
-    question: "sujet.captivant", decision: 0.83, confidence: 0.91, provider: "jev"
-  });
+  const classified = await classifyRequest(topic, { budget, fetchImpl });
+  assert.equal(classified.question, "sujet.captivant");
+  assert.equal(classified.decision, 0.83);
+  assert.ok(Math.abs(classified.confidence - 0.66) < 1e-12);
+  assert.equal(classified.provider, "jev");
   assert.equal(outbound.length, 1);
   assert.deepEqual(Object.keys(outbound[0].questions), ["classification"]);
   assert.deepEqual(outbound[0].state, topic.input);

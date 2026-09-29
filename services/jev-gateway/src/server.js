@@ -28,9 +28,11 @@ export function createGatewayServer({ trustedEvaluator = null, budget, route = m
     }
     if (req.method === "POST" && req.url === "/v1/classify") {
       const started = performance.now(), requestId = randomUUID();
-      let status = 200, result, reasonCode = "CLASSIFIED";
+      let status = 200, result, question = null, reasonCode = "CLASSIFIED";
       try {
-        result = await classify(await readJson(req));
+        const payload = await readJson(req);
+        if (payload?.question && Object.hasOwn(QUESTIONS, payload.question)) question = payload.question;
+        result = await classify(payload);
         if (!result || !Object.hasOwn(QUESTIONS, result.question) || result.provider !== "jev" ||
             !Number.isFinite(result.confidence) || result.confidence < 0 || result.confidence > 1)
           throw new ProviderError("TYPESAFE_CLASSIFICATION_RESPONSE_INVALID");
@@ -39,7 +41,6 @@ export function createGatewayServer({ trustedEvaluator = null, budget, route = m
         reasonCode = error instanceof ClassificationInputError ? error.code : error instanceof InputError ? "INVALID_CLASSIFICATION_REQUEST" :
           error instanceof ProviderError ? error.code : "CLASSIFICATION_UNAVAILABLE";
       }
-      const question = result?.question && Object.hasOwn(QUESTIONS, result.question) ? result.question : null;
       try {
         await trustedEvaluator.auditClassification({ requestId, question, status,
           decision: status === 200 ? result.decision : null, confidence: status === 200 ? result.confidence : null,

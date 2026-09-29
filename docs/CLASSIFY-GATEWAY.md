@@ -6,6 +6,8 @@ sur `POST /v1/classify` avec le même jeton bearer que `/v1/route`. Le gateway
 répond `{ question, decision, confidence, request_id, provider: "jev" }`.
 Une question inconnue renvoie 404, un corps invalide 400, une panne ou un
 budget indisponible 503. L'authentification précède l'analyse du corps.
+Pour une réponse Noul, TypeSafe fournit une probabilité `noul` sans champ
+`confidence` ; le gateway calcule donc `confidence = |2 × noul − 1|`.
 
 Le serveur, et non le client, choisit les instructions et les critères Jev.
 Les entrées autorisées sont des métadonnées publiques courtes, limitées aux
