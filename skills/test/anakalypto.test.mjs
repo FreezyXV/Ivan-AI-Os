@@ -76,3 +76,23 @@ test("publication gate requires confirmed claims and writes Jev decisions only w
   const r = await publicationGate(lot, { draftCheck: () => true, classifyImpl: async () => ({ decision: 0.85, confidence: 0.9, request_id: "rq" }) });
   assert.deepEqual([r.fiches, r.pretes], [1, 1]);
 });
+
+import { commercial, decode, fetchFeeds, parseFeed } from "../encyclopedie-anakalypto/scripts/flux.mjs";
+
+test("science feeds: RSS and Atom parsed, entities decoded, deals and duplicates dropped, outages tolerated", async () => {
+  const rss = `<rss><channel><item><title><![CDATA[Le volcan &amp; sa lumière bleue]]></title><link>https://a.example/volcan</link><pubDate>Mon, 28 Sep 2026 10:00:00 GMT</pubDate></item>
+    <item><title>Friteuse : le prix s'effondre sur Amazon</title><link>https://a.example/deal</link><pubDate>Mon, 28 Sep 2026 10:00:00 GMT</pubDate></item></channel></rss>`;
+  const atom = `<feed><entry><title>Le volcan &amp; sa lumière bleue</title><link href="https://b.example/v"/><updated>2026-09-27T00:00:00Z</updated></entry>
+    <entry><title>Pile de Volta : 1800</title><link href="https://b.example/volta"/><updated>2026-09-26T00:00:00Z</updated></entry></feed>`;
+  assert.deepEqual(parseFeed(rss)[0], { titre: "Le volcan & sa lumière bleue", url: "https://a.example/volcan", date: "2026-09-28" });
+  assert.equal(parseFeed(atom)[1].url, "https://b.example/volta");
+  assert.equal(decode("&#233;t&#xE9;"), "été");
+  assert.equal(commercial("AliExpress : -40 % sur la trottinette"), true);
+  assert.equal(commercial("La pile de Volta a 226 ans"), false);
+  const bodies = { "https://r.example": rss, "https://a.example": atom };
+  const fetchImpl = async url => url === "https://down.example" ? { ok: false, status: 503 } : { ok: true, text: async () => bodies[url] };
+  const { candidats, erreurs } = await fetchFeeds({ fetchImpl, today: new Date("2026-09-29T00:00:00Z"),
+    sources: [{ id: "r", url: "https://r.example", langue: "fr" }, { id: "a", url: "https://a.example", langue: "fr" }, { id: "down", url: "https://down.example", langue: "fr" }] });
+  assert.deepEqual(candidats.map(c => c.titre), ["Le volcan & sa lumière bleue", "Pile de Volta : 1800"]);
+  assert.deepEqual(erreurs, [{ source: "down", code: "HTTP_503" }]);
+});

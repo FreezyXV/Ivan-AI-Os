@@ -17,7 +17,9 @@ Série transversale : [serie-reconstruction.md](serie-reconstruction.md).
 **Jev est obligatoire** : sans ses décisions, aucun sujet n'est retenu et aucun lot n'est publiable.
 
 ## 1. Sujets (0 token jusqu'à Jev)
-- `node scripts/sujets.mjs --jours 3 --max 150 --jev` : pages Wikipédia les plus vues, nettoyées,
+- `node scripts/sujets.mjs --source tout --max 150 --jev` : flux scientifiques (`sources.json` : The
+  Conversation, Sciences et Avenir, Futura, Inserm, NASA, ESA, Nature ; promotions écartées par code)
+  et pages Wikipédia les plus vues, nettoyées,
   intérêt soutenu sur plusieurs jours, sujets déjà couverts exclus
   (`~/.ivan-ai-os/anakalypto/couverts.txt`). Jev décide `sujet.captivant` puis `sujet.domaine` ;
   les retenus sont triés par déficit de leur domaine.
