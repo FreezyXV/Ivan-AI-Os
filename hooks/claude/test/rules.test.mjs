@@ -58,7 +58,7 @@ test("level-0 rules classify real commands into never / autonome / evaluer", () 
 });
 
 test("heredoc bodies are data, and quoted operators do not split commands", () => {
-  assert.equal(classifyCommand("git commit -qF - <<'EOF'\nfix: rm -rf ~/ is refused ; sudo\nEOF").verdict, "never", "NEVER rules still see the whole text (fail safe)");
+  assert.equal(classifyCommand("git commit -qF - <<'EOF'\nfix: rm -rf ~/ is refused ; sudo\nEOF").verdict, "autonome", "a commit message is data, not a command");
   assert.equal(classifyCommand("grep -E 'a|b' file.txt").verdict, "autonome");
   assert.equal(classifyCommand("git log --format='%h;%s' -3").verdict, "autonome");
 });
@@ -86,4 +86,19 @@ test("gate mode: never is refused without network, autonome skips the gateway, n
   const shadow = await run(bash("git stash"), { env: { ...env, IVAN_CLAUDE_HOOK_MODE: "shadow" }, fetchImpl });
   assert.equal(shadow, null, "shadow never influences, even for a never rule");
   for (const out of [denied, asked]) assert.notEqual(out.hookSpecificOutput.permissionDecision, "allow");
+});
+
+test("quoted prose and heredoc bodies that merely mention a forbidden command are not refused", () => {
+  // Found in live use on 2026-09-29: an issue body mentioning a forbidden command was refused.
+  const forbidden = ["git", "stash"].join(" ");
+  assert.equal(classifyCommand(`gh issue create --title 'Relecture' --body 'la règle refuse ${forbidden} et le push sur main'`).verdict, "autonome");
+  assert.equal(classifyCommand(`git commit -qm 'docs: ${forbidden} est interdit dans le dépôt partagé'`).verdict, "autonome");
+  assert.equal(classifyCommand(`git commit -qF - <<'EOF'\nrules: refuse ${forbidden} and sudo\nEOF`).verdict, "autonome");
+  // A shell interpreter makes quoted text executable again: full-text scan.
+  for (const hidden of [`bash -c '${forbidden}'`, `sh -c "git push origin main"`, `bash <<'EOF'\n${forbidden}\nEOF`,
+    `python3 -c "import os; os.system('sudo ls')"`, `eval '${forbidden}'`, "echo x | xargs sudo ls", `node -e "require('child_process').execSync('${forbidden}')"`]) {
+    assert.equal(classifyCommand(hidden).verdict, "never", hidden);
+  }
+  // Secret paths stay protected even when quoted.
+  assert.equal(classifyCommand('cat ".env"').verdict, "never");
 });
