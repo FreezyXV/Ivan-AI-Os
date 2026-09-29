@@ -2,11 +2,22 @@
 
 ## Mise à jour après les fusions Claude et choix Obsidian
 
+Dernière observation : l'ancien coffre sous Documents a disparu ; deux chemins sont déclarés
+dans Obsidian : ~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes et ~/Ivan AI OS Brain/Obsidian.
+Confirmation demandée à Ivan, garder la question pending avant toute écriture ou recréation.
+Le seed créé auparavant n'est plus présent à ces chemins ; aucune mise à jour physique réussie.
+PR #9 contient le contrat/préparateur mémoire, source alignée avec le frontmatter de Claude.
+PR Claude #8 relue @a16da85c : 18 tests passent ; preuves synthétiques Telegram/bearer non refusés
+et fichiers mémoire mode 0644 transmis à Claude pour correction. Ne pas revendiquer que le
+helper ou --max constitue une autorisation OpenClaw ; exec reste interdit à l'agent Telegram.
+La lecture native tools.invoke de notre seule note a été refusée dans la couche outils,
+sans erreur EPERM/EACCES : pas de preuve d'un blocage TCC du LaunchAgent. Aucun modèle appelé.
+
 Ivan confirme Obsidian et fournit une capture du coffre. Chemin actif vérifié sans lecture des
 notes : ~/Documents/Ivan AI OS Brain/Ivan Ai OS Notes. Lire `docs/MEMORY-CONTRACT.md`.
 Ne pas confondre le parent avec le coffre ; iCloud/iPhone et lien VPS restent non vérifiés.
 Claude peut préparer memoire-obsidian sur ce périmètre ; ne pas modifier son worktree.
-Une note technique a été créée dans Ivan AI OS/2026-09-29 - Etat du systeme.md, hors Git,
+Historique : une note technique avait été créée dans Ivan AI OS/2026-09-29 - Etat du systeme.md, hors Git,
 mode 0600 ; une seconde création est refusée et la note reste identique. Aucune note personnelle
 ni configuration Obsidian lue ou modifiée. Script et contrat sur agent/codex/obsidian-bootstrap.
 Les PR #2/#4/#5/#3 sont désormais réellement MERGED dans foundation/v1 : d491262, b5ca9a3,
