@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "releve": "2026-09-29",
+  "cible_par_domaine": 19,
+  "domaines": [
+    {"slug": "alimentation-nutrition", "nom": "Alimentation et nutrition", "articles": 19},
+    {"slug": "arts-culture", "nom": "Arts et culture", "articles": 19},
+    {"slug": "automobile", "nom": "Automobile", "articles": 19},
+    {"slug": "aeronautique", "nom": "Aéronautique", "articles": 19},
+    {"slug": "communication-medias", "nom": "Communication et médias", "articles": 19},
+    {"slug": "corps-humain-sante", "nom": "Corps humain et santé", "articles": 19},
+    {"slug": "droit-justice", "nom": "Droit et justice", "articles": 19},
+    {"slug": "environnement-climat", "nom": "Environnement et climat", "articles": 10},
+    {"slug": "espace-astronomie", "nom": "Espace et astronomie", "articles": 11},
+    {"slug": "geographie-territoires", "nom": "Géographie et territoires", "articles": 9},
+    {"slug": "industries", "nom": "Industries", "articles": 9},
+    {"slug": "intelligence-artificielle", "nom": "Intelligence artificielle", "articles": 9},
+    {"slug": "micro-informatique-informatique", "nom": "Micro-informatique et informatique", "articles": 12},
+    {"slug": "sciences-vivant-appliquees", "nom": "Sciences du vivant appliquées", "articles": 9},
+    {"slug": "sciences-fondamentales", "nom": "Sciences fondamentales", "articles": 22},
+    {"slug": "sciences-humaines-sociales", "nom": "Sciences humaines et sociales", "articles": 12},
+    {"slug": "sport-sciences-mouvement", "nom": "Sport et sciences du mouvement", "articles": 9},
+    {"slug": "technologies-ingenierie", "nom": "Technologies et ingénierie", "articles": 10},
+    {"slug": "energie", "nom": "Énergie", "articles": 19}
+  ]
+}
