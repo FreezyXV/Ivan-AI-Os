@@ -45,8 +45,10 @@
 
 ## Phase 3 — Memory
 - [x] Locate chosen vault `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`; scoped Claude helper merged in #8
-- [ ] Verify sync permissions and add a bounded OpenClaw read tool; memory skill excluded until then
-- [ ] Markdown ingestion, retrieval and provenance
+- [ ] Verify vault sync permissions; bounded OpenClaw read tool is active, Claude memory skill adaptation remains separate
+- [x] Activate bounded read-only memory plugin for System/Knowledge: 10 tests, real native RPC and Telegram/System retrieval with provenance; report delivered after explicit receipt (see docs/MEMORY-PILOT-2026-09-29.md)
+- [x] Retrieve one validated Markdown note with title/date/provenance through Telegram and System
+- [ ] Correct chief delivery after private completion; safe ingestion, writes and conflicting-memory workflow remain open
 - [ ] Embeddings + pgvector only after basic retrieval needs are measured
 - [x] Controlled consolidation, first step: read-only memory gardener (duplicates, possible contradictions, stale proposals) proposing, never rewriting (#27)
 - [ ] Jev `memoire.contradiction` gate and scheduled garden (Codex runtime)

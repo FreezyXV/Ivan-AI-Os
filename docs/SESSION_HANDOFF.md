@@ -1,3 +1,33 @@
+## Reprise Codex — pilote mémoire et service Mac actifs (2026-09-29)
+
+Lire docs/MEMORY-PILOT-2026-09-29.md : snapshot 8151c01 activé sur GO précis d'Ivan.
+System/Knowledge recherchent et lisent la décision validée ; main/Finance refusés nativement.
+Telegram → Jev/System → lecture → worker isolé → rapport vérifié observé ; reçu visible à 14:14 UTC.
+Deux spawns acceptés et paquet worker reçu ; trace worker autonome nettoyée, pas revendiquée conservée.
+Défaut ouvert : reprise privée du chef sans livraison au canal ; corriger sessions_yield.message
+pour conserver l'obligation de livraison via message et contrôle du reçu, sans nouvelle délégation.
+Jev est maintenant un LaunchAgent Mac avec Trousseau, release a58b99f, budget conservé au restart.
+PR #20 agent/codex/mac-background-runtime @12a82a5 : 6 tests, preuve launchd native, CI 7/7 verte.
+Career : trois questions/critères fictifs visibles sur Telegram après reprise et reçu.
+Retours Claude publiés sur #14/#17/#18/#19 après GO précis ; table #17 non activée, runtime reste Jev.
+Le hook Claude reste shadow ; ni son worktree ni AGENTS/constitution n'ont été modifiés.
+Ces états remplacent les paragraphes historiques « mémoire/service non activés » ci-dessous.
+
+## Reprise Codex — correction mémoire après revue Claude (2026-09-29)
+
+#13 et #15 sont fusionnées par Claude sur GO d’Ivan : foundation/v1 @c23597a.
+Le hook Claude est confirmé actif en shadow, dans ce projet, depuis son snapshot fd2ea04.
+#16 est intégrée avec provenance dans la branche de #14 : le nouveau test échoue avant
+(MEMORY_INDEX_LIMIT), puis 10/10 passent. Les journaux ne saturent plus la recherche ;
+connaissances/decisions précèdent inbox ; dépassement signalé par index_truncated.
+La configuration mémoire privée a été validée mais reste non activée et son snapshot
+initial a660d81 doit être remplacé par la version corrigée avant le pilote.
+Calibration Jev publiée sur #11 : training 18/19, holdout 17/19 (53 % REVIEW), environ
+0,0011 EUR estimé pour les deux jeux. Aucun doublon exécuté par Codex.
+Le routage par table #17 et sa leçon skills #18 attendent la revue ; le runtime reste Jev.
+Le ticket #19 est reçu : node --test/npm test exécutent du code, et ne constituent pas
+une liste de lectures sûres. Le shadow reste actif ; le mode ask ne devient pas enforcement.
+
 # Session handoff — 2026-09-29
 
 ## Dernière continuation — Codex — questions Jev actives sur Mac
@@ -26,6 +56,18 @@ publication attend une vérification de provenance codée. #28/#31 relues,
 pilotage gate acceptable. Les PR #14/#20/#21 restent ouvertes et relues.
 Prochains travaux : renforcer la provenance du reçu, planifier les moteurs,
 accès des managers aux outils sans exec, hook Codex, skills OpenClaw, Linux/OVH.
+
+## 2026-09-29 — Codex — lecture mémoire préparée après activation
+
+Branche agent/codex/obsidian-read-tool ; dépend de la livraison d'activation PR #13 @0b6d1c2.
+Lire hooks/openclaw/ivan-memory/README.md : deux outils optionnels, system/knowledge seulement.
+9/9 tests ; chargeur natif 2026.9.5 vérifié en état isolé avec coffre synthétique, aucun modèle.
+Lecture locale de la décision de fusion désignée : valide/interne, une source, corps non affiché.
+Le coffre n'a pas été modifié. Notes personnelles hors Ivan AI OS non explorées ; aucun appel Jev.
+Plugin mémoire non activé, filesystem/exec inchangés. Sources de Claude et fichiers partagés intacts.
+PR #13 : six jobs CI verts ; Jev 4311 et sept rôles actifs, parcours Engineering vérifié.
+Claude informé pour consigne de reprise, hook shadow et deux calibrations ; pas de duplication.
+Prochaine action : revue Claude du plugin mémoire, puis proposition privée épinglée et pilote ciblé.
 
 ## 2026-09-29 — Codex — Linux/OVH runtime candidate
 

@@ -1,0 +1,13 @@
+{
+  "id": "ivan-ai-os-memory",
+  "name": "Ivan AI OS Memory",
+  "description": "Bounded local reading of validated, public or internal agent notes",
+  "contracts": { "tools": ["ivan_memory_search", "ivan_memory_read"] },
+  "activation": { "onStartup": true },
+  "configSchema": {
+    "type": "object",
+    "properties": { "vaultPath": { "type": "string", "minLength": 1 } },
+    "required": ["vaultPath"],
+    "additionalProperties": false
+  }
+}
