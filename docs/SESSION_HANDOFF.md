@@ -1,3 +1,18 @@
+## Reprise Codex — correction mémoire après revue Claude (2026-09-29)
+
+#13 et #15 sont fusionnées par Claude sur GO d’Ivan : foundation/v1 @c23597a.
+Le hook Claude est confirmé actif en shadow, dans ce projet, depuis son snapshot fd2ea04.
+#16 est intégrée avec provenance dans la branche de #14 : le nouveau test échoue avant
+(MEMORY_INDEX_LIMIT), puis 10/10 passent. Les journaux ne saturent plus la recherche ;
+connaissances/decisions précèdent inbox ; dépassement signalé par index_truncated.
+La configuration mémoire privée a été validée mais reste non activée et son snapshot
+initial a660d81 doit être remplacé par la version corrigée avant le pilote.
+Calibration Jev publiée sur #11 : training 18/19, holdout 17/19 (53 % REVIEW), environ
+0,0011 EUR estimé pour les deux jeux. Aucun doublon exécuté par Codex.
+Le routage par table #17 et sa leçon skills #18 attendent la revue ; le runtime reste Jev.
+Le ticket #19 est reçu : node --test/npm test exécutent du code, et ne constituent pas
+une liste de lectures sûres. Le shadow reste actif ; le mode ask ne devient pas enforcement.
+
 # Session handoff — 2026-09-29
 
 ## 2026-09-29 — Codex — lecture mémoire préparée après activation

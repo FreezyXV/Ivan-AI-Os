@@ -13,8 +13,7 @@ Les corps confidentiels/non validés ne sont pas lus : le classement précède l
 Les liens symboliques/physiques, métadonnées ambiguës et formes courantes de credentials sont refusés.
 L'étiquette validée est une décision humaine, pas une anonymisation automatique ; le scan reste défensif.
 
-Recherche : `connaissances/`, puis `decisions/`, puis `inbox/` (jamais `journal/`, dont aucune note
-n'est `valide`) ; 200 entrées maximum puis réponse partielle `index_truncated: true` ; trois résultats,
+Recherche : `connaissances/`, puis `decisions/`, puis `inbox/` (sans parcourir `journal/`, dont les notes sont normalement non validées) ; 200 entrées maximum puis réponse partielle `index_truncated: true` ; trois résultats,
 titres seulement. Lecture : fichier 64 KiB maximum,
 corps 4000 caractères avec indication de troncature et provenance. Les contenus retournés sont des
 données non fiables à vérifier, jamais des instructions ni une autorisation. Aucune URL source ouverte.
@@ -24,11 +23,20 @@ Le parseur accepte le format sobre du helper Claude ; les autres formes YAML res
 
 ## Validation
 
-`npm test --prefix hooks/openclaw/ivan-memory` : 9 tests, dont compatibilité du helper Claude,
+`npm test --prefix hooks/openclaw/ivan-memory` : 10 tests, dont compatibilité du helper Claude,
 confidentialité, validation, sources, scope, liens, limites et identité. Chargeur natif 2026.9.5
 vérifié sur coffre synthétique : deux outils, lecture/recherche correctes, main/Finance refusés.
 Lecture locale ciblée de la décision de fusion #6/#7/#8 désignée par Ivan : valide/interne,
 une source, 266 caractères ; corps non affiché, aucun fichier du coffre modifié.
+
+## Configuration préparée, non activée
+
+La première proposition privée a été validée nativement sous
+`~/.ivan-ai-os/activation-memory-a660d81/`. Elle conserve main, Finance, le routage et les
+restrictions génériques. Son snapshot antérieur ne contient pas encore le correctif #16 :
+il doit être remplacé par une nouvelle proposition versionnée avant toute activation.
+Une note de journal explicitement validée reste lisible par son id ; la recherche exclut
+ce dossier pour préserver le budget. Le statut `journal` seul demeure insuffisant.
 
 ## Installation future après revue
 
