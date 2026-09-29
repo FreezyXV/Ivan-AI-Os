@@ -59,6 +59,22 @@ export async function classify(question, input, { gatewayUrl = process.env.IVAN_
   return { question, decision: r.decision, confidence: r.confidence, request_id: r.request_id, provider: String(r.provider ?? "jev") };
 }
 
+// Bounded parallelism for batches: order preserved; each item resolves to {ok, value} or
+// {ok:false, code}. Callers decide what a failure means (fail closed per item).
+export async function pool(items, worker, concurrency = 4) {
+  const results = new Array(items.length);
+  let next = 0;
+  async function lane() {
+    while (next < items.length) {
+      const i = next++;
+      try { results[i] = { ok: true, value: await worker(items[i], i) }; }
+      catch (error) { results[i] = { ok: false, code: error instanceof JevError ? error.message : "JEV_UNAVAILABLE" }; }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, lane));
+  return results;
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   const [question] = process.argv.slice(2);
   try {

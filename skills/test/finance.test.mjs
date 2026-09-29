@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { PARSERS, SOURCES, alerts, collect, privateDir, report, saveSnapshot, snapshots } from "../finance-engine/scripts/veille.mjs";
+import { PARSERS, SOURCES, alerts, collect, judge, privateDir, report, saveSnapshot, snapshots } from "../finance-engine/scripts/veille.mjs";
 
 const ecb = (date, value) => JSON.stringify({ dataSets: [{ series: { "0:0": { observations: { "0": [value] } } } }], structure: { dimensions: { observation: [{ values: [{ id: date }] }] } } });
 const kraken = (closes, start = Date.UTC(2026, 7, 29) / 1000) => JSON.stringify({ error: [], result: { XXBTZEUR: closes.map((c, i) => [start + i * 86400, "0", "0", "0", String(c)]), last: 0 } });
@@ -87,4 +87,16 @@ test("DCA: drift, buy-only split that never sells, and the contribution needed t
   assert.deepEqual(byTarget.map(l => l.achat_eur), [450, 200, 150, 100, 100], "no value: split by target weights");
   assert.throws(() => split(allocation, 1000, -5), /VALEUR_INVALID/);
   assert.equal(toTarget({ ...allocation, valeur_portefeuille_eur: null }), null);
+});
+
+test("Jev judges threshold alerts: routine ones become notes, an outage keeps them important", async () => {
+  const previous = await collect(fixtureFetch({ dfr: 2.75 }), new Date("2026-09-28T08:00:00Z"));
+  const current = await collect(fixtureFetch(), NOW);
+  const judged = await judge(alerts(current, previous), { classifyImpl: async (q, input) => ({ decision: input.indicateur === "btc_eur" ? 0.2 : 0.9, confidence: 0.8, request_id: "r" }) });
+  assert.equal(judged.find(a => a.id === "bce_taux_depot").niveau, "important");
+  assert.match(judged.find(a => a.id === "btc_eur").texte, /Jev : variation de routine/);
+  assert.equal(judged.find(a => a.id === "btc_eur").niveau, "info");
+  const down = await judge(alerts(current, previous), { classifyImpl: async () => { throw new Error("down"); } });
+  assert.equal(down.filter(a => a.niveau === "important").length, 2, "fail open for alerts: never hidden by an outage");
+  assert.doesNotMatch(report(current, previous, judged), /À surveiller[\s\S]*\+12 % sur 7 jours\.\n/);
 });

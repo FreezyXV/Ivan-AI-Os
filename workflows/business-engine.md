@@ -10,10 +10,10 @@ Status: v1, run manually or by Claude Code; OpenClaw schedule pending (see "Requ
 | 1 | Collect 15–40 public signals (one search per source class) | worker (LLM + web) | premium, bounded |
 | 2 | Clean: validate, canonical URL, dedupe by URL and by (subject, title) | `signals.mjs ajouter` (code) | 0 |
 | 3 | Prioritise subjects by number of distinct sources | `signals.mjs sujets` (code) | 0 |
-| 4 | **Jev relevance gate**: keep signals that are real, monetisable pains | Jev `signal.pertinent` (future) | cents |
+| 4 | **Jev relevance gate** (live): demand signals only; < 0.4 dropped, 0.4–0.6 flagged; offers counted apart as payment evidence | `signals.mjs trier` → Jev `signal.pertinent` | cents |
 | 5 | Research the top 3–5 subjects, gather evidence URLs | worker (LLM + web) | premium, bounded |
 | 6 | Score /30, eliminators, Cash/Venture, decision | `signals.mjs noter` (code) | 0 |
-| 7 | **Jev quality gate**: is each criterion supported by its link? | Jev `preuve.suffisante` (future) | cents |
+| 7 | **Jev quality gate**: is each criterion supported by its link? (`suffisante` / `incertaine` / `insuffisante`) | Jev `preuve.suffisante` | cents |
 | 8 | Report top 3 → Obsidian decision note + Telegram brief | `signals.mjs rapport`, `memoire-obsidian`, `rapport-telegram` | 0 |
 | 9 | Human gate: contact, purchase, publication | Ivan | — |
 

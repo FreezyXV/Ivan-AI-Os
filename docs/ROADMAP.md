@@ -4,6 +4,7 @@
 - [x] Private repository, constitution, schemas and policy catalog skeleton
 - [x] Jev Gateway skeleton and Docker control-plane skeleton
 - [ ] VPS provisioned; runtime secrets configured
+- [x] Prepare a Linux systemd Jev gateway candidate with private credentials, persistent budget and authenticated startup probe; local mock integration tested, VPS not provisioned
 
 ## Phase 1 — Decision plane
 - [x] Correct TypeSafe System One request/response adapter for Choice
@@ -36,6 +37,8 @@
 - [x] Claude source registry: 16 skills and 7 manager definitions, packaging corrections reviewed at fa9c9e0, 13/13 tests
 - [x] Install nine reviewed career/knowledge/system skills for Telegram with reduced private profiles, outside Git
 - [x] Configure all seven roles and verify Telegram → Jev → Engineering → isolated worker → manager report → Telegram; test code proposed, not executed (2026-09-29)
+- [x] Activate manager-scoped, read-only prepared Business and Finance briefs; native RPC verifies both managers and denies main (PR #36)
+- [x] Replace the slow internal gateway restart in future config rollouts with a bounded launchd restart, health check and automatic config rollback (PR #36)
 - [ ] Measure useful workflows for the five other managers and the source-code builder/reviewer bridge
 - [x] Prepare seven private manager workspaces, including public Finance without a profile; native OpenClaw configuration validates in isolation
 - [x] Review Claude Code shadow adapter against a real isolated gateway, six tests; source merged, Claude notified for project-only shadow activation against 4311

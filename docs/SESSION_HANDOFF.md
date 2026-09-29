@@ -27,6 +27,47 @@ pilotage gate acceptable. Les PR #14/#20/#21 restent ouvertes et relues.
 Prochains travaux : renforcer la provenance du reçu, planifier les moteurs,
 accès des managers aux outils sans exec, hook Codex, skills OpenClaw, Linux/OVH.
 
+## 2026-09-29 — Codex — Linux/OVH runtime candidate
+
+Branch `agent/codex/linux-runtime-v2`, PR #37, based on `foundation/v1`.
+`services/linux-runtime/` adds a systemd Jev launcher, a private credential
+contract, persistent budget/audit paths and an authenticated startup probe.
+Four local tests pass, including a real mock gateway on loopback with
+authenticated usage and unauthorized rejection. No real TypeSafe or OVH call,
+purchase, host provisioning or Telegram move. CI includes a Linux test job.
+Read `docs/OVH-DEPLOYMENT-PROPOSAL.md` before a host choice or cutover.
+Important: the Mac and VPS budget files must not count separate 10 EUR monthly
+allowances during migration. The initial VPS proposal is a candidate, not GO
+to purchase. This branch is independent of PRs #35 and #36.
+
+## 2026-09-29 — Codex — Business/Finance read tools and restart recovery
+
+Branch `agent/codex/engine-read-tools`, PR #36. A pinned private copy of
+`ivan-ai-os-engine-briefs` is active on the Mac OpenClaw gateway. Native
+`tools.invoke` returned `READY` for `ivan_business_brief` as `ivan-business`
+and `ivan_finance_brief` as `ivan-finance`; `main` was denied. Neither response
+included the private Business profile or personal Finance allocation. Jev 4311,
+the seven roles and Telegram configuration were preserved. No model call was
+needed for these checks. The source CI had seven green jobs at commit 5224721.
+
+The `openclaw gateway restart --preserve-definition` path took about five
+minutes: log evidence shows an active root request during internal shutdown,
+then delayed startup. The gateway recovered without deleting state or locks.
+Direct `launchctl kickstart -k gui/501/ai.openclaw.gateway` was tested:
+command returned in 3.1 s, TCP listened in 12.2 s, authenticated health in
+21.7 s. Future private config switches should use
+`scripts/switch-openclaw-config.mjs` with an expected source hash and a private
+backup directory; it validates first, restarts via launchd, checks health and
+restores the exact prior config on failure. Do not copy config contents into Git
+or logs. An end-to-end switch on a semantically identical private candidate
+returned `ACTIVE`; JSON config equality against its exact backup was true and
+both scoped tools still returned `READY`. This is a bounded rollout path, not
+proof that OpenClaw never stalls.
+Separate non-delivered model turns completed for `ivan-business` and
+`ivan-finance`; each `toolSummary` included its own brief tool and both runs
+ended normally. This verifies manager-side discovery in addition to direct RPC;
+no Telegram message was sent by these tests.
+
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
 
 Lire docs/ACTIVATION-2026-09-29.md : ce bloc remplace les états inactifs plus anciens ci-dessous.
