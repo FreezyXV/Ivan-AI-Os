@@ -2,6 +2,12 @@
 
 ## Dernière continuation : sept espaces et revue Claude
 
+Calibration livrée séparément sur `agent/codex/jev-calibration` : lire `docs/JEV-CALIBRATION.md`.
+19 catégories étiquetées, quatre tests de métriques/transport synthétiques, zéro appel payant.
+Le runner live passe par le gateway authentifié et son budget ; aucun nouveau endpoint ni
+qualité Jev live revendiquée. Claude peut préparer calibration-jev sur les questions disponibles.
+Services existants 4310 et 18789 répondent à /health ; aucune bascule effectuée.
+
 Lire `docs/MANAGER-RUNTIME.md`. Source Codex sur `agent/codex/manager-runtime` : 60 tests
 gateway/route/observer/managers passent. Les défauts signalés sur le taux 1.005 et les chemins
 absolus via alias sont corrigés avec tests de régression (échec observé avant correction).
