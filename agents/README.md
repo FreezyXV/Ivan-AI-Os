@@ -23,6 +23,11 @@ with `acknowledgment` alone: two pilots answered `NO_REPLY` until the obligation
 `message` (see `docs/ACTIVATION-2026-09-29.md`, `MANAGER_COMPLETION_GUIDANCE`). Proposed tests are
 reported as proposed, never as executed. One worker per objective; no follow-up loops.
 
+Only the Chief of Staff delivers to Ivan: after the manager's report, it sends the result with the
+`message` tool on the originating Telegram route and checks the receipt (`delivered:false` or
+`delivery_queued` is not a delivery; never resend a queued message). A final answer inside the
+private resume turn does not reach Telegram (Codex PR #21, verified 2026-09-29).
+
 ## Definitions (v1 draft, 2026-09-29)
 
 `agents/managers/<name>.md` defines each manager: `route` (Jev routing label, or `orchestrator`
