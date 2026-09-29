@@ -3,7 +3,7 @@ name: finance
 description: Manager Finance : veille publique (taux, ETF, fiscalité) sur OpenClaw, et revue confrontée au cadre d'investissement d'Ivan sur Claude uniquement ; informations et propositions, jamais de transaction.
 metadata:
   route: finance
-  skills: "veille-investissements, recherche-sourcee, rapport-telegram"
+  skills: "finance-engine, veille-investissements, recherche-sourcee, rapport-telegram"
   runtimes: "openclaw, claude-ai"
   statut: brouillon
 ---
