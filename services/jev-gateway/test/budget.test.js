@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, chmodSync, symlinkSync, unlinkSync, statSync } from "node:fs";
-import { createJevBudget, PRICED_MODEL } from "../src/budget.js";
+import { createJevBudget, getRuntimeBudget, PRICED_MODEL } from "../src/budget.js";
 import { askTypeSafe } from "../src/provider.js";
 import { testBudget } from "./helpers.js";
 
@@ -84,6 +84,25 @@ test("budget refusal prevents any provider fetch; failed requests remain account
     assert.equal(calls, 1);
   } finally {
     for (const [name, value] of [["TYPESAFE_API_KEY", saved.key], ["JEV_MODEL", saved.model]]) {
+      if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});
+
+
+test("runtime decimal conversion rounds safely and rejects rates outside the approved range", t => {
+  const { filename } = testBudget(t);
+  const saved = [process.env.IVAN_JEV_BUDGET_PATH, process.env.JEV_USD_TO_EUR_BUDGET_RATE];
+  try {
+    process.env.IVAN_JEV_BUDGET_PATH = filename;
+    process.env.JEV_USD_TO_EUR_BUDGET_RATE = "1.005";
+    assert.equal(getRuntimeBudget().status().usd_to_eur_millis, 1005);
+    for (const rate of ["0.9999", "2.0001", "NaN", "Infinity"]) {
+      process.env.JEV_USD_TO_EUR_BUDGET_RATE = rate;
+      assert.throws(() => getRuntimeBudget(), { code: "BUDGET_NOT_CONFIGURED" });
+    }
+  } finally {
+    for (const [name, value] of [["IVAN_JEV_BUDGET_PATH", saved[0]], ["JEV_USD_TO_EUR_BUDGET_RATE", saved[1]]]) {
       if (value === undefined) delete process.env[name]; else process.env[name] = value;
     }
   }

@@ -2,7 +2,9 @@
 
 Source sur `agent/codex/secure-gateway`, à relire avant activation coordonnée.
 Ivan a choisi les métadonnées autorisées et 10 EUR/mois, sans plafond de 500 appels.
-Clients et finances restent exclus d'OpenClaw/Jev ; le profil professionnel réduit choisi
+Clients et finances personnelles restent exclus d'OpenClaw/Jev ; la veille financière publique
+sur OpenClaw est désormais explicitement choisie par Ivan, avec contextualisation privée Claude.
+Le profil professionnel réduit choisi
 pour les skills Telegram ne change pas les données autorisées chez Jev.
 
 ## API et changement incompatible

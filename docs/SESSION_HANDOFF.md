@@ -1,5 +1,22 @@
 # Session handoff — 2026-09-29
 
+## Dernière continuation : sept espaces et revue Claude
+
+Lire `docs/MANAGER-RUNTIME.md`. Source Codex sur `agent/codex/manager-runtime` : 60 tests
+gateway/route/observer/managers passent. Les défauts signalés sur le taux 1.005 et les chemins
+absolus via alias sont corrigés avec tests de régression (échec observé avant correction).
+Le verrou abandonné reste un refus conservateur documenté, pas une récupération automatique.
+Claude PR #3 relue @fa9c9e0 : corrections acceptées, 13 tests. PR #5 relue @dad877d7 : six tests
+contre un vrai gateway local synthétique passent, aucun appel payant ; shadow reste consultatif.
+Les PR #2/#3/#4/#5 ne sont pas encore fusionnées ; GO de fusion demandé à Ivan.
+Sept espaces privés réellement préparés sous ~/.ivan-ai-os/managers, fragment validé par le
+vrai OpenClaw 2026.9.5 dans un état temporaire. Aucun agent activé ni modèle démarré.
+Ivan a changé le périmètre Finance : Claude pour le contexte personnel, OpenClaw pour la veille
+et les opportunités publiques. Finance OpenClaw a recherche-sourcee/rapport-telegram sans profil.
+Le plan de dispatch est vérifié mais reste une proposition : prochain jalon, activation coordonnée
+et preuve Telegram → manager → worker → résultat. Ne pas confondre préparation et fonctionnement.
+AGENTS/constitution et le worktree Claude n'ont pas été modifiés.
+
 ## Continuation Codex — API privée, collaboration et entreprise virtuelle
 
 Lire `docs/SECURE-GATEWAY.md` et `docs/REVIEW-CODEX-SKILLS-2026-09-29.md`.

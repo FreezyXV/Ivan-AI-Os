@@ -30,9 +30,11 @@
 - [ ] Claude Code and Codex adapters verified against their current runtime hook contracts
 - [ ] Human approvals bound to exact proposed actions
 
-- [x] Claude source registry: 16 skills and 7 manager definitions, 9/9 tests independently verified; PR #3 awaits packaging corrections
+- [x] Claude source registry: 16 skills and 7 manager definitions, packaging corrections reviewed at fa9c9e0, 13/13 tests
 - [x] Install nine reviewed career/knowledge/system skills for Telegram with reduced private profiles, outside Git
 - [ ] Provision all seven manager roles and verify real dispatch plus worker completion; definitions alone do not complete this milestone
+- [x] Prepare seven private manager workspaces, including public Finance without a profile; native OpenClaw configuration validates in isolation
+- [x] Review Claude Code shadow adapter against a real isolated gateway, six tests; PR #5 awaits merge and coordinated activation
 
 ## Phase 3 — Memory
 - [ ] Map `Obsidian Notes` vault path and sync permissions
