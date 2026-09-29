@@ -14,7 +14,9 @@ export const QUESTIONS = Object.freeze({
   "signal.pertinent": { type: "noul", fields: ["titre", "extrait", "type"] },
   "preuve.suffisante": { type: "choice", fields: ["critere", "note", "titre", "extrait"] },
   "alerte.importante": { type: "noul", fields: ["indicateur", "ancien", "nouveau", "seuil"] },
-  "memoire.contradiction": { type: "noul", fields: ["titre_a", "titre_b", "valeurs_a", "valeurs_b"] }
+  "memoire.contradiction": { type: "noul", fields: ["titre_a", "titre_b", "valeurs_a", "valeurs_b"] },
+  "tache.categorie": { type: "choice", fields: ["titre", "extensions"] },
+  "constat.severite": { type: "choice", fields: ["resume", "type_preuve"] }
 });
 const CREDENTIALS = /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bBearer\s+\S{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
 
