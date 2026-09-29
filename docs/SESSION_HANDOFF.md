@@ -1,5 +1,18 @@
 # Session handoff — 2026-09-29
 
+## 2026-09-29 — Codex — Linux/OVH runtime candidate
+
+Branch `agent/codex/linux-runtime-v2`, PR #37, based on `foundation/v1`.
+`services/linux-runtime/` adds a systemd Jev launcher, a private credential
+contract, persistent budget/audit paths and an authenticated startup probe.
+Four local tests pass, including a real mock gateway on loopback with
+authenticated usage and unauthorized rejection. No real TypeSafe or OVH call,
+purchase, host provisioning or Telegram move. CI includes a Linux test job.
+Read `docs/OVH-DEPLOYMENT-PROPOSAL.md` before a host choice or cutover.
+Important: the Mac and VPS budget files must not count separate 10 EUR monthly
+allowances during migration. The initial VPS proposal is a candidate, not GO
+to purchase. This branch is independent of PRs #35 and #36.
+
 ## 2026-09-29 — Codex — Business/Finance read tools and restart recovery
 
 Branch `agent/codex/engine-read-tools`, PR #36. A pinned private copy of
