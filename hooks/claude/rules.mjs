@@ -7,7 +7,8 @@
 
 const NEVER = [
   [/\b(?:jev-keychain|mac-jev-keychain)\b|\bsecurity\s+(?:find|dump)-(?:generic|internet)-password\b|\bsecurity\s+dump-keychain\b/, "lecture de la clé TypeSafe ou du Trousseau : interdite aux agents"],
-  [/(?:^|[\s;&|])(?:cat|less|more|head|tail|bat|grep|cp|scp|curl\b.*-d\s*@)\s[^|;&]*(?:\.env(?!\.example)(?:\.[\w-]+)?\b|decision-token|\.ssh\/id_|\.aws\/credentials)/, "lecture ou copie d'un secret"],
+  // Paths may be quoted: this rule always sees the full text.
+  [/(?:^|[\s;&|])(?:cat|less|more|head|tail|bat|grep|cp|scp|curl\b.*-d\s*@)\s[^|;&]*(?:\.env(?!\.example)(?:\.[\w-]+)?\b|decision-token|\.ssh\/id_|\.aws\/credentials)/, "lecture ou copie d'un secret", { texteComplet: true }],
   [/\bgit\s+stash\b/, "git stash : la pile est partagée avec le checkout de Codex (committer le travail en cours)"],
   [/\bgit\s+push\b[^;&|]*(?:\s--force(?:-with-lease)?\b|\s-f\b|\s\+\S)/, "push forcé : réécrit l'historique partagé"],
   [/\bgit\s+push\b[^;&|]*\s(?:origin\s+)?(?:HEAD:)?(?:main|master|foundation\/v1)\b/, "push direct sur main ou foundation/v1 : passer par une PR et le GO d'Ivan"],
@@ -45,9 +46,18 @@ function segments(command) {
 
 const writes = segment => /(?:^|[^>2&])>{1,2}\s*(?!\/dev\/null|&)\S/.test(segment.replace(/'[^']*'|"[^"]*"/g, "''")) || /\$\(|`/.test(segment.replace(/'[^']*'/g, "''"));
 
+// Quoted prose and heredoc bodies are data (commit messages, issue bodies, notes) unless a shell
+// or language interpreter would execute them; then the whole text is scanned.
+const INTERPRETER = /(?:^|[\s;&|(])(?:(?:ba|z|da|k)?sh|eval|xargs|ssh|source|exec|(?:python3?|node|perl|ruby)\s+-[ce])\b/;
+export function commandWords(command) {
+  if (INTERPRETER.test(command)) return command;
+  return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC").replace(/'[^']*'|"(?:\\.|[^"\\])*"/g, "''");
+}
+
 export function classifyCommand(command) {
   if (typeof command !== "string" || !command.trim()) return { verdict: "evaluer", raison: "commande vide" };
-  for (const [pattern, raison] of NEVER) if (pattern.test(command)) return { verdict: "never", raison };
+  const words = commandWords(command);
+  for (const [pattern, raison, options] of NEVER) if (pattern.test(options?.texteComplet ? command : words)) return { verdict: "never", raison };
   const { parts, ops } = segments(command);
   let level = "read_only";
   for (let i = 0; i < parts.length; i++) {
