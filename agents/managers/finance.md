@@ -3,7 +3,7 @@ name: finance
 description: Manager Finance : veille publique (taux, ETF, fiscalité) sur OpenClaw, et revue confrontée au cadre d'investissement d'Ivan sur Claude uniquement ; informations et propositions, jamais de transaction.
 metadata:
   route: finance
-  skills: "veille-investissements, recherche-sourcee, rapport-telegram"
+  skills: "finance-engine, veille-investissements, recherche-sourcee, rapport-telegram"
   runtimes: "openclaw, claude-ai"
   statut: brouillon
 ---
@@ -21,6 +21,7 @@ nécessaire, transfert à Claude → À FAIRE / À SURVEILLER / HORS CADRE.
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.
+Retour : rapport final non vide au parent (résultat, vérifications, limites), voir `agents/README.md`.
 
 **GO d'Ivan requis pour** : toute transaction, souscription ou transfert (jamais exécuté par un agent).
 

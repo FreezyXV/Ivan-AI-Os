@@ -1,0 +1,14 @@
+{
+  "skill": "verification-affirmations",
+  "version": 1,
+  "positifs": [
+    "Vérifie tous les chiffres de ce lot d'articles avant publication",
+    "C'est sûr ce chiffre de population ? Il vient d'un blog",
+    "Prépare les sections Faits clés et Sources de cet article Anakalypto"
+  ],
+  "negatifs": [
+    {"demande": "Rédige un nouveau lot de 10 articles sur l'astronomie", "attendu": "encyclopedie-anakalypto"},
+    {"demande": "Fais une recherche sur le marché des ESN au Luxembourg", "attendu": "recherche-sourcee"}
+  ],
+  "livrable": "Registre JSON validé : chaque chiffre et date confirmé par deux domaines indépendants dont un fiable, divergences signalées, Faits clés et Sources générés à partir du seul confirmé."
+}

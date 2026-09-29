@@ -1,0 +1,14 @@
+{
+  "skill": "business-engine",
+  "version": 1,
+  "positifs": [
+    "Lance le cycle business de la semaine et donne-moi le top 3",
+    "Trouve-moi des opportunités d'arbitrage ou de service rentables en moins d'un mois",
+    "Voici une alerte Sentinelle business : qu'est-ce que ça vaut ?"
+  ],
+  "negatifs": [
+    {"demande": "Évalue en détail cette idée précise de SaaS pour les dentistes", "attendu": "veille-niches"},
+    {"demande": "Construis le MVP de l'opportunité retenue", "attendu": "dev-studio"}
+  ],
+  "livrable": "Top 3 avec note /30, horizon Cash ou Venture, preuve URL par critère noté au-dessus de 1, plan de validation 7 jours, aucune promesse de revenu."
+}

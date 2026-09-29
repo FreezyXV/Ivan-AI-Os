@@ -21,6 +21,18 @@ jobs:
           node-version: 22
       - run: npm test
 
+  linux-runtime:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/linux-runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
   openclaw-route-adapter:
     runs-on: ubuntu-latest
     defaults:
@@ -53,6 +65,27 @@ jobs:
         with:
           node-version: 22
       - run: npm test --prefix hooks/openclaw/ivan-memory
+
+  openclaw-engine-briefs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hooks/openclaw/ivan-engine-briefs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  openclaw-config-switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test scripts/switch-openclaw-config.test.mjs
 
   skills-and-managers:
     runs-on: ubuntu-latest

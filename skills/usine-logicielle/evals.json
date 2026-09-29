@@ -1,0 +1,14 @@
+{
+  "skill": "usine-logicielle",
+  "version": 1,
+  "positifs": [
+    "Qui doit coder cette fonctionnalité, Claude ou Codex ?",
+    "Enregistre le résultat de la PR 28 dans l'usine",
+    "Fais le bilan de l'usine logicielle : qui réussit quoi ?"
+  ],
+  "negatifs": [
+    {"demande": "Corrige ce bug dans le service", "attendu": "dev-studio"},
+    {"demande": "Relis la PR de Codex", "attendu": "revue-croisee"}
+  ],
+  "livrable": "Constructeur et relecteur recommandés avec la raison (périmètre, mesure, a priori ou alternance), ou résultat de PR enregistré dans le registre privé."
+}

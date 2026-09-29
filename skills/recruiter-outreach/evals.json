@@ -1,0 +1,20 @@
+{
+  "skill": "recruiter-outreach",
+  "version": 1,
+  "positifs": [
+    "Écris un message LinkedIn à cette recruteuse",
+    "Relance l'ESN qui ne m'a pas répondu",
+    "Remercie le manager après l'entretien"
+  ],
+  "negatifs": [
+    {
+      "demande": "Adapte mon CV à cette offre",
+      "attendu": "job-application-optimizer"
+    },
+    {
+      "demande": "Prépare mon entretien",
+      "attendu": "interview-prep"
+    }
+  ],
+  "livrable": "Message dans la limite de longueur du format, accroche vérifiable, aucune formule creuse, non envoyé (Ivan envoie)."
+}

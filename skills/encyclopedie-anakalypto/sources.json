@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "verifie": "2026-09-29",
+  "flux": [
+    {"id": "the-conversation", "url": "https://theconversation.com/fr/articles.atom", "langue": "fr"},
+    {"id": "sciences-et-avenir", "url": "https://www.sciencesetavenir.fr/rss.xml", "langue": "fr"},
+    {"id": "futura-sciences", "url": "https://www.futura-sciences.com/rss/actualites.xml", "langue": "fr"},
+    {"id": "inserm", "url": "https://www.inserm.fr/feed/", "langue": "fr"},
+    {"id": "nasa", "url": "https://www.nasa.gov/feed/", "langue": "en"},
+    {"id": "esa-science", "url": "https://www.esa.int/rssfeed/Our_Activities/Space_Science", "langue": "en"},
+    {"id": "nature", "url": "https://www.nature.com/nature.rss", "langue": "en"}
+  ]
+}

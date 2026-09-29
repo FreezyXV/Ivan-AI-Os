@@ -2,7 +2,7 @@
 name: veille-investissements
 description: Veille des évolutions et opportunités d'investissement (taux réglementés, ETF éligibles PEA, frais, fonds euros, SCPI, or, BCE, fiscalité France et Luxembourg) confrontée à la stratégie long terme d'Ivan. Utiliser pour "veille invest", "revue finance", "opportunité d'investissement", "qu'est-ce qui a changé côté placements", ou quand Ivan transfère une alerte Sentinelle finance.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   famille: finance
   manager: finance
   risque: lecture
@@ -26,6 +26,14 @@ Le cadre d'Ivan prime : lire la section « Cadre d'investissement » de `profil.
 6. Fiscalité : sujets suivis listés dans le profil.
 Sources prioritaires : Banque de France, AMF, BCE, service-public.fr, impots.gouv.fr, guichet.lu,
 ASPIM, émetteurs d'ETF, justETF.
+
+## 1 bis. Dérive et versement (calcul, 0 token)
+Allocation privée : `~/.ivan-ai-os/finance/allocation.json` (jamais Git, OpenClaw ni Jev).
+`node skills/finance-engine/scripts/dca.mjs derive` : écart réel/cible en points (bande ±5 pts).
+`node skills/finance-engine/scripts/dca.mjs repartir [montant] --valeur <total>` : répartition
+(versement mensuel par défaut ; sans `--valeur`, répartition selon les pourcentages cibles —
+règle d'Ivan ; avec `--valeur`, rééquilibrage sans vente)
+**sans vente** du prochain versement (combler les écarts, puis suivre la cible). Proposition seulement.
 
 ## 2. Livrer (dans le chat)
 - **À FAIRE** (3 maximum) : action concrète, compatible avec le cadre, appuyée par 2 sources

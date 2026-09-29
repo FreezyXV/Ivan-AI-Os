@@ -2,7 +2,7 @@
 name: orchestrateur-ia
 description: Choisir le bon outil de l'écosystème IA d'Ivan pour chaque tâche et économiser les quotas (Claude, Claude Code, Codex/ChatGPT, Secrétaire OpenClaw sur Telegram, Sentinelle, Jev). Utiliser quand Ivan demande "qui fait quoi", "comment automatiser", "quel outil", "ça coûte trop de tokens", ou avant de lancer une tâche longue ou récurrente.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   famille: system
   manager: system
   risque: lecture
@@ -15,7 +15,8 @@ metadata:
 ## Qui fait quoi
 | Besoin | Outil | Pourquoi |
 |---|---|---|
-| Classer, trier oui/non, noter, router, pré-contrôler une action | **Jev** (skill `jev-decision`) | Quelques centimes ; budget 10 €/mois à utiliser |
+| Router ou trier sur des étiquettes fixes | **Table / règle** (code) | Gratuit, exact, instantané |
+| Classer, trier oui/non, noter, pré-contrôler quand l'entrée est ambiguë | **Jev** (skill `jev-decision`) | Quelques centimes ; budget 10 €/mois à utiliser |
 | Plan global, services, OpenClaw, infrastructure du dépôt | **Codex** | Bâtisseur principal d'Ivan-AI-Os |
 | Skills, agents, relecture croisée, gros refactor, lots Anakalypto | **Claude Code** | Agents, hooks, worktrees, skills |
 | Livrable important, stratégie, document long, analyse | Claude (chat) | Qualité, skills |

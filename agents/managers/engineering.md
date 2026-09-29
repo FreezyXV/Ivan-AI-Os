@@ -3,7 +3,7 @@ name: engineering
 description: Manager Engineering : développement, dépôts, débogage, architecture et livraison logicielle par Claude Code et Codex, l'un bâtit, l'autre relit.
 metadata:
   route: engineering
-  skills: "dev-studio, design-original, revue-croisee, revue-securite-diff, passation-session, jev-decision"
+  skills: "usine-logicielle, dev-studio, design-original, revue-croisee, revue-securite-diff, passation-session, jev-decision"
   runtimes: "claude-code, codex"
   statut: brouillon
 ---
@@ -15,6 +15,7 @@ metadata:
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.
+Retour : rapport final non vide au parent (résultat, vérifications, limites), voir `agents/README.md`.
 
 **GO d'Ivan requis pour** : push sur main, déploiement, migration destructive, dépense.
 

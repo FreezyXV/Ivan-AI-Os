@@ -19,7 +19,8 @@ const CREDENTIALS = [
   /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}/, /\bgh[pousr]_[A-Za-z0-9]{20,}/, /\bAKIA[0-9A-Z]{16}\b/,
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /\b\d{8,10}:[A-Za-z0-9_-]{35}\b/, // Telegram bot token
   /\bBearer\s+[A-Za-z0-9._~+/-]{20,}=*/i, /\bxox[abprs]-[A-Za-z0-9-]{10,}/, // bearer header, Slack
-  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/ // JWT
+  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/, // JWT
+  /\bapikey_[A-Za-z0-9_]{20,}/i // aligned with hooks/openclaw/ivan-memory
 ];
 
 export class MemoryError extends Error {}
@@ -98,7 +99,7 @@ export function parseNote(text) {
   return { data, body: match[2] };
 }
 
-function notesUnder(dir) {
+export function notesUnder(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
     const full = path.join(dir, entry.name);
