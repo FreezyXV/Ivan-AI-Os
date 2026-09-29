@@ -18,6 +18,7 @@
 - [ ] Calibration on labeled requests and permission scenarios
 
 ## Phase 2 — Agent integration
+- [x] After merged PRs #6/#7/#8, prepare a private native-valid configuration preserving the Secretary workspace and a pinned runtime snapshot; no activation (see docs/COORDINATED-ACTIVATION.md)
 - [x] Source-only OpenClaw 2026.9.5 advisory routing tool with mocked tests
 - [x] Interactive local Jev smoke mode to keep the Gateway available for OpenClaw integration testing
 - [x] Install the linked plugin on Ivan's Mac and inspect runtime registration (`Status: loaded`, `Tools: ivan_route`)
@@ -37,7 +38,8 @@
 - [x] Review Claude Code shadow adapter against a real isolated gateway, six tests; PR #5 awaits merge and coordinated activation
 
 ## Phase 3 — Memory
-- [ ] Map `Obsidian Notes` vault path and sync permissions
+- [x] Locate chosen vault `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`; scoped Claude helper merged in #8
+- [ ] Verify sync permissions and add a bounded OpenClaw read tool; memory skill excluded until then
 - [ ] Markdown ingestion, retrieval and provenance
 - [ ] Embeddings + pgvector only after basic retrieval needs are measured
 - [ ] Controlled Dream consolidation

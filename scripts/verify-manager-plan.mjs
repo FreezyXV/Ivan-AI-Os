@@ -21,7 +21,7 @@ try {
   const valid = result.status === 0 && JSON.parse(result.stdout).valid === true;
   const finance = plan.roles.find(r => r.route === "finance");
   const profileFree = finance.skills.every(name => !readdirSync(path.join(finance.workspace, "skills", name)).includes("profil.md"));
-  const privateModes = plan.roles.every(role => (statSync(role.workspace).mode & 0o777) === 0o700);
+  const privateModes = plan.roles.every(role => (statSync(role.preparedWorkspace ?? role.workspace).mode & 0o777) === 0o700);
   console.log(JSON.stringify({ native_config_valid: valid, roles: plan.roles.length, finance_profile_free: profileFree, private_modes: privateModes, live_config_modified: false, models_started: 0 }));
   if (!valid || !profileFree || !privateModes) process.exitCode = 1;
 } catch { console.error("MANAGER_PLAN_VERIFICATION_FAILED"); process.exitCode = 1; }

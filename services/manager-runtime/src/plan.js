@@ -1,13 +1,15 @@
 import path from "node:path";
 import { validateRoutingMetadata } from "../../jev-gateway/src/routing-metadata.js";
+import { isOpenClawSkillAvailable } from "./openclaw-skills.js";
 
 export const ROUTES = Object.freeze(["business", "career", "finance", "knowledge", "engineering", "system"]);
 export const ROLE_IDS = Object.freeze(Object.fromEntries(ROUTES.map(route => [route, `ivan-${route}`])));
 const deniedTools = ["exec", "process", "message", "gateway", "plugins", "cron", "sessions_send"];
 
 // Input comes from Claude's reviewed registry, never a model-provided role list.
-export function createManagerPlan({ managers, skills, runtimeRoot }) {
+export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace }) {
   if (!path.isAbsolute(runtimeRoot) || !Array.isArray(managers) || managers.length !== 7 || !Array.isArray(skills)) throw new Error("INVALID_MANAGER_REGISTRY");
+  if (mainWorkspace !== undefined && (typeof mainWorkspace !== "string" || !path.isAbsolute(mainWorkspace))) throw new Error("INVALID_MAIN_WORKSPACE");
   const expected = new Set(["orchestrator", ...ROUTES]);
   const known = new Map(skills.map(skill => [skill.name, skill]));
   const roles = managers.map(manager => {
@@ -17,17 +19,20 @@ export function createManagerPlan({ managers, skills, runtimeRoot }) {
     // Claude. Reuse public research/report skills, never the personal finance skill.
     const candidates = publicFinance ? ["recherche-sourcee", "rapport-telegram"] : manager.skills;
     if (candidates.some(name => !known.has(name))) throw new Error("INVALID_MANAGER_REGISTRY");
-    const allowed = candidates.filter(name => known.get(name).statut === "actif" && known.get(name).manager !== "finance");
+    const allowed = candidates.filter(name => isOpenClawSkillAvailable(known.get(name)));
     if (!allowed.length) throw new Error("MANAGER_WITHOUT_SKILLS");
     return {
       role: manager.route === "orchestrator" ? "chief-of-staff" : manager.route,
       route: manager.route, agentId: manager.route === "orchestrator" ? "main" : ROLE_IDS[manager.route],
-      runtime: "openclaw", workspace: path.join(runtimeRoot, manager.route === "orchestrator" ? "chief-of-staff" : manager.route),
+      runtime: "openclaw", workspace: manager.route === "orchestrator" && mainWorkspace
+        ? mainWorkspace : path.join(runtimeRoot, manager.route === "orchestrator" ? "chief-of-staff" : manager.route),
+      ...(manager.route === "orchestrator" && mainWorkspace ? { preparedWorkspace: path.join(runtimeRoot, "chief-of-staff") } : {}),
       skills: allowed, description: publicFinance ? "Veille financière publique : macro, taux, évolutions et opportunités sourcées pour éclairer les décisions d'Ivan." : manager.description,
       publicContextOnly: publicFinance, status: "PREPARED_NOT_ACTIVATED"
     };
   });
   if (expected.size) throw new Error("INVALID_MANAGER_REGISTRY");
+  if (new Set(roles.map(role => path.resolve(role.workspace))).size !== 7) throw new Error("WORKSPACE_COLLISION");
   const native = roles.filter(role => role.runtime === "openclaw");
   const agentEntries = Object.fromEntries(native.map(role => [role.agentId, {
     ...(role.agentId === "main" ? { default: true } : {}),

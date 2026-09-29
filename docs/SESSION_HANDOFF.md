@@ -1,5 +1,22 @@
 # Session handoff — 2026-09-29
 
+## État actuel après GO #6 → #7 → #8
+
+Les trois PR sont réellement fusionnées dans foundation/v1 @f6bb2e3. Les paragraphes plus anciens
+qui les disent en attente sont historiques. Lire `docs/COORDINATED-ACTIVATION.md` en premier.
+Ivan a choisi le coffre unique `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`, déclaré dans
+`~/.ivan-ai-os/config.json` ; l'ancien chemin Documents n'est plus la cible. Pas de recréation.
+La capture utilisateur montre la décision de fusion validée ; aucune lecture de note personnelle.
+Codex prépare la suite sur agent/codex/coordinated-runtime : workspace actuel de main conservé,
+memoire-obsidian exclu d'OpenClaw, proposition privée validée nativement, runtime versionné hors
+checkout. Sept artefacts sous ~/.ivan-ai-os/managers-f6bb2e3-coordinated ; aucun rôle activé.
+Quatre fichiers de contexte et douze fichiers mémoire de main inchangés ; corps mémoire non lus.
+Base fusionnée 88 tests ; résultat Codex 95 tests. Aucun appel modèle/TypeSafe payant.
+Les défauts synthétiques credentials/mode du helper mémoire #8 subsistent : relayés à Claude.
+Bascule live, clé privée TypeSafe, rotation credentials et GO d'activation restent à accomplir.
+Le pilote Claude sera shadow et vise le gateway 4311 ; ne pas changer son worktree/settings ici.
+PR #9 est l'ancien seed/contrat mémoire : ne pas appliquer ses chemins ou relais devenus obsolètes.
+
 ## Dernière continuation : sept espaces et revue Claude
 
 Calibration livrée séparément sur `agent/codex/jev-calibration` : lire `docs/JEV-CALIBRATION.md`.
