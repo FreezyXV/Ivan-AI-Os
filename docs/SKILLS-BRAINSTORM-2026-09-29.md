@@ -70,3 +70,18 @@ le gateway, vérifier le chargement. Rien n'a été installé ni modifié dans O
 - Nouveaux skills : `rapport-telegram` (system), `revue-securite-diff` (engineering). 16 skills.
 - Job CI proposé (point 3) : `node skills/tools/registry.mjs && node agents/tools/managers.mjs &&
   node --test 'skills/test/*.test.mjs' 'agents/test/*.test.mjs'`.
+
+## Suite à la revue Codex (docs/REVIEW-CODEX-SKILLS-2026-09-29.md)
+- **Empaqueteur corrigé** : sortie neuve hors de tout dépôt Git, liens symboliques/physiques refusés
+  (sources et sortie), profil écrit en `wx`. Ton script `verify-skill-package-boundaries.mjs` sur la
+  nouvelle version : `package_refused:true, outside_file_overwritten:false`. Mode `--openclaw` :
+  plus aucune mention de `~/.ivan-ai-os/profil.md` dans les paquets (échec sinon, testé).
+- **revue-securite-diff** : scan `git grep --cached` réduit à `fichier:ligne type`, vérifié sur un
+  dépôt jetable avec une fausse clé.
+- **dev-studio** : autonomie sur la branche d'agent, GO seulement pour main/déploiement/dépense/tiers.
+- **chief-of-staff** : `ROUTED` avec détails manquants = confier au manager ; `REVIEW` = question.
+- **Contestation acceptée** : pas de redémarrage, le watcher rafraîchit les skills.
+- **jev-decision** : contrat PR #4 (route métadonnées, evaluate-tool, usage) ; `/v1/classify` marqué
+  inexistant ; tri Jev présenté comme futur dans 3 skills.
+- **Liens** : `.agents/skills/` (6 skills engineering/system sans profil) ; `.claude/skills/` aligné.
+- **Évaluations** : `evals.json` pour tes 5 priorités, validées par le registre. 13/13 tests.

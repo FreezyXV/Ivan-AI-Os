@@ -16,7 +16,14 @@ Principe d'Ivan : protéger fort ce qui coûte cher (secrets, argent, irréversi
 bloquer le reste. Un faux positif qui gêne le travail est aussi un défaut.
 
 ## Checklist (dans cet ordre, s'arrêter à ce qui s'applique)
-1. **Secrets** : `git diff --cached | grep -nE '(sk|pk|ghp|gho|AKIA)[-_A-Za-z0-9]{16,}|BEGIN .*PRIVATE KEY|password\s*[:=]'`.
+1. **Secrets** : scan de l'index qui n'affiche que `fichier:ligne type`, jamais la ligne trouvée :
+   ```bash
+   for rule in 'cle-api=(sk|pk|rk)-[A-Za-z0-9_-]{16,}' 'jeton-github=gh[pousr]_[A-Za-z0-9]{20,}' \
+     'cle-aws=AKIA[0-9A-Z]{16}' 'cle-privee=BEGIN [A-Z ]*PRIVATE KEY' \
+     'mot-de-passe=(password|passwd|secret)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'; do
+     git grep --cached -nIE "${rule#*=}" | cut -d: -f1,2 | sed "s/\$/  ${rule%%=*}/"
+   done
+   ```
    Fichiers `.env*` (hors `.example`), clés, dumps de config ajoutés ?
 2. **Données personnelles** : noms de clients, finances, e-mails, téléphones dans le dépôt, les
    journaux ou un prompt envoyé à un tiers ?

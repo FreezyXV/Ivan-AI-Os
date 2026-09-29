@@ -1,10 +1,10 @@
 // Package skills for runtimes that cannot read the repository (claude.ai upload,
 // OpenClaw skills folder). Profile skills get the private profile copied in.
-// Usage: node skills/tools/package.mjs [--out DIR] [--profile FILE] [--openclaw] [--manager ROUTE] [name ...]
+// Usage: node skills/tools/package.mjs [--out NEW_DIR] [--profile FILE] [--openclaw] [--manager ROUTE] [name ...]
 // --manager keeps only the skills listed by that manager in agents/managers/.
 // --openclaw (Ivan's decision 2026-09-29): drop the "Clients" and "Cadre d'investissement"
-// profile sections and exclude finance skills; clients and personal finances stay on Claude.
-import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+// profile sections, exclude finance skills and remove any pointer to the full local profile.
+import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,8 +13,8 @@ import { skillsForRoute } from "../../agents/tools/managers.mjs";
 
 export { OPENCLAW_DROPPED_SECTIONS, OPENCLAW_EXCLUDED_MANAGERS };
 
-const REPO_ROOT = path.resolve(SKILLS_ROOT, "..");
-
+const IGNORED = new Set(["__pycache__", ".DS_Store"]);
+const FULL_PROFILE_POINTER = /\s*[,;]\s*sinon `~\/\.ivan-ai-os\/profil\.md`/g;
 
 export function withoutSections(text, headings) {
   return headings.reduce((result, heading) => {
@@ -23,26 +23,59 @@ export function withoutSections(text, headings) {
   }, text);
 }
 
-export function packageSkills({ out, profile, names = [], root = SKILLS_ROOT, openclaw = false }) {
+function insideGitRepository(dir) {
+  for (let current = dir; ; current = path.dirname(current)) {
+    if (existsSync(path.join(current, ".git"))) return true;
+    if (path.dirname(current) === current) return false;
+  }
+}
+
+// A fresh, empty output outside any Git checkout: nothing pre-existing (such as a
+// planted symlink) can redirect a write, and Git cannot pick up the private profile.
+function prepareOutput(out) {
   const target = path.resolve(out);
-  mkdirSync(target, { recursive: true });
-  const real = realpathSync(target);
-  const repo = realpathSync(REPO_ROOT);
-  // The private profile must never be written anywhere Git can pick it up.
-  if (real === repo || real.startsWith(repo + path.sep)) throw new Error("OUTPUT_INSIDE_REPOSITORY");
+  let existing = target;
+  while (!existsSync(existing)) existing = path.dirname(existing);
+  if (insideGitRepository(realpathSync(existing))) throw new Error("OUTPUT_INSIDE_REPOSITORY");
+  const stat = lstatSync(target, { throwIfNoEntry: false });
+  if (stat && (stat.isSymbolicLink() || !stat.isDirectory() || readdirSync(target).length)) throw new Error("OUTPUT_NOT_FRESH");
+  mkdirSync(target, { recursive: true, mode: 0o700 });
+  return realpathSync(target);
+}
+
+// Copy regular files only; links could smuggle content in or writes out.
+function copySkill(source, dest, transform) {
+  mkdirSync(dest, { mode: 0o700 });
+  for (const name of readdirSync(source)) {
+    if (IGNORED.has(name)) continue;
+    const from = path.join(source, name), to = path.join(dest, name), stat = lstatSync(from);
+    if (stat.isSymbolicLink()) throw new Error("SOURCE_LINK_REFUSED");
+    if (stat.isDirectory()) { copySkill(from, to, transform); continue; }
+    if (!stat.isFile() || stat.nlink !== 1) throw new Error("SOURCE_LINK_REFUSED");
+    const content = readFileSync(from);
+    writeFileSync(to, name.endsWith(".md") ? transform(content.toString("utf8")) : content, { flag: "wx", mode: stat.mode & 0o755 });
+  }
+}
+
+export function packageSkills({ out, profile, names = [], root = SKILLS_ROOT, openclaw = false }) {
   const { ok, results } = buildRegistry(root, { privateTerms: privateTermsFrom(profile) });
   if (!ok) throw new Error("INVALID_SKILLS");
+  const real = prepareOutput(out);
+  const transform = openclaw ? text => text.replace(FULL_PROFILE_POINTER, "") : text => text;
   const packaged = [], skipped = [];
   for (const { dir, entry } of results) {
     if (names.length && !names.includes(entry.name)) continue;
     if (openclaw && OPENCLAW_EXCLUDED_MANAGERS.includes(entry.manager)) { skipped.push(entry.name); continue; }
     if (entry.profil === "oui" && !(profile && existsSync(profile))) { skipped.push(entry.name); continue; }
     const dest = path.join(real, entry.name);
-    cpSync(dir, dest, { recursive: true, filter: src => !/(?:^|\/)(?:__pycache__|\.DS_Store)$/.test(src) });
+    copySkill(dir, dest, transform);
     if (entry.profil === "oui") {
       const text = readFileSync(profile, "utf8");
-      writeFileSync(path.join(dest, "profil.md"), openclaw ? withoutSections(text, OPENCLAW_DROPPED_SECTIONS) : text, { mode: 0o600 });
-      chmodSync(path.join(dest, "profil.md"), 0o600);
+      // "wx" = O_CREAT|O_EXCL: never follows or replaces an existing path.
+      writeFileSync(path.join(dest, "profil.md"), openclaw ? withoutSections(text, OPENCLAW_DROPPED_SECTIONS) : text, { flag: "wx", mode: 0o600 });
+    }
+    if (openclaw && readdirSync(dest).some(f => f.endsWith(".md") && readFileSync(path.join(dest, f), "utf8").includes(".ivan-ai-os/profil.md"))) {
+      throw new Error("FULL_PROFILE_POINTER_REMAINS");
     }
     packaged.push(entry.name);
   }

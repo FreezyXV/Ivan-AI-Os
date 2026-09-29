@@ -1,0 +1,20 @@
+{
+  "skill": "dev-studio",
+  "version": 1,
+  "positifs": [
+    "Ajoute un endpoint /health testé à ce service Node",
+    "Ce bug de calcul de TVA : trouve la cause et corrige-le",
+    "Prépare ce repo pour un MVP Next.js avec tickets"
+  ],
+  "negatifs": [
+    {
+      "demande": "Relis la PR de Codex",
+      "attendu": "revue-croisee"
+    },
+    {
+      "demande": "Propose trois directions artistiques pour la landing page",
+      "attendu": "design-original"
+    }
+  ],
+  "livrable": "Test qui échoue avant le correctif puis passe, fichiers modifiés listés, commande de test fournie, travail sur une branche agent."
+}

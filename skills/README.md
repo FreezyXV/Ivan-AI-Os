@@ -65,10 +65,17 @@ node skills/tools/package.mjs --openclaw --out ~/.ivan-ai-os/skills-openclaw   #
 node skills/tools/package.mjs --openclaw --manager career --out DIR          # one manager's skills only
 ```
 
-Packages are written outside the repository only. Upload a packaged folder to claude.ai, or copy it
+Packages go to a new or empty directory outside any Git checkout (delete the previous build
+first); links in sources or outputs are refused. Upload a packaged folder to claude.ai, or copy it
 into an OpenClaw/Codex skills directory, after review.
 
 ## Runtimes
 
-- Claude Code (this repository): `.claude/skills/` links the system and engineering skills only.
-- Codex / OpenClaw: to be agreed, see `docs/SKILLS-BRAINSTORM-2026-09-29.md`.
+- Claude Code and Codex (this repository): `.claude/skills/` and `.agents/skills/` link only
+  engineering/system skills that need no private profile (checked by the tests).
+- OpenClaw: `--openclaw` packages installed by Codex; the skills watcher refreshes them.
+
+## Trigger evaluations
+
+`skills/<name>/evals.json` (optional, validated): 3 prompts that must trigger the skill, 2 near misses
+with the skill that should win instead, 1 verifiable deliverable. Synthetic cases only.

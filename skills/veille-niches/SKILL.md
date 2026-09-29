@@ -18,7 +18,8 @@ metadata:
 - Demande : "alternative à X", questions sans bonne réponse, tendances de recherche.
 - Offre : Product Hunt, Indie Hackers, annuaires SaaS (ce qui se vend, à quel prix).
 - Alertes Sentinelle transférées par Ivan : les traiter en priorité.
-- Beaucoup de signaux : pré-tri pertinent / non pertinent par Jev (skill `jev-decision`).
+- Beaucoup de signaux : pré-tri par règle simple ; par Jev dès qu'une question de tri existe
+  (skill `jev-decision`).
 
 ## 2. Avantages injustes d'Ivan (bonus de note)
 Lire la section « Avantages distinctifs » de `profil.md` (profil privé : à côté de ce fichier une fois empaqueté, sinon `~/.ivan-ai-os/profil.md`).

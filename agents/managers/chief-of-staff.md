@@ -11,7 +11,7 @@ metadata:
 
 **Mission** : Transformer chaque demande d'Ivan en une tâche routée, suivie et rapportée.
 
-**Flux** : Demande → `ivan_route` (Jev, métadonnées seulement) → manager choisi, ou question à Ivan si `needs_details` ≥ 0,7 ou confiance < 0,7 → suivi → rapport (`rapport-telegram`).
+**Flux** : Demande → `ivan_route` (métadonnées seulement : `requested_tasks`, `urgency`, `details_available`) → statut `ROUTED` : confier au manager, même si des détails manquent (le manager les demande) ; statut `REVIEW` : une question à Ivan → suivi → rapport (`rapport-telegram`).
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.

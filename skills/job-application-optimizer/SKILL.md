@@ -18,9 +18,9 @@ expériences à mobiliser, langues. Absent → demander à Ivan ; ne rien suppos
 que s'il est pertinent pour l'offre.
 
 ## Tri en volume
-Plusieurs offres d'un coup (ex. transfert de la Secrétaire) : pré-trier par Jev (skill
-`jev-decision`, question `noul` « l'offre vise-t-elle un poste BA métier compatible ? ») sur les
-seules métadonnées de l'offre (titre, lieu, contrat, langues), puis analyser en détail le top 3.
+Plusieurs offres d'un coup (ex. transfert de la Secrétaire) : pré-trier sur les seules
+métadonnées (titre, lieu, contrat, langues) par règle simple, puis analyser en détail le top 3.
+Quand la question Jev `offre.compatible` existera (skill `jev-decision`), l'utiliser pour ce tri.
 
 ## Méthode
 1. **Extraire** de l'offre : missions, compétences exigées vs souhaitées, secteur, langues,

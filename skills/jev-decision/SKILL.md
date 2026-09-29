@@ -2,18 +2,30 @@
 name: jev-decision
 description: Utiliser Jev (TypeSafe System One, via le Jev Gateway d'Ivan-AI-Os) pour les décisions bon marché - routage vers un manager, tri oui/non, notation, choix parmi des options, pré-contrôle d'une action - et concevoir de nouvelles questions Jev. Utiliser dès qu'une tâche demande de classer, trier, noter, filtrer ou router en volume, avant d'appeler un modèle premium pour ça, ou quand Ivan dit "passe par Jev", "fais trier", "note ces éléments".
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   famille: system
   manager: system
   risque: lecture
   profil: "non"
   statut: brouillon
-  provenance: "services/jev-gateway (questions.js, provider.js) @0ee3363 ; budget fixé par Ivan le 2026-09-29"
+  provenance: "services/jev-gateway @0ee3363 et contrat PR #4 @2976563 ; budget fixé par Ivan le 2026-09-29"
 ---
 # Jev : décisions rapides et bon marché
 
-Statut brouillon : le contrat HTTP authentifié et le compteur de budget sont en cours chez Codex
-(`services/jev-gateway`). Vérifier `docs/TRUSTED-EVALUATION.md` avant tout appel réel.
+Statut brouillon : contrat de la PR #4 de Codex (`docs/SECURE-GATEWAY.md`), pas encore activé sur
+le Mac. Vérifier ce document avant tout appel réel.
+
+## Points d'entrée (bearer privé, lu par le runtime ; jamais dans une config ni dans Git)
+| Endpoint | Entrée | Usage |
+|---|---|---|
+| `POST /v1/route` | `{"metadata":{"requested_tasks":[…],"urgency":"none","details_available":bool}}` | Choisir le manager |
+| `POST /v1/evaluate-tool` | `{"tool":"write","arguments":{"path":"…"}}` | Avis shadow sur une action concrète |
+| `GET /v1/usage` | — | Budget estimé du mois (`estimate:true`) |
+
+`requested_tasks` : 1 à 8 labels parmi les 19 de `services/jev-gateway/src/routing-metadata.js`
+(`unit_test`, `bug_fix`, `job_search`, `market_research`, `topic_research`, `configure_skill`,
+`other`…) ; `urgency` : `none`, `soon` ou `immediate`. Aucun texte libre. `/v1/classify` (questions enregistrées) n'existe pas encore.
+Le compteur mesure les tokens d'entrée (`jev-1.13.0`) et refuse avant le réseau au plafond de 10 €.
 
 ## Cascade (du moins cher au plus cher)
 1. Code déterministe (regex, règle, liste) si la règle s'écrit en 10 lignes.

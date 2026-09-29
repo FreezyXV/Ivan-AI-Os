@@ -73,7 +73,24 @@ export function validateSkill(dir, { privateTerms = [] } = {}) {
   for (const [, target] of body.matchAll(/\]\((?!https?:|#)([^)\s]+)\)/g)) {
     if (!existsSync(path.join(dir, target))) errors.push(`broken link: ${target}`);
   }
-  return { errors, entry: { name, description: data.description, ...meta } };
+  const evals = checkEvals(dir, name, errors);
+  return { errors, entry: { name, description: data.description, ...meta }, evals };
+}
+
+// Optional trigger evaluations: 3 prompts that must select the skill, 2 near misses
+// naming the skill that should win instead, and one verifiable deliverable criterion.
+function checkEvals(dir, name, errors) {
+  const file = path.join(dir, "evals.json");
+  if (!existsSync(file)) return undefined;
+  let evals;
+  try { evals = JSON.parse(readFileSync(file, "utf8")); } catch { errors.push("evals.json is not valid JSON"); return undefined; }
+  const text = (value, min = 10) => typeof value === "string" && value.trim().length >= min;
+  if (evals.skill !== name || evals.version !== 1) errors.push("evals.json: skill must equal name, version 1");
+  if (!Array.isArray(evals.positifs) || evals.positifs.length !== 3 || !evals.positifs.every(p => text(p))) errors.push("evals.json: exactly 3 positifs");
+  if (!Array.isArray(evals.negatifs) || evals.negatifs.length !== 2 || !evals.negatifs.every(n => text(n?.demande) && text(n?.attendu, 2) && n.attendu !== name)) errors.push("evals.json: exactly 2 negatifs {demande, attendu≠skill}");
+  if (!text(evals.livrable, 20)) errors.push("evals.json: livrable required");
+  for (const [pattern, label] of FORBIDDEN) if (pattern.test(JSON.stringify(evals))) errors.push(`evals.json forbidden content: ${label}`);
+  return evals;
 }
 
 export function skillDirs(root = SKILLS_ROOT) {
@@ -90,6 +107,10 @@ export function privateTermsFrom(profilePath) {
 
 export function buildRegistry(root = SKILLS_ROOT, options = {}) {
   const results = skillDirs(root).map(dir => ({ dir, ...validateSkill(dir, options) }));
+  const names = new Set(results.map(r => r.entry?.name));
+  for (const r of results) for (const n of r.evals?.negatifs ?? []) {
+    if (!names.has(n.attendu)) r.errors.push(`evals.json: unknown expected skill ${n.attendu}`);
+  }
   return { ok: results.every(r => !r.errors.length), results };
 }
 
@@ -98,7 +119,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { ok, results } = buildRegistry(SKILLS_ROOT, { privateTerms: privateTermsFrom(profile) });
   for (const r of results) {
     const e = r.entry ?? {};
-    console.log(`${r.errors.length ? "KO" : "OK"}  ${path.basename(r.dir).padEnd(26)} ${e.manager ?? "?"}/${e.risque ?? "?"} ${e.statut ?? ""}`);
+    console.log(`${r.errors.length ? "KO" : "OK"}  ${path.basename(r.dir).padEnd(26)} ${e.manager ?? "?"}/${e.risque ?? "?"} ${e.statut ?? ""}${r.evals ? "  evals" : ""}`);
     for (const error of r.errors) console.log(`    - ${error}`);
   }
   console.log(`\n${results.length} skill(s)${profile ? ", private profile checked" : ""}.`);

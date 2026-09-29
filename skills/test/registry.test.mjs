@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync, existsSync } from "node:fs";
+import { linkSync, lstatSync, readdirSync, realpathSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -76,14 +76,33 @@ test("packaging injects the private profile outside the repository only", t => {
   skill(root, "personal", { front: `name: personal\ndescription: d\n${meta().replace('profil: "non"', 'profil: "oui"')}`, body: "Lire `profil.md`." });
   const profile = path.join(root, "profil.md");
   writeFileSync(profile, "# synthetic profile\n");
-  assert.deepEqual(packageSkills({ out, root, profile: path.join(root, "absent.md") }).skipped, ["personal"]);
+  assert.deepEqual(packageSkills({ out: `${out}-noprofile`, root, profile: path.join(root, "absent.md") }).skipped, ["personal"]);
   const result = packageSkills({ out, root, profile });
   assert.deepEqual(result.packaged.sort(), ["personal", "plain"]);
   assert.equal(readFileSync(path.join(out, "personal", "profil.md"), "utf8"), "# synthetic profile\n");
   assert.equal(statSync(path.join(out, "personal", "profil.md")).mode & 0o777, 0o600);
   assert.equal(existsSync(path.join(out, "plain", "profil.md")), false);
   assert.throws(() => packageSkills({ out: path.join(SKILLS_ROOT, "tmp-dist"), root, profile }), /OUTPUT_INSIDE_REPOSITORY/);
-  rmSync(path.join(SKILLS_ROOT, "tmp-dist"), { recursive: true, force: true });
+  assert.equal(existsSync(path.join(SKILLS_ROOT, "tmp-dist")), false);
+  assert.throws(() => packageSkills({ out, root, profile }), /OUTPUT_NOT_FRESH/);
+});
+
+test("packaging never follows planted or source links (Codex review finding)", t => {
+  const dir = scratch(t), root = path.join(dir, "source"), out = path.join(dir, "out");
+  skill(root, "personal", { front: `name: personal\ndescription: d\n${meta().replace('profil: "non"', 'profil: "oui"')}`, body: "Lire `profil.md`." });
+  const profile = path.join(dir, "profile"), victim = path.join(dir, "sentinel");
+  writeFileSync(profile, "SYNTHETIC_PRIVATE_PROFILE"); writeFileSync(victim, "ORIGINAL");
+  mkdirSync(path.join(out, "personal"), { recursive: true });
+  symlinkSync(victim, path.join(out, "personal", "profil.md"));
+  assert.throws(() => packageSkills({ root, out, profile, openclaw: true }), /OUTPUT_NOT_FRESH/);
+  symlinkSync(out, path.join(dir, "linked-out"));
+  assert.throws(() => packageSkills({ root, out: path.join(dir, "linked-out"), profile }), /OUTPUT_NOT_FRESH/);
+  assert.equal(readFileSync(victim, "utf8"), "ORIGINAL");
+  symlinkSync(victim, path.join(root, "personal", "extra.md"));
+  assert.throws(() => packageSkills({ root, out: path.join(dir, "fresh"), profile }), /SOURCE_LINK_REFUSED/);
+  rmSync(path.join(root, "personal", "extra.md"));
+  linkSync(victim, path.join(root, "personal", "hard.md"));
+  assert.throws(() => packageSkills({ root, out: path.join(dir, "fresh2"), profile }), /SOURCE_LINK_REFUSED/);
 });
 
 test("Anakalypto batch validator accepts a conforming article and flags defects", t => {
@@ -117,4 +136,44 @@ test("OpenClaw packages drop clients and personal finances", t => {
   const result = packageSkills({ out, root, profile, openclaw: true });
   assert.deepEqual([result.packaged, result.skipped], [["career"], ["money"]]);
   assert.equal(/Acme|DCA/.test(readFileSync(path.join(out, "career", "profil.md"), "utf8")), false);
+});
+
+test("OpenClaw packages of the real registry never point to the full local profile", t => {
+  const dir = scratch(t), profile = path.join(dir, "profil.md");
+  writeFileSync(profile, "## Positionnement\nsynthetic\n");
+  const result = packageSkills({ out: path.join(dir, "out"), profile, openclaw: true });
+  assert.ok(result.packaged.includes("job-application-optimizer"));
+  for (const name of result.packaged) {
+    assert.equal(readFileSync(path.join(dir, "out", name, "SKILL.md"), "utf8").includes(".ivan-ai-os/profil.md"), false, name);
+  }
+  const full = packageSkills({ out: path.join(dir, "full"), profile });
+  assert.ok(readFileSync(path.join(dir, "full", "job-application-optimizer", "SKILL.md"), "utf8").includes(".ivan-ai-os/profil.md"));
+  assert.ok(full.packaged.includes("veille-investissements"));
+});
+
+test("runtime skill links (.claude, .agents) resolve and stay engineering/system only", () => {
+  const repo = path.resolve(SKILLS_ROOT, "..");
+  const entries = new Map(buildRegistry().results.map(r => [r.entry.name, r.entry]));
+  for (const runtime of [".claude/skills", ".agents/skills"]) {
+    const dir = path.join(repo, runtime);
+    const links = readdirSync(dir);
+    assert.ok(links.length >= 6, runtime);
+    for (const name of links) {
+      assert.ok(lstatSync(path.join(dir, name)).isSymbolicLink(), `${runtime}/${name}`);
+      assert.equal(realpathSync(path.join(dir, name)), realpathSync(path.join(SKILLS_ROOT, name)), `${runtime}/${name}`);
+      assert.ok(["engineering", "system"].includes(entries.get(name)?.manager), `${runtime}/${name}`);
+      assert.equal(entries.get(name).profil, "non", `${runtime}/${name} must not need the private profile`);
+    }
+  }
+});
+
+test("priority skills carry trigger evaluations pointing at real skills", t => {
+  const { results } = buildRegistry();
+  const withEvals = results.filter(r => r.evals).map(r => r.entry.name).sort();
+  assert.deepEqual(withEvals, ["dev-studio", "job-application-optimizer", "orchestrateur-ia", "rapport-telegram", "revue-croisee"]);
+  const root = scratch(t);
+  const dir = skill(root, "evald");
+  writeFileSync(path.join(dir, "evals.json"), JSON.stringify({ skill: "evald", version: 1, positifs: ["only one positive prompt"], negatifs: [{ demande: "a near miss request", attendu: "evald" }], livrable: "" }));
+  const { errors } = validateSkill(dir);
+  for (const expected of [/3 positifs/, /2 negatifs/, /livrable required/]) assert.ok(errors.some(e => expected.test(e)), `${expected}: ${errors}`);
 });

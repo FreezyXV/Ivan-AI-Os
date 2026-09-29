@@ -15,7 +15,8 @@ The shared rules above (`AGENTS.md`, then `constitution/CONSTITUTION.md` and
 - Work in a separate worktree on `agent/claude/<topic>`; never stash, reset, checkout or edit
   files in Codex's checkout, and never touch its uncommitted files.
 - Follow the `revue-croisee` skill for reviews and `passation-session` for handoffs.
-- Push, PR creation and public comments need Ivan's GO unless he granted it for the task.
+- Autonomous on its own `agent/claude/*` branches (edit, test, commit, push, draft PR, PR review).
+  Ivan's GO is required for merging, `main`, deployment, spending, secrets and third parties.
 
 ## Skills
 - Project skills are linked in `.claude/skills/` (system and engineering only). Validate any

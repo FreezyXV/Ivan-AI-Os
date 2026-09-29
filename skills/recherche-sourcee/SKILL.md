@@ -18,8 +18,8 @@ metadata:
 2. **Chercher par sous-question** : requêtes courtes (1–6 mots), une recherche distincte par
    sous-question. Sources primaires d'abord (site officiel, régulateur, rapport annuel,
    documentation), presse sérieuse ensuite, forums en dernier.
-3. **Trier sans lire** quand les résultats sont nombreux : pertinence oui/non par Jev (skill
-   `jev-decision`) ou par règle simple, avant d'ouvrir les pages.
+3. **Trier sans lire** quand les résultats sont nombreux : pertinence par règle simple (source,
+   date, titre), ou par Jev dès qu'une question de tri existe (skill `jev-decision`).
 4. **Lire au lieu de survoler** : ouvrir (fetch) les 2–3 pages clés plutôt que se fier aux extraits.
 5. **Vérifier les points critiques** : chiffres, dates, prix, lois → 2 sources concordantes, sinon
    le signaler.

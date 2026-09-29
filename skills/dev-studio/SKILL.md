@@ -2,7 +2,7 @@
 name: dev-studio
 description: Méthode de développement rapide, testée et économe pour Ivan (Next.js/TypeScript/Prisma par défaut, Node pur pour les services) - cadrage, architecture, découpage en tickets, preuve avant correctif, tests minimaux utiles, CI gratuite, branches par agent. Utiliser pour toute tâche de code : nouveau projet, MVP, fonctionnalité, bug, refactor, intégration API, "prépare ce repo", tests, même si Ivan ne demande pas de méthode.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   famille: engineering
   manager: engineering
   risque: ecriture-depot
@@ -15,7 +15,7 @@ metadata:
 ## Selon la tâche
 | Tâche | Chemin |
 |---|---|
-| Triviale (< 20 lignes, 1 fichier) | diff direct → GO d'Ivan → appliquer |
+| Triviale (< 20 lignes, 1 fichier) | appliquer sur la branche d'agent → tests → résumé |
 | Nouvelle fonctionnalité / projet | Cadrage → Architecture → GO → tickets |
 | Bug | Reproduire + prouver la cause (log, test qui échoue) AVANT tout correctif |
 | Travail d'un autre agent à relire | skill `revue-croisee` |
@@ -45,8 +45,10 @@ metadata:
 - PR relue par l'autre agent avant fusion ; rien sur `main` sans GO d'Ivan.
 
 ## Règles d'Ivan
-- Écriture, commit, push, migration, déploiement : présenter le diff, attendre "GO", journaliser,
-  sauf autonomie déclarée dans le `CLAUDE.md` du projet.
+- **Autonome sans GO** (confirmé par Ivan le 2026-09-29) : éditer, tester, commiter et pousser sur
+  sa propre branche `agent/<nom>/<sujet>`, ouvrir une PR en brouillon.
+- **GO d'Ivan requis** : fusion ou push sur `main`, déploiement, migration destructive, dépense,
+  secret, contact d'un tiers, modification de `AGENTS.md` ou de la constitution.
 - Pas de refactor hors périmètre.
 - Réponses : fichiers modifiés + commande de test ; pas de code recopié inutilement dans le chat.
 - Pour les gros chantiers : Claude Code ou Codex (agents, hooks, worktrees) plutôt que le chat.
