@@ -8,7 +8,7 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { classify, JevError } from "../../jev-decision/scripts/classify.mjs";
+import { classify, pool } from "../../jev-decision/scripts/classify.mjs";
 
 export const DOMAINES = JSON.parse(readFileSync(new URL("../domaines.json", import.meta.url), "utf8"));
 // Under-covered domains first: deficit = target articles per domain - current articles.
@@ -55,27 +55,22 @@ export async function fetchDays({ langue = "fr", jours = 3, today = new Date(), 
 // Jev decides twice: is it captivating, and which of Anakalypto's 19 domains does it belong to.
 // A topic without both Jev decisions is never "retenu". Retained topics are ordered by the
 // deficit of their domain, then by score.
-export async function gate(candidates, { classifyImpl = classify, langue = "fr", seuil = 0.6 } = {}) {
-  const out = [];
+export async function gate(candidates, { classifyImpl = classify, langue = "fr", seuil = 0.6, concurrency = 4 } = {}) {
   const slugs = DOMAINES.domaines.map(d => d.slug);
-  for (const c of candidates) {
-    try {
-      // Only defined, public fields reach Jev (feed items have no pageview counts).
-      const input = Object.fromEntries(Object.entries({ titre: c.titre, langue: c.langue ?? langue, vues: c.vues, jours: c.jours }).filter(([, v]) => v !== undefined));
-      const r = await classifyImpl("sujet.captivant", input);
-      const entry = { ...c, jev: { decision: r.decision, confidence: r.confidence, request_id: r.request_id }, statut: r.decision >= seuil ? "retenu" : "ecarte_par_jev" };
-      if (entry.statut === "retenu") {
-        const d = await classifyImpl("sujet.domaine", { titre: c.titre, langue: c.langue ?? langue, domaines: slugs.join(",") });
-        if (!slugs.includes(d.decision)) entry.statut = "ecarte_hors_domaines";
-        else Object.assign(entry, { domaine: d.decision, priorite: deficit(d.decision), jev_domaine: { confidence: d.confidence, request_id: d.request_id } });
-      }
-      out.push(entry);
-    } catch (error) {
-      const code = error instanceof JevError ? error.message : "JEV_UNAVAILABLE";
-      // Fail closed for the whole batch once Jev is unavailable: no silent fallback selection.
-      return [...out, ...candidates.slice(out.length).map(x => ({ ...x, statut: "en_attente_jev", jev_erreur: code }))];
+  // Parallel, bounded; a failed Jev call leaves that topic "en_attente_jev" (never selected).
+  const results = await pool(candidates, async c => {
+    // Only defined, public fields reach Jev (feed items have no pageview counts).
+    const input = Object.fromEntries(Object.entries({ titre: c.titre, langue: c.langue ?? langue, vues: c.vues, jours: c.jours }).filter(([, v]) => v !== undefined));
+    const r = await classifyImpl("sujet.captivant", input);
+    const entry = { ...c, jev: { decision: r.decision, confidence: r.confidence, request_id: r.request_id }, statut: r.decision >= seuil ? "retenu" : "ecarte_par_jev" };
+    if (entry.statut === "retenu") {
+      const d = await classifyImpl("sujet.domaine", { titre: c.titre, langue: c.langue ?? langue, domaines: slugs.join(",") });
+      if (!slugs.includes(d.decision)) entry.statut = "ecarte_hors_domaines";
+      else Object.assign(entry, { domaine: d.decision, priorite: deficit(d.decision), jev_domaine: { confidence: d.confidence, request_id: d.request_id } });
     }
-  }
+    return entry;
+  }, concurrency);
+  const out = results.map((r, i) => r.ok ? r.value : { ...candidates[i], statut: "en_attente_jev", jev_erreur: r.code });
   return out.sort((a, b) => (b.statut === "retenu") - (a.statut === "retenu") || (b.priorite ?? 0) - (a.priorite ?? 0) || (b.score ?? 0) - (a.score ?? 0));
 }
 

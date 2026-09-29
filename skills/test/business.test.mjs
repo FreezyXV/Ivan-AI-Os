@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { addSignals, canonicalUrl, privateDir, report, recordOpportunity, scoreOpportunity, subjects } from "../business-engine/scripts/signals.mjs";
+import { addSignals, canonicalUrl, privateDir, report, recordOpportunity, scoreOpportunity, subjects, triage } from "../business-engine/scripts/signals.mjs";
 
 function dir(t) {
   const root = mkdtempSync(path.join(tmpdir(), "ivan-business-"));
@@ -66,4 +66,19 @@ test("report keeps the latest score per subject, splits Cash/Venture and omits d
   assert.doesNotMatch(md, /### abandon/);
   assert.match(md, /3 sujet\(s\) notés, 1 abandonné/);
   assert.equal(readFileSync(path.join(d, "opportunites.jsonl"), "utf8").trim().split("\n").length, 4);
+});
+
+test("Jev triage: demand signals only, offers counted apart, hesitation band kept and flagged", async t => {
+  const d = dir(t);
+  addSignals(d, [signal("https://a.org/1", { titre: "t1" }), signal("https://b.org/2", { titre: "spam" }), signal("https://c.org/3", { titre: "t3" }),
+    signal("https://e.org/5", { titre: "hesite" }), signal("https://f.org/6", { titre: "offre", type: "offre", preuve_paiement: true })]);
+  let calls = 0, down = true;
+  const scores = { t1: 0.9, spam: 0.1, hesite: 0.45, t3: 0.8 };
+  const fake = async (q, input) => { calls++; if (input.titre === "t3" && down) throw new Error("x"); return { decision: scores[input.titre], confidence: 0.8, request_id: `r${calls}` }; };
+  assert.deepEqual(await triage(d, { classifyImpl: fake }), { tries: 3, en_attente_jev: 1, deja_tries: 0 }, "the offer is never sent to Jev");
+  const [g] = subjects(d, 1);
+  assert.deepEqual([g.signaux, g.offres, g.incertains, g.non_tries, g.preuve_paiement], [3, 1, 1, 1, true], "spam dropped; t1 + hesitant + untriaged t3 kept");
+  down = false;
+  assert.deepEqual(await triage(d, { classifyImpl: fake }), { tries: 1, en_attente_jev: 0, deja_tries: 3 });
+  assert.equal(calls, 5, "triaged signals are never sent twice");
 });
