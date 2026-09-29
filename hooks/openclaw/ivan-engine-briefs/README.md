@@ -25,4 +25,8 @@ seconds. `scripts/switch-openclaw-config.mjs` also passed an end-to-end Mac
 switch using a semantically identical private config: native validation, exact
 private backup, launchd restart, authenticated health, and both tools still
 `READY`. Future config changes use this path, which rolls back if health fails.
+Separate non-delivered agent turns for `ivan-business` and `ivan-finance`
+completed successfully; each execution's `toolSummary` named its own brief
+tool. These tests exercised model-side discovery without sending Telegram
+messages.
 Snapshot collection and scheduling remain separate work.

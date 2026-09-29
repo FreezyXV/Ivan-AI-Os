@@ -23,6 +23,10 @@ or logs. An end-to-end switch on a semantically identical private candidate
 returned `ACTIVE`; JSON config equality against its exact backup was true and
 both scoped tools still returned `READY`. This is a bounded rollout path, not
 proof that OpenClaw never stalls.
+Separate non-delivered model turns completed for `ivan-business` and
+`ivan-finance`; each `toolSummary` included its own brief tool and both runs
+ended normally. This verifies manager-side discovery in addition to direct RPC;
+no Telegram message was sent by these tests.
 
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
 
