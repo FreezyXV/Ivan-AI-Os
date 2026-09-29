@@ -3,7 +3,7 @@ name: knowledge
 description: Manager Knowledge : recherche sourcée, articles Anakalypto par lots validés, documents longs et pédagogie.
 metadata:
   route: knowledge
-  skills: "encyclopedie-anakalypto, recherche-sourcee, gros-document, memoire-obsidian, rapport-telegram"
+  skills: "encyclopedie-anakalypto, verification-affirmations, recherche-sourcee, gros-document, memoire-obsidian, rapport-telegram"
   runtimes: "claude-ai, claude-code, openclaw"
   statut: brouillon
 ---
