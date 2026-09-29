@@ -1,0 +1,16 @@
+{
+  "id": "ivan-ai-os-engine-briefs",
+  "name": "Ivan AI OS Engine Briefs",
+  "description": "Bounded local read-only access to prepared public Business and Finance results",
+  "contracts": { "tools": ["ivan_business_brief", "ivan_finance_brief"] },
+  "activation": { "onStartup": true },
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "businessDir": { "type": "string", "minLength": 1 },
+      "financeDir": { "type": "string", "minLength": 1 }
+    },
+    "required": ["businessDir", "financeDir"],
+    "additionalProperties": false
+  }
+}
