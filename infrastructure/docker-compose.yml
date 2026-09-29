@@ -3,20 +3,18 @@ services:
     image: node:22-alpine
     working_dir: /app
     command: ["node", "src/server.js"]
-    env_file:
-      - ../.env
     environment:
       HOST: "0.0.0.0" # Within container only; host port stays loopback.
+      PORT: "4310"
+      JEV_PROVIDER: ${JEV_PROVIDER:-mock}
+      TYPESAFE_API_KEY: ${TYPESAFE_API_KEY:-}
+      JEV_MODEL: ${JEV_MODEL:-jev-latest}
+      JEV_TIMEOUT_MS: ${JEV_TIMEOUT_MS:-8000}
     volumes:
       - ../services/jev-gateway:/app:ro
     ports:
       - "127.0.0.1:4310:4310"
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
 
   postgres:
     image: pgvector/pgvector:pg16

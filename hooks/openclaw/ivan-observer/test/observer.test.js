@@ -113,12 +113,31 @@ test("stopping records incomplete calls and prevents late evaluation evidence", 
   assert.equal(events[0].phase, "incomplete");
 });
 
-test("plugin is inactive by default and missing credentials prevent hook registration", () => {
+test("invalid observer configuration does not abort registration or register hooks", () => {
   const registered = [];
-  const api = { on: (...args) => registered.push(args), pluginConfig: {} };
+  const warnings = [];
+  const api = { on: (...args) => registered.push(args), logger: { warn: code => warnings.push(code) }, pluginConfig: {} };
   plugin.register(api);
   assert.equal(registered.length, 0);
   // A malformed URL fails independently of any credential in the environment.
-  assert.throws(() => plugin.register({ ...api, pluginConfig: { enabled: true, gatewayUrl: "not-a-url" } }), /INVALID_OBSERVER_CONFIG/);
+  assert.doesNotThrow(() => plugin.register({ ...api, pluginConfig: { enabled: true, gatewayUrl: "not-a-url" } }));
+  assert.deepEqual(warnings, ["OBSERVER_DISABLED_INVALID_CONFIG"]);
   assert.equal(registered.length, 0);
+});
+
+test("enabled observer without a token warns and lets the host continue", () => {
+  const original = process.env.IVAN_DECISION_TOKEN;
+  const registered = [], warnings = [];
+  try {
+    delete process.env.IVAN_DECISION_TOKEN;
+    assert.doesNotThrow(() => plugin.register({
+      pluginConfig: { enabled: true, agentId: "synthetic", tools: ["read"], gatewayUrl: "http://127.0.0.1:4310", auditPath: "/tmp/unused-observer-fixture.jsonl" },
+      on: (...args) => registered.push(args), logger: { warn: code => warnings.push(code) }
+    }));
+    assert.deepEqual(registered, []);
+    assert.deepEqual(warnings, ["OBSERVER_DISABLED_INVALID_CONFIG"]);
+  } finally {
+    if (original === undefined) delete process.env.IVAN_DECISION_TOKEN;
+    else process.env.IVAN_DECISION_TOKEN = original;
+  }
 });

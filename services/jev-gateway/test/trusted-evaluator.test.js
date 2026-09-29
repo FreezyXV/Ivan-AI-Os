@@ -102,6 +102,39 @@ test("missing sensitive paths are denied before resolution", async t => {
   assert.equal(requests.length, 0);
 });
 
+test("sensitive filenames with extensions are denied even when absent or reached through a symlink", async t => {
+  const { evaluator, workspace, requests } = fixture(t);
+  const files = ["credentials.json", "secrets.yaml", "secret.production.yml", "credentials.backup.json"];
+  for (const file of files) {
+    for (const exists of [false, true]) {
+      if (exists) writeFileSync(path.join(workspace, file), sensitive);
+      for (const tool of ["read", "write", "edit"]) {
+        const result = await evaluator.evaluate({ tool, arguments: { path: file } });
+        assert.equal(result.body.decision, "DENY", file);
+        assert.equal(result.body.reason_code, "SENSITIVE_PATH", file);
+      }
+    }
+  }
+  symlinkSync(path.join(workspace, "credentials.json"), path.join(workspace, "ordinary.json"));
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: "ordinary.json" } })).body.decision, "DENY");
+  assert.equal(requests.length, 0);
+});
+
+test("new protected files require approval, including destinations through an existing directory symlink", async t => {
+  const { evaluator, workspace, requests } = fixture(t);
+  mkdirSync(path.join(workspace, "hooks"));
+  symlinkSync(path.join(workspace, "hooks"), path.join(workspace, "ordinary-directory"));
+  for (const file of ["hooks/new.js", "ordinary-directory/new.js", ".github/workflows/new.yml", ".claude/settings.json", "CLAUDE.md", "constitution/new.md"]) {
+    const result = await evaluator.evaluate({ tool: "write", arguments: { path: file, content: sensitive } });
+    assert.equal(result.body.decision, "REQUIRE_HUMAN", file);
+    assert.equal(result.body.reason_code, "PROTECTED_PROJECT_METADATA", file);
+  }
+  const ordinary = await evaluator.evaluate({ tool: "write", arguments: { path: "ordinary/new.md" } });
+  assert.equal(ordinary.body.decision, "REVIEW");
+  assert.equal(ordinary.body.reason_code, "PATH_NOT_RESOLVED");
+  assert.equal(requests.length, 0);
+});
+
 test("provider only receives trusted metadata and local policies; ALLOW never authorizes", async t => {
   const { evaluator, requests, journal } = fixture(t);
   const result = await evaluator.evaluate({ tool: "read", arguments: { path: "note.md", content: sensitive, intent: sensitive } });
@@ -166,4 +199,24 @@ test("audit exhaustion, weak permissions and symlinks cannot produce successful 
   const writer = createAuditWriter(linked);
   assert.throws(() => writer({ test: true }));
   assert.deepEqual(readFileSync(journal), prior);
+});
+
+
+test("known source templates and the kernel secret policy are readable without granting broad exceptions", async t => {
+  const { evaluator, workspace } = fixture(t);
+  mkdirSync(path.join(workspace, "policies/kernel"), { recursive: true });
+  mkdirSync(path.join(workspace, "src"));
+  for (const file of [".env.example", "policies/kernel/secrets.yaml", "src/secret-scanner.js"]) {
+    writeFileSync(path.join(workspace, file), "public synthetic source");
+    const result = await evaluator.evaluate({ tool: "read", arguments: { path: file } });
+    assert.equal(result.body.reason_code, "ENFORCEMENT_NOT_ENABLED", file);
+  }
+  assert.equal((await evaluator.evaluate({ tool: "write", arguments: { path: "policies/kernel/secrets.yaml" } })).body.decision, "REQUIRE_HUMAN");
+  for (const file of ["policies/credentials.json", "secrets.example.yaml", ".env.sample", "decision-token"]) {
+    assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: file } })).body.decision, "DENY", file);
+  }
+  // An exempt template name must not hide a symlink to an actual credential.
+  rmSync(path.join(workspace, ".env.example"));
+  symlinkSync(path.join(workspace, ".env"), path.join(workspace, ".env.example"));
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: ".env.example" } })).body.decision, "DENY");
 });

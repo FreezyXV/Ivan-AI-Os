@@ -19,7 +19,12 @@ export default {
         audit: createAuditWriter(config.auditPath),
         warn: code => api.logger.warn(code)
       });
-    } catch { throw new Error("INVALID_OBSERVER_CONFIG"); }
+    } catch {
+      // Optional telemetry must not make the host unavailable. No hooks are
+      // registered on failure; this warning does not imply policy enforcement.
+      try { api.logger.warn("OBSERVER_DISABLED_INVALID_CONFIG"); } catch {}
+      return;
+    }
     const options = { matcher: config.tools, timeoutMs: timeoutMs + 2000 };
     api.on("before_tool_call", observer.before, options);
     api.on("after_tool_call", observer.after, options);

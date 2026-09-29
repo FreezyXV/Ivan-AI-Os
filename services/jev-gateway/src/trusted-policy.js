@@ -76,24 +76,57 @@ export function classifyToolCall(call, workspaceRoot) {
   // Check the requested path before resolution so a missing secret file is
   // still reported as sensitive rather than PATH_NOT_RESOLVED.
   const denySensitive = { action, hardDecision: "DENY", reason: "SENSITIVE_PATH" };
-  if (sensitivePath(resolved)) return denySensitive;
-  let canonical;
+  if (sensitivePath(resolved, root)) return denySensitive;
+  let canonical, exists = true;
   try { canonical = realpathSync(resolved); }
-  catch { return { action, reason: "PATH_NOT_RESOLVED" }; }
-  if (sensitivePath(canonical)) return denySensitive;
+  catch (error) {
+    exists = false;
+    // For new files, resolve the nearest existing ancestor as well. This
+    // catches an ordinary directory alias whose destination is protected.
+    canonical = error.code === "ENOENT" ? resolveMissingDestination(resolved) : null;
+    if (!canonical) {
+      if (tool !== "read" && protectedPath(resolved)) return protectedWrite(action);
+      return { action, reason: "PATH_NOT_RESOLVED" };
+    }
+  }
+  if (sensitivePath(canonical, root)) return denySensitive;
   const paths = [resolved, canonical];
   if (paths.some(p => outside(root, p))) return { action, reason: "OUTSIDE_WORKSPACE" };
-  if (tool !== "read" && paths.some(p => /(?:^|\/)(?:policies|constitution|hooks|\.git|\.github|\.agents|\.codex|\.claude)(?:\/|$)|(?:^|\/)(?:AGENTS|CLAUDE)\.md$/i.test(p))) {
-    return { action: { ...action, policy_mutation: true }, reason: "PROTECTED_PROJECT_METADATA" };
-  }
+  if (tool !== "read" && paths.some(protectedPath)) return protectedWrite(action);
+  if (!exists) return { action, reason: "PATH_NOT_RESOLVED" };
   return {
     action: { ...action, intent: tool === "read" ? "Read an existing ordinary project file" : "Modify an existing ordinary project file", risk: tool === "read" ? "low" : "medium" },
     consultProvider: true, reason: "ORDINARY_PROJECT_FILE"
   };
 }
 
-function sensitivePath(p) {
-  return /(?:^|\/)(?:\.env(?:\.[^/]*)?|secrets?|credentials?|auth-profiles\.json|openclaw\.json|\.ssh|\.aws|\.gnupg)(?:\/|$)|\.(?:pem|key)$/i.test(p);
+function sensitivePath(p, root) {
+  // Two exact, public project sources may be read; do not exempt whole
+  // policy directories or arbitrary *.example files. Canonical targets are
+  // checked independently, so a template symlink cannot conceal a secret.
+  const relative = path.relative(root, p);
+  const publicSource = relative === ".env.example" || relative === path.join("policies", "kernel", "secrets.yaml");
+  const parts = p.split(path.sep);
+  return parts.some((part, index) => {
+    if (publicSource && index === parts.length - 1) return false;
+    return /^(?:\.env(?:\..*)?|secrets?|credentials?|(?:secrets?|credentials?)(?:[._-][^/.]+)*\.(?:json|ya?ml|toml|ini|txt|conf|bak)(?:\.(?:bak|old|backup))?|decision-token|auth-profiles\.json|openclaw\.json|\.ssh|\.aws|\.gnupg)$/i.test(part);
+  }) || /\.(?:pem|key)(?:\.(?:bak|old|backup))?$/i.test(p);
+}
+function protectedPath(p) {
+  return /(?:^|\/)(?:policies|constitution|hooks|\.git|\.github|\.agents|\.codex|\.claude)(?:\/|$)|(?:^|\/)(?:AGENTS|CLAUDE)\.md$/i.test(p);
+}
+function protectedWrite(action) {
+  return { action: { ...action, policy_mutation: true }, reason: "PROTECTED_PROJECT_METADATA" };
+}
+function resolveMissingDestination(target) {
+  let parent = path.dirname(target);
+  for (;;) {
+    try { return path.resolve(realpathSync(parent), path.relative(parent, target)); }
+    catch (error) { if (error.code !== "ENOENT") return null; }
+    const next = path.dirname(parent);
+    if (next === parent) return null;
+    parent = next;
+  }
 }
 function outside(root, target) {
   const relative = path.relative(root, target);
