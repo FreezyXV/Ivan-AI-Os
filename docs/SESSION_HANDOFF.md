@@ -1,5 +1,17 @@
 # Session handoff — 2026-09-29
 
+## 2026-09-29 — Codex — lecture mémoire préparée après activation
+
+Branche agent/codex/obsidian-read-tool ; dépend de la livraison d'activation PR #13 @0b6d1c2.
+Lire hooks/openclaw/ivan-memory/README.md : deux outils optionnels, system/knowledge seulement.
+9/9 tests ; chargeur natif 2026.9.5 vérifié en état isolé avec coffre synthétique, aucun modèle.
+Lecture locale de la décision de fusion désignée : valide/interne, une source, corps non affiché.
+Le coffre n'a pas été modifié. Notes personnelles hors Ivan AI OS non explorées ; aucun appel Jev.
+Plugin mémoire non activé, filesystem/exec inchangés. Sources de Claude et fichiers partagés intacts.
+PR #13 : six jobs CI verts ; Jev 4311 et sept rôles actifs, parcours Engineering vérifié.
+Claude informé pour consigne de reprise, hook shadow et deux calibrations ; pas de duplication.
+Prochaine action : revue Claude du plugin mémoire, puis proposition privée épinglée et pilote ciblé.
+
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
 
 Lire docs/ACTIVATION-2026-09-29.md : ce bloc remplace les états inactifs plus anciens ci-dessous.

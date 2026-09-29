@@ -42,6 +42,7 @@
 ## Phase 3 — Memory
 - [x] Locate chosen vault `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`; scoped Claude helper merged in #8
 - [ ] Verify sync permissions and add a bounded OpenClaw read tool; memory skill excluded until then
+- [x] Prepare bounded read-only memory plugin for System/Knowledge: 9 tests, native isolated loader and one designated validated note verified; not activated (see hooks/openclaw/ivan-memory/README.md)
 - [ ] Markdown ingestion, retrieval and provenance
 - [ ] Embeddings + pgvector only after basic retrieval needs are measured
 - [ ] Controlled Dream consolidation
