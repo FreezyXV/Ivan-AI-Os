@@ -83,6 +83,8 @@ test("DCA: drift, buy-only split that never sells, and the contribution needed t
   assert.throws(() => validateAllocation({ ...allocation, lignes: allocation.lignes.slice(1) }), /SOMME_REEL_PCT/);
   assert.throws(() => split(allocation, 0), /MONTANT_INVALID/);
   assert.equal(split(allocation).reduce((s, l) => s + l.achat_eur, 0).toFixed(2), "1000.00", "monthly contribution by default");
-  assert.throws(() => split({ ...allocation, valeur_portefeuille_eur: null }), /VALEUR_PORTEFEUILLE_REQUIRED/);
+  const byTarget = split({ ...allocation, valeur_portefeuille_eur: null });
+  assert.deepEqual(byTarget.map(l => l.achat_eur), [450, 200, 150, 100, 100], "no value: split by target weights");
+  assert.throws(() => split(allocation, 1000, -5), /VALEUR_INVALID/);
   assert.equal(toTarget({ ...allocation, valeur_portefeuille_eur: null }), null);
 });
