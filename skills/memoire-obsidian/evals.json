@@ -1,0 +1,20 @@
+{
+  "skill": "memoire-obsidian",
+  "version": 1,
+  "positifs": [
+    "Note ça dans Obsidian",
+    "Qu'est-ce qu'on sait déjà sur la calibration de Jev ?",
+    "Retiens cette décision"
+  ],
+  "negatifs": [
+    {
+      "demande": "Fais le ménage dans la mémoire",
+      "attendu": "system-steward"
+    },
+    {
+      "demande": "Rédige un rapport long",
+      "attendu": "gros-document"
+    }
+  ],
+  "livrable": "Note écrite uniquement sous Ivan AI OS/, avec sources, sensibilité et statut ; aucun doublon ; notes personnelles intactes."
+}

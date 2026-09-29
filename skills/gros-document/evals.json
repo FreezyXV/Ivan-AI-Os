@@ -1,0 +1,20 @@
+{
+  "skill": "gros-document",
+  "version": 1,
+  "positifs": [
+    "Rédige le cahier des charges du projet",
+    "Écris un rapport d'audit de 10 pages",
+    "Prépare une proposition commerciale complète"
+  ],
+  "negatifs": [
+    {
+      "demande": "Résume cette page en 5 lignes",
+      "attendu": "recherche-sourcee"
+    },
+    {
+      "demande": "Prévient Ivan sur Telegram",
+      "attendu": "rapport-telegram"
+    }
+  ],
+  "livrable": "Plan validé par Ivan avant rédaction, sections rédigées une par une, checklist de relecture passée, aucune affirmation sans source."
+}

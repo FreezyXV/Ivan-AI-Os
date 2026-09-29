@@ -1,0 +1,20 @@
+{
+  "skill": "passation-session",
+  "version": 1,
+  "positifs": [
+    "Fais le point, on reprend demain",
+    "Passe le relais à Codex",
+    "On reprend : où en était-on ?"
+  ],
+  "negatifs": [
+    {
+      "demande": "Relis la PR de Codex",
+      "attendu": "revue-croisee"
+    },
+    {
+      "demande": "Envoie le résumé sur Telegram",
+      "attendu": "rapport-telegram"
+    }
+  ],
+  "livrable": "Bloc de passation de 30 lignes au plus : état vérifié, preuves, décisions, points ouverts, une prochaine action exécutable."
+}
