@@ -2,7 +2,7 @@
 name: memoire-obsidian
 description: Mémoire durable des agents dans le coffre Obsidian d'Ivan - retrouver ce qui est déjà su avant de chercher, enregistrer un fait sourcé, une décision ou un compte rendu, sans jamais modifier les notes personnelles d'Ivan ni dupliquer. Utiliser dès qu'un résultat mérite d'être retenu, qu'Ivan dit "note ça", "retiens", "mets dans Obsidian", "qu'est-ce qu'on sait déjà sur", ou en fin de tâche de recherche, de veille ou de décision.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   famille: memory
   manager: system
   risque: ecriture-depot
@@ -24,7 +24,9 @@ Coffre : `$IVAN_OBSIDIAN_VAULT` ou `obsidian_vault` dans `~/.ivan-ai-os/config.j
   `lister --max interne`.
 - Connaissances et décisions arrivent en `inbox/` avec `statut: propose` ; Ivan valide. Un agent ne
   modifie jamais une note `valide` : il propose une nouvelle note qui la cite.
-- Aucun identifiant, jeton ni clé (refusé par l'outil).
+- Aucun identifiant, jeton ni clé. L'outil refuse les formes courantes (clés API, jetons GitHub,
+  Telegram, Slack, en-têtes `Bearer`, JWT, clés privées) : filet défensif, pas une garantie.
+- Nouvelles notes en 0600, nouveaux dossiers en 0700 ; le reste du coffre n'est pas modifié.
 - **OpenClaw** : pas d'accès tant qu'un outil lecture seule dédié n'existe pas (l'outil exige
   `exec` et un chemin hors workspace, tous deux refusés aux managers). Ne pas contourner.
 
@@ -47,5 +49,6 @@ Types : `connaissance` (fait vérifiable), `decision` (choix + justification + a
 une note `decision` proposée qui les cite ; jamais de fusion silencieuse d'une note validée.
 
 ## Erreurs utiles
-`VAULT_NOT_CONFIGURED` : définir le chemin. `VAULT_ACCESS_DENIED_BY_MACOS` : le coffre est dans un
-dossier protégé (Documents, Bureau) → le déplacer (ex. `~/Obsidian/`) ou accorder l'accès au terminal.
+`VAULT_NOT_CONFIGURED` : définir le chemin. `VAULT_ACCESS_DENIED_BY_MACOS` : macOS refuse l'accès à
+ce processus (constaté pour le terminal de Claude Code sur `~/Documents`) → déplacer le coffre hors
+des dossiers protégés ou accorder l'accès à ce processus précis.

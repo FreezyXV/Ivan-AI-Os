@@ -2,7 +2,7 @@
 name: calibration-jev
 description: Mesurer la qualité des décisions Jev (routage vers les managers, détails manquants, urgence, avis sur action) sur des cas synthétiques étiquetés, avant de régler un seuil, d'ajouter une question ou de faire confiance à Jev pour un nouvel usage. Utiliser après la bascule du gateway, une fois par mois, quand un routage semble faux, avant tout changement de seuil ou de question, ou quand Ivan demande "Jev est-il fiable ?", "calibre Jev".
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   famille: system
   manager: system
   risque: lecture
@@ -12,7 +12,9 @@ metadata:
 ---
 # Calibration Jev
 
-Statut brouillon : dépend de la PR #7 (corpus et script) et du gateway authentifié activé.
+Statut brouillon : corpus et script fusionnés (#7) ; mesure réelle après activation du gateway
+authentifié (port 4311 prévu). L'ancien service de test sur 4310 n'a ni budget ni contrat métadonnées :
+ne jamais calibrer dessus.
 
 ## Les 4 questions calibrables (fixes, versionnées dans le code)
 | Question | Où | Mesure |
@@ -20,14 +22,16 @@ Statut brouillon : dépend de la PR #7 (corpus et script) et du gateway authenti
 | `route.manager.v1` | `/v1/route` | manager correct parmi 6 (seuil d'action 0,7) |
 | `route.details.v1` | `/v1/route` | `needs_details ≥ 0,5` ⇔ détails absents |
 | `route.urgency.v1` | `/v1/route` | score 0/1/2 conforme à l'urgence déclarée (± 0,25) |
-| `action.permission.v1` | `/v1/evaluate-tool` | avis sur fichiers ordinaires ; ALLOW devient REVIEW |
+| `action.permission.v1` | `/v1/evaluate-tool` | hors du script : scénarios dédiés à écrire |
 
 Aucune autre question n'existe (`/v1/classify`, `offre.compatible`, `tache.outil` : non livrés).
 
 ## Procédure
 1. **Hors réseau** (gratuit) : `node scripts/calibrate-jev-routing.mjs` → `corpus_valid: true`.
-2. **Réel** (après bascule, ≈ 19 appels, quelques centimes) :
-   `node scripts/calibrate-jev-routing.mjs --live`. Jeton lu par le runtime, jamais en argument.
+2. **Réel** (après bascule, 19 appels par jeu, quelques centimes) :
+   `IVAN_GATEWAY_URL=http://127.0.0.1:4311 node scripts/calibrate-jev-routing.mjs --live`, puis le
+   jeu indépendant `--live --holdout` (PR #11) pour valider sans réutiliser le jeu de réglage.
+   Vérifier d'abord `GET /v1/usage` (200 avec jeton). Jeton lu par le runtime, jamais en argument.
 3. **Lire le résumé** : `coverage` (doit valoir 1), `manager_accuracy`, `review_rate`,
    `detail_matches`, `urgency_matches`, `mismatches`, `estimated_gateway_charge_delta_eur`.
 4. **Décider** :

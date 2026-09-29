@@ -18,8 +18,8 @@ strings never leave Claude Code. Reads are not evaluated, to spare the 10 EUR/mo
 (the gateway only consults Jev for ordinary files, never for shell commands or protected paths).
 
 Token: `readDecisionToken()` (same private file as the gateway and OpenClaw plugin); nothing is
-stored in settings or Git. Gateway: `IVAN_GATEWAY_URL`, loopback only, default
-`http://127.0.0.1:4310`. Timeout: `IVAN_CLAUDE_HOOK_TIMEOUT_MS` (default 3000).
+stored in settings or Git. Gateway: `IVAN_GATEWAY_URL`, loopback only (default
+`http://127.0.0.1:4310`; the coordinated runtime uses `4311`, set in `settings.example.json`). Timeout: `IVAN_CLAUDE_HOOK_TIMEOUT_MS` (default 3000).
 
 Activation (after the coordinated gateway migration, Ivan's GO): merge `settings.example.json` into
 this repository's `.claude/settings.json` only. Do not install it globally: the gateway classifies
