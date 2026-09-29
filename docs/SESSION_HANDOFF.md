@@ -1,3 +1,15 @@
+## Reprise Codex — correction de livraison du chef (2026-09-29)
+
+Mémoire #14 activée et vérifiée, source agent/codex/obsidian-read-tool @7ebf0f4.
+Lire docs/MEMORY-PILOT-2026-09-29.md sur cette branche pour la preuve Telegram/System.
+Service Jev LaunchAgent actif, Trousseau local, source PR #20 @12a82a5, CI verte.
+Correction de reprise privée sur agent/codex/chief-delivery : lire docs/CHIEF-DELIVERY.md.
+13/13 tests runtime ; addition f161603 appliquée seulement au workspace OpenClaw main,
+5104 octets de contexte existant préservés ; aucune modification AGENTS/constitution du dépôt.
+Pilote Telegram C réussi à 14:22:22 UTC : Jev/System → mémoire → worker → rapport → message,
+un seul envoi au canal courant, reçu natif et visibilité Telegram, aucune relance utilisateur.
+Les sources/worktree Claude restent intacts ; hook shadow actif, table #17 non activée.
+
 # Session handoff — 2026-09-29
 
 ## 2026-09-29 — Codex — activation locale sur GO d'Ivan
