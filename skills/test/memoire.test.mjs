@@ -61,7 +61,8 @@ test("missing provenance, sensitivity, credentials and linked agent areas are re
     // Synthetic shapes from Codex's review: Telegram bot token and bearer header.
     [{ body: `bot ${"1".repeat(9)}:${"A".repeat(35)}` }, /CREDENTIAL_REFUSED/],
     [{ body: `Authorization: Bearer ${"b".repeat(40)}` }, /CREDENTIAL_REFUSED/],
-    [{ sources: [`https://api.example.org/?h=Bearer ${"c".repeat(30)}`] }, /CREDENTIAL_REFUSED/]]) {
+    [{ sources: [`https://api.example.org/?h=Bearer ${"c".repeat(30)}`] }, /CREDENTIAL_REFUSED/],
+    [{ body: `clé apikey_${"d".repeat(24)}` }, /CREDENTIAL_REFUSED/]]) {
     assert.throws(() => add(v, note(extra)), code);
   }
   const outside = mkdtempSync(path.join(tmpdir(), "ivan-outside-"));

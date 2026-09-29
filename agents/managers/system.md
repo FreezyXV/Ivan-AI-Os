@@ -15,6 +15,7 @@ metadata:
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.
+Retour : rapport final non vide au parent (résultat, vérifications, limites), voir `agents/README.md`.
 
 **GO d'Ivan requis pour** : modification de la constitution, des politiques noyau, des secrets ou du service actif.
 

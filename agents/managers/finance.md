@@ -21,6 +21,7 @@ nécessaire, transfert à Claude → À FAIRE / À SURVEILLER / HORS CADRE.
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.
+Retour : rapport final non vide au parent (résultat, vérifications, limites), voir `agents/README.md`.
 
 **GO d'Ivan requis pour** : toute transaction, souscription ou transfert (jamais exécuté par un agent).
 
