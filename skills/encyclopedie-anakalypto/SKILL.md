@@ -2,7 +2,7 @@
 name: encyclopedie-anakalypto
 description: Rédaction d'articles d'encyclopédie au format commun strict d'Anakalypto (résumé, sections, faits clés, chronologie, sources), en lots, avec recherche sourcée et validation automatique du format. Utiliser dès qu'Ivan parle d'Anakalypto, d'articles d'encyclopédie, de sous-catégories restantes, d'un "nouveau lot" ou d'une fiche de connaissance, même sans citer le skill.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   famille: knowledge
   manager: knowledge
   risque: brouillon
@@ -23,6 +23,9 @@ concaténés. Si Ivan fournit un article existant, aligner d'abord les clés et 
    - 3 à 5 recherches courtes, sources fiables (institutions, encyclopédies, publications,
      organismes officiels) ;
    - rédaction complète au format, 900 à 1 500 mots, faits vérifiables, chiffres datés ;
+   - chaque chiffre, date et définition noté dans un registre `articles-batch-N.claims.json`
+     (skill `verification-affirmations`) ; `verifier` doit passer avant l'assemblage ;
+   - « Faits clés » et « Sources » générés par `faits` ; format visuel proposé par `visuels` ;
    - fait incertain → l'omettre, jamais l'inventer.
 3. **Assembler** les blocs dans un seul fichier `articles-batch-N.md`.
 4. **Valider** : `python3 scripts/valider_lot.py <fichier>` ; corriger uniquement les erreurs
