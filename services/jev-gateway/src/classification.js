@@ -84,7 +84,7 @@ export const QUESTIONS = Object.freeze({
   }
 });
 
-const CREDENTIALS = /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bBearer\s+\S{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
+const CREDENTIALS = /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bapikey_[A-Za-z0-9_]{20,}|\bBearer\s+\S{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
 const CONTACT = /[\w.+-]+@[\w.-]+\.[a-z]{2,}|\+\d[\d .()-]{8,}\d|\b0[1-9](?:[ .-]?\d{2}){4}\b/i;
 const NUMERIC_FIELDS = new Set(["vues", "jours", "mots", "ancien", "nouveau", "seuil", "note"]);
 

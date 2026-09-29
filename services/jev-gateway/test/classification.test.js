@@ -18,6 +18,7 @@ test("gateway registry matches all registered client questions and refuses unkno
   for (const input of [
     { ...topic.input, texte_prive: "no" }, { ...topic.input, titre: "x".repeat(501) },
     { ...topic.input, titre: "contact@example.org" }, { ...topic.input, titre: `Bearer ${"x".repeat(30)}` },
+    { ...topic.input, titre: `apikey_${"x".repeat(30)}` },
     { ...topic.input, vues: "1200" }, { langue: "fr" }
   ]) assert.throws(() => validateClassification({ question: topic.question, input }), ClassificationInputError);
   assert.equal(validateClassification(topic).question, topic.question);
