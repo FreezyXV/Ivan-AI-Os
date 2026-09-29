@@ -17,6 +17,19 @@ Bascule live, clé privée TypeSafe, rotation credentials et GO d'activation res
 Le pilote Claude sera shadow et vise le gateway 4311 ; ne pas changer son worktree/settings ici.
 PR #9 est l'ancien seed/contrat mémoire : ne pas appliquer ses chemins ou relais devenus obsolètes.
 
+Livraison effective : PR #10, commit runtime 151b2b1, CI 6/6 verte. Snapshot préparé dans
+~/.ivan-ai-os/releases/151b2b1 ; chargeur natif sur cette copie vérifié, authentification et
+métadonnées uniquement, zéro appel TypeSafe réel. Candidate privée
+~/.ivan-ai-os/activation-151b2b1/openclaw.proposed.json validée : ne jamais afficher ce fichier,
+il conserve les credentials de la configuration existante. Source/context fingerprints associés.
+Le GO d'activation a été demandé ; ne pas assimiler son absence à une autorisation.
+Claude doit relire #10 ; après bascule seulement, son hook vise 4311 en shadow dans ce projet.
+PR #11 indépendante, agent/codex/jev-holdout @d484849 : 19 cas de validation disjoints,
+13 multi-tâches, priorités inversées, six managers ; 48 tests gateway et CI 6/6 verts.
+Labels écrits avant toute prédiction ; revue Claude demandée. Aucune mesure live ni seuil modifié.
+Le runner de #11 accepte --holdout ; 19 + 19 appels réels éventuels, avec le budget commun.
+La quatrième question action.permission exige toujours un corpus distinct.
+
 ## Dernière continuation : sept espaces et revue Claude
 
 Calibration livrée séparément sur `agent/codex/jev-calibration` : lire `docs/JEV-CALIBRATION.md`.

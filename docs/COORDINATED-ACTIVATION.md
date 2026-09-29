@@ -69,7 +69,10 @@ source plugin épinglée, launcher workspace explicite. Suite combinée : 95/95 
 Avant le correctif, le test launcher rendait OUTSIDE_WORKSPACE au lieu de PROTECTED_PROJECT_METADATA ;
 le test de main pointait vers un nouveau dossier au lieu de son workspace existant.
 Configuration native des sept artefacts et candidate validées, zéro modèle et zéro appel TypeSafe réel.
-Corpus offline : 19 cas, précision live non mesurée ; holdout et multi-tâches restent à ajouter.
+Snapshot réel : ~/.ivan-ai-os/releases/151b2b1, chargeur natif ivan_route vérifié sur la copie.
+Candidate épinglée : ~/.ivan-ai-os/activation-151b2b1, validée, PREPARED_NOT_ACTIVATED.
+PR #10 : six jobs CI verts. PR #11 indépendante prépare le holdout (19 cas, 13 multi-tâches),
+48 tests gateway et six jobs CI verts ; labels à relire par Claude, aucune précision live mesurée.
 
 Revue mémoire #8 : preuve jetable toujours `telegram_fixture_refused:false`,
 `bearer_fixture_refused:false`, nouvelle note mode 0644. Corrections demandées à Claude,
