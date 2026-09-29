@@ -17,6 +17,10 @@ that is oversized, linked or malformed returns `UNAVAILABLE`. The output is
 prepared evidence for the manager, not a recommendation or permission.
 
 `npm test` uses synthetic registries and no live model or source API.
-Production activation should pin the plugin outside the checkout and grant
-the two tool names only to their corresponding managers. Snapshot collection
-and scheduling remain separate work.
+The Mac pilot pins the plugin outside the checkout. The live gateway returned
+`READY` for both manager-scoped RPC calls; `main` could not invoke the Business
+tool. A direct `launchctl kickstart -k` restarted the service in 3 seconds,
+with TCP available after 12 seconds and authenticated RPC health after 22
+seconds. Use `scripts/switch-openclaw-config.mjs` for subsequent private config
+changes; it validates, snapshots, restarts through launchd, checks health and
+rolls back if needed. Snapshot collection and scheduling remain separate work.
