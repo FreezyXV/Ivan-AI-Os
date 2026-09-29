@@ -30,6 +30,33 @@ une liste de lectures sûres. Le shadow reste actif ; le mode ask ne devient pas
 
 # Session handoff — 2026-09-29
 
+## Dernière continuation — Codex — questions Jev actives sur Mac
+
+`foundation/v1` est à `0b2d93d` après les fusions Claude. La PR #35
+`agent/codex/classify` ajoute `/v1/classify` pour les dix questions
+réellement déclarées dans le client, avec bearer, budget commun et audit
+sans entrée brute ; 52/52 tests et 6/6 CI passent. Le commit de correction
+`6d2add2` adapte la réponse Noul TypeSafe réelle, sans champ `confidence`.
+Source PR encore non fusionnée. L'ancien travail non suivi
+`services/linux-runtime/` est préservé.
+
+Sur GO d'Ivan, copie figée `~/.ivan-ai-os/releases/classify-6d2add2`
+activée par LaunchAgent sur 4311. Keychain, jeton et budget conservés ;
+ancien plist sauvegardé dans `~/.ivan-ai-os/background-classify-6d2add2/`.
+Une première bascule a rencontré une course de `launchctl bootstrap`,
+l'ancien service a été rétabli, puis la bascule réessayée avec attente et
+contrôles a réussi. Jev réel : `sujet.captivant` 0,86 sur La pile de Volta,
+`sujet.domaine` sciences-fondamentales, `publication.prete` 0,75 sur la
+fiche de verre. 56 appels, 0,001549 € estimés au dernier relevé.
+Le lot privé Anakalypto a reçu un `.jev.json` créé sans écrasement ;
+`valider_lot.py` passe. **Aucune publication externe**. Voir
+`docs/CLASSIFY-GATEWAY.md` et `docs/REVIEW-CODEX-CLAUDE-2026-09-29.md` :
+le validateur #26 accepte aussi un reçu forgé, donc l'automatisation de
+publication attend une vérification de provenance codée. #28/#31 relues,
+pilotage gate acceptable. Les PR #14/#20/#21 restent ouvertes et relues.
+Prochains travaux : renforcer la provenance du reçu, planifier les moteurs,
+accès des managers aux outils sans exec, hook Codex, skills OpenClaw, Linux/OVH.
+
 ## 2026-09-29 — Codex — lecture mémoire préparée après activation
 
 Branche agent/codex/obsidian-read-tool ; dépend de la livraison d'activation PR #13 @0b6d1c2.

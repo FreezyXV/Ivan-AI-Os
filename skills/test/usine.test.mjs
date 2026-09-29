@@ -37,3 +37,13 @@ test("outcomes are validated and the private ledger overrides a re-recorded PR",
   assert.equal(statSync(path.join(dir, "ledger.jsonl")).mode & 0o777, 0o600);
   assert.equal(outcomes(dir).find(x => x.pr === 14).resultat, "accepte");
 });
+
+import { QUESTIONS as GATEWAY } from "../../services/jev-gateway/src/classification.js";
+import { QUESTIONS as CLIENT } from "../jev-decision/scripts/classify.mjs";
+import { CATEGORIES } from "../usine-logicielle/scripts/usine.mjs";
+
+test("contract: Jev client, gateway registry and the factory categories never drift", () => {
+  assert.deepEqual(Object.keys(CLIENT).sort(), Object.keys(GATEWAY).sort(), "same registered questions");
+  for (const [id, q] of Object.entries(CLIENT)) assert.deepEqual([...q.fields].sort(), [...GATEWAY[id].fields].sort(), `${id}: same allowed fields`);
+  assert.deepEqual(Object.keys(GATEWAY["tache.categorie"].prompt.criteria).sort(), [...CATEGORIES].sort(), "tache.categorie = factory categories");
+});
