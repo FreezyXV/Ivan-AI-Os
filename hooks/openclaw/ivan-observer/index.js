@@ -1,6 +1,7 @@
 import { createAuditWriter } from "../../../services/jev-gateway/src/audit.js";
 import { createEvaluationClient } from "./client.js";
 import { createObserver } from "./observer.js";
+import { readDecisionToken } from "../../../services/jev-gateway/src/runtime-token.js";
 
 export default {
   id: "ivan-ai-os-observer",
@@ -10,9 +11,9 @@ export default {
     const config = api.pluginConfig;
     if (config?.enabled !== true) return;
     const timeoutMs = config.timeoutMs ?? 3000;
-    const token = process.env.IVAN_DECISION_TOKEN;
     let observer;
     try {
+      const token = readDecisionToken();
       observer = createObserver({
         token, agentId: config.agentId, tools: config.tools,
         evaluate: createEvaluationClient({ gatewayUrl: config.gatewayUrl, token, timeoutMs }),

@@ -1,4 +1,12 @@
-# OpenClaw adapter (source only)
+# OpenClaw advisory adapter
+
+**Migration on agent/codex/secure-gateway:** the source tool now accepts
+`{"requested_tasks":["unit_test"],"urgency":"none","details_available":false}` and authenticates
+with the private runtime decision-token. Old `text` arguments are rejected. Read
+[SECURE-GATEWAY.md](../../../docs/SECURE-GATEWAY.md) before activating/restarting the linked plugin.
+The live Telegram proof below belongs to the old contract; it has not been repeated after migration.
+
+## Historical installation and verification
 
 Target: OpenClaw 2026.9.5. This plugin exposes the **advisory** `ivan_route` tool to the agent. It does not intercept tool calls, change model routing, start worker agents, or grant execution rights. The current Gateway requires local-only access; if run on a VPS later, its endpoint needs private connectivity and authentication before this plugin is pointed at it.
 

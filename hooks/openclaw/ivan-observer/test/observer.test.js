@@ -127,9 +127,11 @@ test("invalid observer configuration does not abort registration or register hoo
 
 test("enabled observer without a token warns and lets the host continue", () => {
   const original = process.env.IVAN_DECISION_TOKEN;
+  const originalFile = process.env.IVAN_DECISION_TOKEN_FILE;
   const registered = [], warnings = [];
   try {
     delete process.env.IVAN_DECISION_TOKEN;
+    process.env.IVAN_DECISION_TOKEN_FILE = "/nonexistent-ivan-fixture/missing-token";
     assert.doesNotThrow(() => plugin.register({
       pluginConfig: { enabled: true, agentId: "synthetic", tools: ["read"], gatewayUrl: "http://127.0.0.1:4310", auditPath: "/tmp/unused-observer-fixture.jsonl" },
       on: (...args) => registered.push(args), logger: { warn: code => warnings.push(code) }
@@ -139,5 +141,7 @@ test("enabled observer without a token warns and lets the host continue", () => 
   } finally {
     if (original === undefined) delete process.env.IVAN_DECISION_TOKEN;
     else process.env.IVAN_DECISION_TOKEN = original;
+    if (originalFile === undefined) delete process.env.IVAN_DECISION_TOKEN_FILE;
+    else process.env.IVAN_DECISION_TOKEN_FILE = originalFile;
   }
 });

@@ -1,3 +1,13 @@
+# Decision plane — migration contract
+
+Current proposed source is documented in [SECURE-GATEWAY.md](SECURE-GATEWAY.md): authenticated
+route/evaluation/usage, metadata-only routing and estimated 10 EUR monthly accounting. `/v1/decide`
+is an alias of concrete shadow evaluation; caller flags and policies are rejected. No endpoint
+returns executable permission. The existing Mac service has not migrated yet.
+
+The following historical design explains the prototype preceding that migration. Its legacy
+HTTP examples must not be used with the new source contract.
+
 # Decision Plane: current scope
 
 The gateway speaks the official TypeSafe System One API: `POST https://api.typesafe.ai/v1/systemone`, with `state`, `model`, and a typed `choice` question. Its answer comes from `answers.permission.choice` and the associated probabilities/confidence. The human-readable question and allow thresholds live in `services/jev-gateway/src/questions.js`.

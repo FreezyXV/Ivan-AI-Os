@@ -1,5 +1,23 @@
 # Session handoff — 2026-09-29
 
+## Continuation Codex — API privée, collaboration et entreprise virtuelle
+
+Lire `docs/SECURE-GATEWAY.md` et `docs/REVIEW-CODEX-SKILLS-2026-09-29.md`.
+Source sur `agent/codex/secure-gateway` : 54 tests, vérification native isolée, zéro appel payant.
+Bearer sur route/evaluate-tool/decide/usage ; routage uniquement par enums ; decide devient alias
+concret ; budget durable estimé 10 EUR/mois choisi par Ivan, aucune limite de 500 appels.
+Provisionnement mock testé en répertoire/port temporaires. Bascule live non effectuée : contrat
+incompatible, plugin lié au checkout, ancien service/bot à préserver jusqu'à activation coordonnée.
+Claude PR #3 relue @e6eea34 : 16 skills, 7 managers, 9/9 tests ; corrections de packaging demandées.
+Codex PR #2 corrigée @84d2bc0 : faux positifs sensibles levés sans exceptions globales, 44 tests.
+Neuf skills career/knowledge/system installés hors Git dans ~/.openclaw/skills, profils réduits,
+aucun repli vers le profil privé complet. Ni configuration ni restart du gateway modifiés.
+Ivan a réaffirmé les sept rôles : chef de cabinet + six managers et workers temporaires.
+Conserver cette architecture entière ; préparer tous les espaces et un dispatch vérifié.
+Le manager Finance est inclus, avec données personnelles réservées au contexte privé Claude.
+Les fichiers managers sont des définitions, pas une preuve d'agents actifs ou de dispatch.
+AGENTS/constitution/CLAUDE et le worktree Claude restent inchangés par Codex.
+
 ## Mission
 Build Ivan AI OS in private repository `FreezyXV/Ivan-AI-Os`, branch `foundation/v1`. Read `docs/ROADMAP.md`, `docs/USER_ACTIONS.md`, `docs/DECISION-PLANE.md`, and `hooks/openclaw/ivan-route/README.md` first. Continue implementation and verify real behavior with the least necessary changes. Ivan authorized work on his Mac when a local session has access; never presume a cloud session's loopback points to his Mac.
 

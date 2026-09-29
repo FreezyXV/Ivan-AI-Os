@@ -22,3 +22,12 @@ A Telegram bot credential appeared in the shared terminal transcript and a Gatew
 ## Approval boundary
 
 Research, source changes and drafts can proceed. Ivan approves purchases, payments, transactions and third-party contact.
+
+## Decisions confirmed on 2026-09-29
+
+Ivan chose enumerated routing metadata, a 10 EUR/month Jev budget without a 500-call ceiling,
+and coordinated activation after provisioning. Local accounting is an estimate, not an invoice cap.
+OpenClaw skill packages exclude clients and personal investments; the public career mission remains
+as chosen in option A. The full private profile stays outside Git and is reserved for Claude.
+The complete virtual enterprise remains the target: chief of staff, six managers and ephemeral
+workers. Source contracts and seven definitions must be followed by observed runtime dispatch.

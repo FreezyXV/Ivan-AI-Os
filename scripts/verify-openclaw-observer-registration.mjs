@@ -14,12 +14,13 @@ const candidates = readdirSync(path.join(root, "dist")).filter(n => /^loader-run
 })).filter(entry => entry.exportName);
 assert.equal(candidates.length, 1);
 const scratch = mkdtempSync(path.join(tmpdir(), "ivan-loader-check-"));
-const envNames = ["OPENCLAW_STATE_DIR", "OPENCLAW_CONFIG_PATH", "IVAN_DECISION_TOKEN"];
+const envNames = ["OPENCLAW_STATE_DIR", "OPENCLAW_CONFIG_PATH", "IVAN_DECISION_TOKEN", "IVAN_DECISION_TOKEN_FILE"];
 const original = Object.fromEntries(envNames.map(name => [name, process.env[name]]));
 try {
   process.env.OPENCLAW_STATE_DIR = scratch;
   process.env.OPENCLAW_CONFIG_PATH = path.join(scratch, "unused-config.json");
   delete process.env.IVAN_DECISION_TOKEN;
+  process.env.IVAN_DECISION_TOKEN_FILE = path.join(scratch, "missing-token");
   const candidate = candidates[0];
   const load = (await import(pathToFileURL(path.join(root, "dist", candidate.name)).href))[candidate.exportName];
   const id = "ivan-ai-os-observer";

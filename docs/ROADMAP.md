@@ -13,8 +13,8 @@
 - [x] Live Jev route smoke from Ivan's Mac with a hidden, ephemeral API key (HTTP 200, engineering ROUTED); persistent runtime remains pending
 - [x] Shadow evaluator loads global kernel policies from the repository and rejects caller policy lists; catalog revision recorded
 - [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative classification, bounded redacted audit and keyed action correlation; 43 local tests pass on the follow-up review branch (see `docs/TRUSTED-EVALUATION.md`)
-- [ ] Activate private authenticated runtime and trusted native call capture; legacy endpoints remain advisory/unauthenticated
-- [ ] Authenticate all three endpoints, remove confidential free text from provider-bound routing, and enforce a durable provider quota chosen by Ivan (see `docs/RESPONSE-TO-CLAUDE-2026-09-29.md`)
+- [ ] Activate private authenticated runtime and trusted native call capture; the existing live service still uses the legacy contract
+- [x] Source on the secure-gateway branch authenticates decision endpoints, rejects routing prose and shares a durable estimated 10 EUR/month Jev budget; 54 tests and isolated native verification pass (see `docs/SECURE-GATEWAY.md`)
 - [ ] Calibration on labeled requests and permission scenarios
 
 ## Phase 2 — Agent integration
@@ -29,6 +29,10 @@
 - [ ] Native OpenClaw `before_tool_call` policy gate, based on trusted tool metadata
 - [ ] Claude Code and Codex adapters verified against their current runtime hook contracts
 - [ ] Human approvals bound to exact proposed actions
+
+- [x] Claude source registry: 16 skills and 7 manager definitions, 9/9 tests independently verified; PR #3 awaits packaging corrections
+- [x] Install nine reviewed career/knowledge/system skills for Telegram with reduced private profiles, outside Git
+- [ ] Provision all seven manager roles and verify real dispatch plus worker completion; definitions alone do not complete this milestone
 
 ## Phase 3 — Memory
 - [ ] Map `Obsidian Notes` vault path and sync permissions
