@@ -4,6 +4,12 @@
 
 Calibration livrée séparément sur `agent/codex/jev-calibration` : lire `docs/JEV-CALIBRATION.md`.
 19 catégories étiquetées, quatre tests de métriques/transport synthétiques, zéro appel payant.
+PR #6 (040a9f9) et #7 (0cb3e68) poussées, six jobs CI passent pour chacune ; les jobs Claude
+restent conditionnels tant que leurs sources ne sont pas fusionnées. Une copie d'intégration
+isolée combine notre branche, skills/agents fa9c9e0 et hooks Claude dad877d7 : 83/83 tests passent.
+Ce n'est ni une fusion Git ni une activation. Revues favorables/commentaires publiés sur #3/#5,
+questions de calibration livrées à Claude ; #6/#7 attendent sa revue. Aucun contenu Obsidian lu ;
+configuration Obsidian locale et recherche par nom n'ont pas trouvé le chemin du coffre.
 Le runner live passe par le gateway authentifié et son budget ; aucun nouveau endpoint ni
 qualité Jev live revendiquée. Claude peut préparer calibration-jev sur les questions disponibles.
 Services existants 4310 et 18789 répondent à /health ; aucune bascule effectuée.
