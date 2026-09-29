@@ -170,7 +170,9 @@ test("runtime skill links (.claude, .agents) resolve and stay engineering/system
 test("priority skills carry trigger evaluations pointing at real skills", t => {
   const { results } = buildRegistry();
   const withEvals = results.filter(r => r.evals).map(r => r.entry.name).sort();
-  assert.deepEqual(withEvals, ["dev-studio", "job-application-optimizer", "orchestrateur-ia", "rapport-telegram", "revue-croisee"]);
+  for (const required of ["business-engine", "dev-studio", "job-application-optimizer", "orchestrateur-ia", "rapport-telegram", "revue-croisee"]) {
+    assert.ok(withEvals.includes(required), `${required} needs evals.json`);
+  }
   const root = scratch(t);
   const dir = skill(root, "evald");
   writeFileSync(path.join(dir, "evals.json"), JSON.stringify({ skill: "evald", version: 1, positifs: ["only one positive prompt"], negatifs: [{ demande: "a near miss request", attendu: "evald" }], livrable: "" }));
