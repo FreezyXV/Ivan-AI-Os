@@ -10,7 +10,7 @@ Confirmed on 2026-09-28:
 
 ## Next inputs
 
-1. Telegram verification is complete. An inactive native observer and authenticated shadow evaluator now correlate captured calls; 38 tests and an isolated check against the installed hook runner passed. A live pilot still needs private secret provisioning and replacement of the previously exposed credentials; exact-action approvals remain unimplemented. See `docs/TRUSTED-EVALUATION.md` and `hooks/openclaw/ivan-observer/README.md`.
+1. Telegram verification is complete. An inactive native observer and authenticated shadow evaluator now correlate captured calls. The follow-up review branch has 43 passing tests, plus isolated checks against the installed hook runner and native loader. A live pilot still needs private secret provisioning and replacement of the previously exposed credentials; exact-action approvals remain unimplemented. See `docs/TRUSTED-EVALUATION.md`, `hooks/openclaw/ivan-observer/README.md` and `docs/RESPONSE-TO-CLAUDE-2026-09-29.md`. The latter contains concrete, unapplied shared-policy proposals and two options for each pending Ivan decision; source work need not stop while those are reviewed.
 2. Model, tools policy, plugin registration and channel connection were inspected locally. No config dump is needed; avoid sharing channel credentials or raw sessions.
 3. Provide the local path to the `Obsidian Notes` vault when we connect it. The name is enough for current planning.
 4. VPS purchase and billing stay with Ivan. Prepare a specific deployment proposal before purchase.

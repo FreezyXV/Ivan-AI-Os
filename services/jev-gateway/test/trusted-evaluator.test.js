@@ -102,6 +102,39 @@ test("missing sensitive paths are denied before resolution", async t => {
   assert.equal(requests.length, 0);
 });
 
+test("sensitive filenames with extensions are denied even when absent or reached through a symlink", async t => {
+  const { evaluator, workspace, requests } = fixture(t);
+  const files = ["credentials.json", "secrets.yaml", "secret.production.yml", "credentials.backup.json"];
+  for (const file of files) {
+    for (const exists of [false, true]) {
+      if (exists) writeFileSync(path.join(workspace, file), sensitive);
+      for (const tool of ["read", "write", "edit"]) {
+        const result = await evaluator.evaluate({ tool, arguments: { path: file } });
+        assert.equal(result.body.decision, "DENY", file);
+        assert.equal(result.body.reason_code, "SENSITIVE_PATH", file);
+      }
+    }
+  }
+  symlinkSync(path.join(workspace, "credentials.json"), path.join(workspace, "ordinary.json"));
+  assert.equal((await evaluator.evaluate({ tool: "read", arguments: { path: "ordinary.json" } })).body.decision, "DENY");
+  assert.equal(requests.length, 0);
+});
+
+test("new protected files require approval, including destinations through an existing directory symlink", async t => {
+  const { evaluator, workspace, requests } = fixture(t);
+  mkdirSync(path.join(workspace, "hooks"));
+  symlinkSync(path.join(workspace, "hooks"), path.join(workspace, "ordinary-directory"));
+  for (const file of ["hooks/new.js", "ordinary-directory/new.js", ".github/workflows/new.yml", ".claude/settings.json", "CLAUDE.md", "constitution/new.md"]) {
+    const result = await evaluator.evaluate({ tool: "write", arguments: { path: file, content: sensitive } });
+    assert.equal(result.body.decision, "REQUIRE_HUMAN", file);
+    assert.equal(result.body.reason_code, "PROTECTED_PROJECT_METADATA", file);
+  }
+  const ordinary = await evaluator.evaluate({ tool: "write", arguments: { path: "ordinary/new.md" } });
+  assert.equal(ordinary.body.decision, "REVIEW");
+  assert.equal(ordinary.body.reason_code, "PATH_NOT_RESOLVED");
+  assert.equal(requests.length, 0);
+});
+
 test("provider only receives trusted metadata and local policies; ALLOW never authorizes", async t => {
   const { evaluator, requests, journal } = fixture(t);
   const result = await evaluator.evaluate({ tool: "read", arguments: { path: "note.md", content: sensitive, intent: sensitive } });

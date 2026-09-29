@@ -12,8 +12,9 @@
 - [x] TypeSafe API access confirmed by Ivan; no key stored in this repository
 - [x] Live Jev route smoke from Ivan's Mac with a hidden, ephemeral API key (HTTP 200, engineering ROUTED); persistent runtime remains pending
 - [x] Shadow evaluator loads global kernel policies from the repository and rejects caller policy lists; catalog revision recorded
-- [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative classification, bounded redacted audit and keyed action correlation; 38 local tests pass (see `docs/TRUSTED-EVALUATION.md`)
+- [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative classification, bounded redacted audit and keyed action correlation; 43 local tests pass on the follow-up review branch (see `docs/TRUSTED-EVALUATION.md`)
 - [ ] Activate private authenticated runtime and trusted native call capture; legacy endpoints remain advisory/unauthenticated
+- [ ] Authenticate all three endpoints, remove confidential free text from provider-bound routing, and enforce a durable provider quota chosen by Ivan (see `docs/RESPONSE-TO-CLAUDE-2026-09-29.md`)
 - [ ] Calibration on labeled requests and permission scenarios
 
 ## Phase 2 — Agent integration

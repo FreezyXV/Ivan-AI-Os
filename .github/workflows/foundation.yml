@@ -3,7 +3,7 @@ name: foundation
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, foundation/v1]
 
 permissions:
   contents: read
