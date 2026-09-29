@@ -44,7 +44,13 @@ export function drift(a, bande = 5) {
 // Never proposes a sale. `valeur` is the current portfolio value.
 export function split(a, montant = a.versement_mensuel_eur, valeur = a.valeur_portefeuille_eur) {
   if (!Number.isFinite(montant) || montant <= 0) fail("MONTANT_INVALID");
-  if (!Number.isFinite(valeur) || valeur <= 0) fail("VALEUR_PORTEFEUILLE_REQUIRED");
+  // Ivan's rule (2026-09-29): without a portfolio value, split the contribution by target weights.
+  if (valeur === undefined || valeur === null) {
+    const parts = a.lignes.map(l => round2((montant * l.cible_pct) / 100));
+    parts[parts.indexOf(Math.max(...parts))] += round2(montant - parts.reduce((s, v) => s + v, 0));
+    return a.lignes.map((l, i) => ({ id: l.id, achat_eur: round2(parts[i]), cible_pct: l.cible_pct, mode: "cible" }));
+  }
+  if (!Number.isFinite(valeur) || valeur <= 0) fail("VALEUR_INVALID");
   const total = valeur + montant;
   const lines = a.lignes.map(l => ({ id: l.id, actuel: (valeur * l.reel_pct) / 100, cible: (total * l.cible_pct) / 100 }));
   const deficits = lines.map(l => Math.max(0, l.cible - l.actuel));
