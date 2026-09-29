@@ -1,5 +1,23 @@
 # Session handoff — 2026-09-29
 
+## 2026-09-29 — Codex — activation locale sur GO d'Ivan
+
+Lire docs/ACTIVATION-2026-09-29.md : ce bloc remplace les états inactifs plus anciens ci-dessous.
+Branche agent/codex/activation-preflight, base foundation/v1 @fd2ea04 ; aucun changement sur main.
+Gateway privé 4311 réel Jev et budget estimé 10 EUR/mois actifs ; plugin runtime épinglé hors checkout.
+OpenClaw redémarré, sept rôles configurés, Telegram connecté, appel natif provider jev vérifié.
+Workspace main préservé : à la bascule, 4 fichiers de contexte / 12 fichiers mémoire inchangés.
+Test DM IVAN-ACT-20260929-C : Jev → Engineering → worker isolé → rapport vérifié → Telegram,
+11:04:14–11:04:49 UTC, trois assertions vérifiées, tests proposés non exécutés, aucun exec/write.
+Deux essais ont révélé NO_REPLY ; message de sessions_yield, pas acknowledgment, corrige la reprise.
+Contrat installé dans six espaces générés, sauvegardes privées ; 11/11 tests runtime passent.
+Claude informé pour orchestrateur-ia, deux calibrations séparées et activation de son hook shadow.
+Ne pas modifier son worktree, skills/agents/CLAUDE/.claude/hooks/claude, AGENTS ou constitution.
+Retour arrière validé : configuration privée rollback + plugin legacy épinglé 963860a + service 4310.
+Ne pas afficher ces configurations/credentials ni effacer le budget. Aucun nouveau modèle configuré.
+Ouvert : confirmation des métriques Claude/shadow, autres domaines, mémoire OpenClaw, service permanent/OVH.
+Prochaine action : construire l'outil de lecture Obsidian borné pour system/knowledge, sur branche Codex.
+
 ## État actuel après GO #6 → #7 → #8
 
 Les trois PR sont réellement fusionnées dans foundation/v1 @f6bb2e3. Les paragraphes plus anciens

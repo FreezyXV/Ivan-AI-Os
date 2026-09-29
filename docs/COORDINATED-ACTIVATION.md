@@ -1,5 +1,9 @@
 # Bascule préparée — 2026-09-29
 
+**État actuel : pilote activé sur GO d'Ivan.** Lire [ACTIVATION-2026-09-29.md](ACTIVATION-2026-09-29.md).
+Gateway authentifié 4311, sept rôles configurés, appel natif et parcours réel Telegram → Engineering
+→ worker → rapport → Telegram vérifiés. Le reste de cette page décrit la préparation historique.
+
 Base : foundation/v1 @f6bb2e3, PR #6 → #7 → #8 fusionnées sur GO d'Ivan.
 Codex prépare sur agent/codex/coordinated-runtime ; Claude garde skills/agents/hook Claude.
 Le coffre choisi est `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`, configuré hors Git.

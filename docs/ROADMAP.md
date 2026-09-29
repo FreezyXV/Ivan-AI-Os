@@ -13,7 +13,8 @@
 - [x] Live Jev route smoke from Ivan's Mac with a hidden, ephemeral API key (HTTP 200, engineering ROUTED); persistent runtime remains pending
 - [x] Shadow evaluator loads global kernel policies from the repository and rejects caller policy lists; catalog revision recorded
 - [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative classification, bounded redacted audit and keyed action correlation; 43 local tests pass on the follow-up review branch (see `docs/TRUSTED-EVALUATION.md`)
-- [ ] Activate private authenticated runtime and trusted native call capture; the existing live service still uses the legacy contract
+- [x] Activate private authenticated Mac runtime on 4311 with the metadata contract and estimated 10 EUR/month budget, on Ivan's GO (see docs/ACTIVATION-2026-09-29.md)
+- [ ] Activate trusted native call capture; observer pilot remains separate
 - [x] Source on the secure-gateway branch authenticates decision endpoints, rejects routing prose and shares a durable estimated 10 EUR/month Jev budget; 54 tests and isolated native verification pass (see `docs/SECURE-GATEWAY.md`)
 - [ ] Calibration on labeled requests and permission scenarios
 
@@ -33,9 +34,10 @@
 
 - [x] Claude source registry: 16 skills and 7 manager definitions, packaging corrections reviewed at fa9c9e0, 13/13 tests
 - [x] Install nine reviewed career/knowledge/system skills for Telegram with reduced private profiles, outside Git
-- [ ] Provision all seven manager roles and verify real dispatch plus worker completion; definitions alone do not complete this milestone
+- [x] Configure all seven roles and verify Telegram → Jev → Engineering → isolated worker → manager report → Telegram; test code proposed, not executed (2026-09-29)
+- [ ] Measure useful workflows for the five other managers and the source-code builder/reviewer bridge
 - [x] Prepare seven private manager workspaces, including public Finance without a profile; native OpenClaw configuration validates in isolation
-- [x] Review Claude Code shadow adapter against a real isolated gateway, six tests; PR #5 awaits merge and coordinated activation
+- [x] Review Claude Code shadow adapter against a real isolated gateway, six tests; source merged, Claude notified for project-only shadow activation against 4311
 
 ## Phase 3 — Memory
 - [x] Locate chosen vault `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`; scoped Claude helper merged in #8
