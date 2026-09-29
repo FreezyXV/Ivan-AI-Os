@@ -16,19 +16,26 @@ export const ROUTING_CALIBRATION = Object.freeze([
   expected: Object.freeze({ manager })
 })));
 
-export function validateCalibration(cases = ROUTING_CALIBRATION) {
-  if (cases.length !== ROUTING_TASKS.length || new Set(cases.map(c => c.id)).size !== cases.length) throw new Error("INVALID_CALIBRATION_CORPUS");
+export function validateCalibration(cases = ROUTING_CALIBRATION, { holdout = false } = {}) {
+  if (!Array.isArray(cases) || !cases.length || cases.length > 64 || (!holdout && cases.length !== ROUTING_TASKS.length) || new Set(cases.map(c => c.id)).size !== cases.length) throw new Error("INVALID_CALIBRATION_CORPUS");
   const labels = new Set(ROUTING_TASKS);
+  const key = metadata => JSON.stringify(validateRoutingMetadata(metadata));
+  const training = new Set(ROUTING_CALIBRATION.map(c => key(c.metadata))), inputs = new Set();
   for (const item of cases) {
     const metadata = validateRoutingMetadata(item.metadata);
-    if (metadata.requested_tasks.length !== 1 || !labels.delete(metadata.requested_tasks[0]) || item.id !== metadata.requested_tasks[0] || !["business", "career", "finance", "knowledge", "engineering", "system"].includes(item.expected.manager)) throw new Error("INVALID_CALIBRATION_CORPUS");
+    if (!/^[a-z0-9_-]{1,64}$/.test(item.id) || !["business", "career", "finance", "knowledge", "engineering", "system"].includes(item.expected?.manager)) throw new Error("INVALID_CALIBRATION_CORPUS");
+    if (holdout) {
+      const input = key(metadata);
+      if (training.has(input) || inputs.has(input)) throw new Error("HOLDOUT_OVERLAP_REFUSED");
+      inputs.add(input);
+    } else if (metadata.requested_tasks.length !== 1 || !labels.delete(metadata.requested_tasks[0]) || item.id !== metadata.requested_tasks[0]) throw new Error("INVALID_CALIBRATION_CORPUS");
   }
-  if (labels.size) throw new Error("INVALID_CALIBRATION_CORPUS");
+  if ((!holdout && labels.size) || (holdout && !cases.some(c => c.metadata.requested_tasks.length > 1))) throw new Error("INVALID_CALIBRATION_CORPUS");
   return cases;
 }
 
-export function summarizeCalibration(observations, cases = ROUTING_CALIBRATION) {
-  validateCalibration(cases);
+export function summarizeCalibration(observations, cases = ROUTING_CALIBRATION, { holdout = false } = {}) {
+  validateCalibration(cases, { holdout });
   const seen = new Set(), results = new Map();
   for (const observation of observations) {
     if (!cases.some(c => c.id === observation.id) || seen.has(observation.id)) throw new Error("INVALID_CALIBRATION_OBSERVATIONS");
@@ -45,7 +52,7 @@ export function summarizeCalibration(observations, cases = ROUTING_CALIBRATION) 
     if ((r.needs_details_probability >= 0.5) === !item.metadata.details_available) detailMatches++;
     if (Math.abs(r.urgency - ["none", "soon", "immediate"].indexOf(item.metadata.urgency)) <= 0.25) urgencyMatches++;
   }
-  return { corpus_version: 1, total: cases.length, measured, unavailable, manager_correct: correct,
+  return { corpus_version: 1, corpus: holdout ? "holdout-v1" : "training-v1", total: cases.length, measured, unavailable, manager_correct: correct,
     manager_accuracy: measured ? correct / measured : null, coverage: measured / cases.length,
     review_rate: measured ? reviewed / measured : null, detail_matches: detailMatches,
     urgency_matches: urgencyMatches, mismatches, permission_granted: false };

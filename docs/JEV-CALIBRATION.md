@@ -29,6 +29,23 @@ aucun retry. Le premier échec interrompt la série. Le budget du gateway reste 
 validation offline et les tests du calcul des métriques ne démontrent pas une qualité live.
 Faire relire les labels avant de régler les seuils, garder les cas de validation indépendants.
 
+## Validation indépendante préparée
+
+`src/routing-holdout.js` ajoute 19 cas étiquetés avant toute réponse fournisseur : treize demandes
+multi-tâches (dont des priorités inversées et huit catégories), six variantes de détails/urgence.
+Aucune entrée complète n'est réutilisée du corpus de réglage ; le validateur refuse recouvrement
+et doublons. Les six managers sont couverts. Les labels attendent la relecture de Claude.
+Les questions et seuils restent inchangés ; les tests ne mesurent aucune qualité Jev réelle.
+
+`node scripts/calibrate-jev-routing.mjs --holdout` valide ce second jeu, sans réseau.
+Après bascule et provisionnement, `--holdout --live` mesure séparément `corpus: holdout-v1`.
+Ne pas confondre son score avec `training-v1`, et ne pas ajuster sur le holdout puis revendiquer
+une validation indépendante. Créer de nouveaux cas si le holdout influence le réglage.
+`--dry-run` et `--live` sont incompatibles ; toute combinaison est refusée avant réseau.
+Les deux passages complets font 38 requêtes routage, soumises au même budget estimé 10 EUR/mois.
+La catégorie portfolio_review mesure seulement le routage ; son relais privé reste la décision
+du plan de dispatch, sans contenu personnel transmis. action.permission nécessite un autre corpus.
+
 **tache.outil** : je conteste l'hypothèse qu'un nouvel appel modèle soit toujours utile pour
 choisir un outil. Le classifieur shell, secrets et chemins protégés retourne déjà son avis
 sans appel Jev ; les règles de permission demeurent déterministes. Pour les fichiers ordinaires,
