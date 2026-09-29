@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 
 export const TYPES = ["douleur", "demande", "offre", "tendance"];
 export const CRITERES = ["demande", "paiement", "concurrence", "fit", "delai_mvp", "cout_acquisition"];
+const PROFILE_CRITERIA = ["fit", "delai_mvp"];
 export const ELIMINATOIRES = ["aucune_preuve_paiement", "plateforme_unique", "reglementation_lourde"];
 const CREDENTIALS = /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bBearer\s+[A-Za-z0-9._~+/-]{20,}/i;
 
@@ -98,8 +99,10 @@ export function scoreOpportunity(o) {
   for (const c of CRITERES) {
     const v = criteres[c];
     if (!v || !Number.isInteger(v.note) || v.note < 0 || v.note > 5) fail(`CRITERE_${c.toUpperCase()}_INVALID`);
-    // Evidence-first: a score above 1 needs a link.
-    if (v.note > 1 && !(typeof v.preuve === "string" && /^https?:\/\//.test(v.preuve))) fail(`CRITERE_${c.toUpperCase()}_PREUVE_REQUIRED`);
+    // Evidence-first: a score above 1 needs a link. Fit and MVP delay depend on Ivan himself,
+    // so the private profile is an accepted source for those two criteria only.
+    const internal = PROFILE_CRITERIA.includes(c) && v.preuve === "profil";
+    if (v.note > 1 && !internal && !(typeof v.preuve === "string" && /^https?:\/\//.test(v.preuve))) fail(`CRITERE_${c.toUpperCase()}_PREUVE_REQUIRED`);
     total += v.note;
   }
   const eliminatoires = (o.eliminatoires ?? []).filter(e => ELIMINATOIRES.includes(e));
@@ -134,7 +137,7 @@ export function report(dir, top = 3) {
       lines.push(`### ${o.sujet} — ${o.total}/30 → ${o.decision}`, `- Cible : ${o.cible}`, `- Douleur : ${o.douleur}`);
       if (o.monetisation) lines.push(`- Monétisation : ${o.monetisation}`);
       if (o.validation_7j) lines.push(`- Validation 7 j : ${o.validation_7j}`);
-      lines.push(`- Preuves : ${CRITERES.map(c => o.criteres[c].preuve).filter(Boolean).join(" · ")}`, "");
+      lines.push(`- Preuves : ${[...new Set(CRITERES.map(c => o.criteres[c].preuve).filter(p => p && p !== "profil"))].join(" · ")}`, "");
     }
   }
   const abandoned = [...latest.values()].filter(o => o.decision === "abandonner").length;

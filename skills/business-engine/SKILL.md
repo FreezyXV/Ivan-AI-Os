@@ -28,7 +28,8 @@ Contrat complet : `workflows/business-engine.md`. Notation d'une idée isolée :
    Ne creuser que les 3 à 5 premiers. (Tri Jev `signal.pertinent` dès que Codex l'ouvre.)
 4. **Noter** chaque sujet creusé → `signals.mjs noter` avec 6 critères notés 0–5
    (`demande`, `paiement`, `concurrence` inversée, `fit`, `delai_mvp` inversé, `cout_acquisition`
-   inversé), **une URL de preuve dès que la note dépasse 1**, `jours_premier_euro`, cible,
+   inversé), **une URL de preuve dès que la note dépasse 1** (`"profil"` accepté pour `fit` et
+   `delai_mvp` seulement), `jours_premier_euro`, cible,
    douleur, monétisation, plan de validation 7 jours à 0 €.
    Règles codées : aucune preuve de paiement = abandon ; ≥ 22 lancer, ≥ 16 creuser.
 5. **Livrer** : `signals.mjs rapport --top 3` → note `decision` via `memoire-obsidian`
@@ -36,6 +37,7 @@ Contrat complet : `workflows/business-engine.md`. Notation d'une idée isolée :
 
 ## Règles
 - Aucun chiffre de marché sans source ; aucune promesse de revenu.
-- Données publiques uniquement dans les signaux ; rien sur les clients d'Ivan.
+- Données publiques uniquement dans les signaux ; rien sur les clients d'Ivan. Un sujet qui touche
+  l'activité d'un client listé dans `profil.md` n'est pas noté (conflit d'intérêts) : le signaler à Ivan.
 - Contacter un prospect, acheter un domaine ou un outil : GO d'Ivan (constitution).
 - Idée retenue → `dev-studio` pour le MVP.

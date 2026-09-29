@@ -49,6 +49,10 @@ test("scoring requires evidence, applies eliminators and classifies Cash/Venture
   assert.deepEqual([unpaid.decision, unpaid.eliminatoires], ["abandonner", ["aucune_preuve_paiement"]]);
   assert.equal(scoreOpportunity(opportunity({ eliminatoires: ["plateforme_unique"] })).decision, "abandonner");
   assert.throws(() => scoreOpportunity(opportunity({ jours_premier_euro: 0 })), /JOURS_PREMIER_EURO_REQUIRED/);
+  // The private profile is evidence for fit and MVP delay only.
+  const profile = { ...opportunity().criteres, fit: { note: 5, preuve: "profil" }, delai_mvp: { note: 4, preuve: "profil" } };
+  assert.equal(scoreOpportunity(opportunity({ criteres: profile })).total, 23);
+  assert.throws(() => scoreOpportunity(opportunity({ criteres: { ...profile, demande: { note: 4, preuve: "profil" } } })), /CRITERE_DEMANDE_PREUVE_REQUIRED/);
 });
 
 test("report keeps the latest score per subject, splits Cash/Venture and omits dropped ideas", t => {
