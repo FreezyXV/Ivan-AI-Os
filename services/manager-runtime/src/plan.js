@@ -6,6 +6,11 @@ export const ROUTES = Object.freeze(["business", "career", "finance", "knowledge
 export const ROLE_IDS = Object.freeze(Object.fromEntries(ROUTES.map(route => [route, `ivan-${route}`])));
 const deniedTools = ["exec", "process", "message", "gateway", "plugins", "cron", "sessions_send"];
 
+// Native sessions_yield acknowledgment is only a waiting reply. Keep the
+// unfinished verification obligation in message so it survives the next turn.
+export const MANAGER_RESUME_MESSAGE = "La mission reste à terminer : vérifier le résultat du worker contre le cahier des charges, puis rendre au parent un rapport final non vide avec résultat, vérifications et limites. Le rapport interne est un livrable encore dû ; NO_REPLY ne le remplace pas. Ne pas annoncer de tests exécutés sans preuve. Ne pas créer de worker supplémentaire ni boucler sur les historiques.";
+export const MANAGER_COMPLETION_GUIDANCE = `Après sessions_spawn, attendre via sessions_yield avec ce paramètre exact : ${JSON.stringify({ message: MANAGER_RESUME_MESSAGE })}. Utiliser message, pas acknowledgment. À la reprise, achever la vérification et retourner le rapport au parent.`;
+
 // Input comes from Claude's reviewed registry, never a model-provided role list.
 export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace }) {
   if (!path.isAbsolute(runtimeRoot) || !Array.isArray(managers) || managers.length !== 7 || !Array.isArray(skills)) throw new Error("INVALID_MANAGER_REGISTRY");
@@ -63,6 +68,6 @@ export function buildDispatchPlan({ route, metadata, plan }) {
   return {
     status: "DELEGATION_PROPOSED", manager: route.manager, executable: false,
     spawn: { agentId: role.agentId, runtime: "subagent", context: "isolated", mode: "run", runTimeoutSeconds: 300, deliver: false,
-      task: `Traiter les métadonnées de tâche suivantes dans ton rôle ${role.role} : ${JSON.stringify(safeMetadata)}. Si le cahier des charges manque, demander uniquement les informations nécessaires à l'exécution. Aucun paiement, contact tiers, publication ou opération destructive. Retourner un résultat vérifiable au chef de cabinet.` }
+      task: `Traiter les métadonnées de tâche suivantes dans ton rôle ${role.role} : ${JSON.stringify(safeMetadata)}. Si le cahier des charges manque, demander uniquement les informations nécessaires à l'exécution. Aucun paiement, contact tiers, publication ou opération destructive. Retourner un résultat vérifiable au chef de cabinet. ${MANAGER_COMPLETION_GUIDANCE}` }
   };
 }

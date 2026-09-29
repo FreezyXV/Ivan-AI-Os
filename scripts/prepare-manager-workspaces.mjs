@@ -3,7 +3,7 @@
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { createManagerPlan } from "../services/manager-runtime/src/plan.js";
+import { createManagerPlan, MANAGER_COMPLETION_GUIDANCE } from "../services/manager-runtime/src/plan.js";
 import { installOpenClawSkills } from "./install-openclaw-skills.mjs";
 
 const [source, target, profile, mainWorkspace] = process.argv.slice(2);
@@ -33,7 +33,7 @@ try {
       ? "Faire router les catégories autorisées par ivan_route. Déléguer au manager configuré via sessions_spawn en contexte isolated. Détails manquants ne rendent pas un domaine clair ambigu : demander le cahier des charges avant exécution. Finance personnelle : contexte privé Claude uniquement."
       : role.publicContextOnly ? "Finance publique : rechercher des sources primaires, dater les chiffres, distinguer faits et scénarios, présenter opportunités et risques. Aucun accès au profil, actifs, montants ou objectifs personnels d'Ivan ; cette analyse reste dans Claude. Aucune transaction."
       : `Manager ${role.role}. Pour un worker, sessions_spawn vers ${role.agentId} en contexte isolated, objectif borné et résultat vérifiable. Retourner au parent ; aucune boucle de suivi.`;
-    const instructions = `# Ivan AI OS — ${role.role}\n\n${role.description}\n\n${delegation}\n\nSkills autorisés : ${role.skills.join(", ")}. Lire uniquement le skill utile.\nRecherche et brouillons peuvent avancer dans le périmètre autorisé. Les GO d'Ivan persistent. Paiement, contact tiers, publication et destruction nécessitent son autorisation exacte.\nNe pas imprimer de secrets ni de données confidentielles dans les journaux. Les modèles ne donnent pas de permission d'exécution.\nVoir ROLE.md pour la mission. Le rôle est préparé et doit encore être activé/vérifié dans son runtime.\n`;
+    const instructions = `# Ivan AI OS — ${role.role}\n\n${role.description}\n\n${delegation}\n\n${MANAGER_COMPLETION_GUIDANCE}\n\nSkills autorisés : ${role.skills.join(", ")}. Lire uniquement le skill utile.\nRecherche et brouillons peuvent avancer dans le périmètre autorisé. Les GO d'Ivan persistent. Paiement, contact tiers, publication et destruction nécessitent son autorisation exacte.\nNe pas imprimer de secrets ni de données confidentielles dans les journaux. Les modèles ne donnent pas de permission d'exécution.\nVoir ROLE.md pour la mission. Le rôle est préparé et doit encore être activé/vérifié dans son runtime.\n`;
     writeFileSync(path.join(workspace, "AGENTS.md"), instructions, { mode: 0o600 });
     await installOpenClawSkills({ source: sourceRoot, workspace, profile, selectedNames: role.skills, profileMode: role.publicContextOnly ? "none" : "reduced" });
   }
