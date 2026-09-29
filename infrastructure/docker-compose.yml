@@ -1,17 +1,25 @@
 services:
   jev-gateway:
     image: node:22-alpine
-    working_dir: /app
+    working_dir: /repo/services/jev-gateway
     command: ["node", "src/server.js"]
     environment:
       HOST: "0.0.0.0" # Within container only; host port stays loopback.
       PORT: "4310"
       JEV_PROVIDER: ${JEV_PROVIDER:-mock}
       TYPESAFE_API_KEY: ${TYPESAFE_API_KEY:-}
-      JEV_MODEL: ${JEV_MODEL:-jev-latest}
+      JEV_MODEL: ${JEV_MODEL:-jev-1.13.0}
       JEV_TIMEOUT_MS: ${JEV_TIMEOUT_MS:-8000}
+      IVAN_DECISION_TOKEN_FILE: /runtime/decision-token
+      IVAN_AUDIT_PATH: /runtime/evaluation.jsonl
+      IVAN_WORKSPACE_ROOT: /repo
+      IVAN_JEV_BUDGET_PATH: /runtime/jev-budget.json
+      JEV_USD_TO_EUR_BUDGET_RATE: ${JEV_USD_TO_EUR_BUDGET_RATE:-1}
     volumes:
-      - ../services/jev-gateway:/app:ro
+      - ../services/jev-gateway:/repo/services/jev-gateway:ro
+      - ../policies/kernel:/repo/policies/kernel:ro
+      # Provision a dedicated private directory before using this skeleton.
+      - ${IVAN_RUNTIME_DIR:?Set a provisioned private runtime directory}:/runtime
     ports:
       - "127.0.0.1:4310:4310"
     restart: unless-stopped

@@ -15,7 +15,7 @@ export const permissionQuestion = {
 export const routingQuestions = {
   manager: {
     type: "choice",
-    instructions: "Which one specialist should handle this request? Choose based on the user's concrete objective. If there are several objectives, choose the one needing first action; choose system for AI OS operation or unclear intent.",
+    instructions: "Which specialist should handle the enumerated requested_tasks? Tasks are ordered by the user's priority; choose the specialist needing first action. Use only these metadata, not assumed private context. Choose system for AI OS operation or other/unclear intent.",
     criteria: {
       business: "Business ideas, customer problems, pricing, validation or revenue opportunities.",
       career: "Jobs, freelance missions, applications, CV or professional positioning.",
@@ -27,7 +27,7 @@ export const routingQuestions = {
   },
   needs_details: {
     type: "noul",
-    instructions: "Does the specialist need additional concrete details before carrying out this request? Judge execution readiness, not whether the specialist domain can be selected.",
+    instructions: "Does the specialist need more details? details_available=false means essential execution details are missing; true means the caller has details locally. Judge readiness independently of selecting the domain.",
     criteria: {
       true: "The specialist is identifiable, but a file, subject, scope or other essential input is missing before execution.",
       false: "The request contains enough detail for the specialist to start the requested work."
@@ -35,7 +35,7 @@ export const routingQuestions = {
   },
   urgency: {
     type: "score",
-    instructions: "How time-sensitive is the user's request based only on explicit evidence in the text?",
+    instructions: "Rate only the urgency metadata: none=0, soon=1, immediate=2. Do not infer a deadline from task type.",
     criteria: ["No stated deadline", "Time-sensitive but not immediate", "Immediate deadline or active incident"]
   }
 };

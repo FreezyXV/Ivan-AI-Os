@@ -44,3 +44,21 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+
+  skills-and-managers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Claude's reviewed registry arrives in a separate PR. These steps become
+      # active when it is present, without making this stacked PR depend on it.
+      - if: ${{ hashFiles('skills/tools/registry.mjs') != '' }}
+        run: node skills/tools/registry.mjs
+      - if: ${{ hashFiles('agents/tools/managers.mjs') != '' }}
+        run: node agents/tools/managers.mjs
+      - if: ${{ hashFiles('skills/test/*.test.mjs') != '' }}
+        run: node --test skills/test/*.test.mjs
+      - if: ${{ hashFiles('agents/test/*.test.mjs') != '' }}
+        run: node --test agents/test/*.test.mjs

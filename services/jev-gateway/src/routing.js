@@ -1,13 +1,15 @@
 import { askTypeSafe, ProviderError } from "./provider.js";
 import { routingQuestions } from "./questions.js";
+import { validateRoutingMetadata } from "./routing-metadata.js";
 
 const MANAGERS = Object.keys(routingQuestions.manager.criteria);
 
-export async function routeRequest(text) {
+export async function routeRequest(input, options) {
+  const metadata = validateRoutingMetadata(input);
   if ((process.env.JEV_PROVIDER || "mock") !== "jev") {
     return { status: "REVIEW", manager: null, manager_confidence: null, urgency: null, needs_details_probability: null, provider: "mock" };
   }
-  const raw = await askTypeSafe(text, routingQuestions);
+  const raw = await askTypeSafe(metadata, routingQuestions, options);
   const { manager, needs_details, urgency } = raw?.answers || {};
   if (manager?.type !== "choice" || !MANAGERS.includes(manager.choice) ||
       !Number.isFinite(manager.confidence) || manager.confidence < 0 || manager.confidence > 1 ||
