@@ -79,6 +79,7 @@ try {
     IVAN_DECISION_TOKEN_FILE: tokenFile, IVAN_AUDIT_PATH: path.join(directory, "evaluation.jsonl"),
     IVAN_WORKSPACE_ROOT: workspaceRoot, IVAN_JEV_BUDGET_PATH: path.join(directory, "jev-budget.json"),
     JEV_USD_TO_EUR_BUDGET_RATE: process.env.JEV_USD_TO_EUR_BUDGET_RATE || "1",
+    ...(process.env.JEV_ROUTING_MODE === "table" ? { JEV_ROUTING_MODE: "table" } : {}),
     ...(key ? { TYPESAFE_API_KEY: key } : {})
   };
   child = spawn(process.execPath, [path.join(root, "services/jev-gateway/src/server.js")], { env, stdio: ["ignore", "ignore", "ignore"] });
