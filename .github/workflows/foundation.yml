@@ -32,3 +32,15 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+
+  openclaw-observer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hooks/openclaw/ivan-observer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test

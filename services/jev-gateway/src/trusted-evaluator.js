@@ -4,12 +4,14 @@ import { evaluateKernel } from "./kernel.js";
 import { decideWithProvider } from "./provider.js";
 import { createAuditWriter } from "./audit.js";
 import { classifyToolCall, loadPolicyCatalog, validateToolCall, TrustedInputError } from "./trusted-policy.js";
+import { canonicalJson, createKeyedBinding } from "./action-binding.js";
 
 // Shadow evaluation only. No ALLOW response, action execution, runtime hook or
 // human-approval token is implemented by this endpoint.
 export function createTrustedEvaluator({ token, workspaceRoot, auditPath, audit = auditPath && createAuditWriter(auditPath), catalog = loadPolicyCatalog(), decide = decideWithProvider } = {}) {
   if (typeof token !== "string" || token.length < 32 || /\s/.test(token) || typeof audit !== "function") throw new Error("INVALID_TRUSTED_CONFIG");
   const expected = digest(`Bearer ${token}`);
+  const bind = createKeyedBinding(token);
   return {
     authenticate(header) {
       return typeof header === "string" && header.length < 4096 && timingSafeEqual(expected, digest(header));
@@ -17,9 +19,14 @@ export function createTrustedEvaluator({ token, workspaceRoot, auditPath, audit 
     async evaluate(payload) {
       const started = performance.now();
       const requestId = randomUUID();
-      let status = 200, classification, result;
+      let status = 200, classification, result, actionBinding;
       try {
-        classification = classifyToolCall(validateToolCall(payload), workspaceRoot);
+        let call;
+        try {
+          call = JSON.parse(canonicalJson(validateToolCall(payload)));
+          actionBinding = bind(call);
+        } catch { throw new TrustedInputError(); }
+        classification = classifyToolCall(call, workspaceRoot);
         const { action, hardDecision, consultProvider, reason } = classification;
         const kernel = evaluateKernel(action);
         result = { decision: hardDecision || kernel?.decision || "REVIEW", confidence: hardDecision || kernel ? 1 : 0, reason_code: reason, provider: "deterministic-kernel" };
@@ -39,6 +46,7 @@ export function createTrustedEvaluator({ token, workspaceRoot, auditPath, audit 
       }
       const response = {
         ...result, request_id: requestId, advisory: true, executable: false,
+        ...(actionBinding ? { action_binding: actionBinding } : {}),
         policies: catalog.policies.map(p => p.id), policy_revision: catalog.revision,
         latency_ms: Math.round(performance.now() - started)
       };
@@ -46,6 +54,7 @@ export function createTrustedEvaluator({ token, workspaceRoot, auditPath, audit 
       // headers, paths, addresses or error objects into the audit journal.
       const event = {
         version: 1, request_id: requestId, timestamp: new Date().toISOString(),
+        ...(actionBinding ? { action_binding: actionBinding } : {}),
         actor: "local-adapter", tool: classification?.action.tool ?? "invalid",
         risk: classification?.action.risk ?? "unknown", decision: response.decision, confidence: response.confidence,
         reason_code: response.reason_code, provider: response.provider,

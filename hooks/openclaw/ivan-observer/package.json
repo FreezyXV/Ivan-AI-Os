@@ -1,0 +1,10 @@
+{
+  "name": "ivan-ai-os-observer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "openclaw": { "extensions": ["./index.js"] },
+  "peerDependencies": { "openclaw": "2026.9.5" },
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test" }
+}

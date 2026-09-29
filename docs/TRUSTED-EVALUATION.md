@@ -10,9 +10,11 @@ Implemented locally on 2026-09-28 after the first verified Telegram → `ivan_ro
 {"tool":"read","arguments":{"path":"README.md"}}
 ```
 
-The request requires `Authorization: Bearer …`. `IVAN_DECISION_TOKEN` must be a cryptographically random token of at least 32 non-whitespace characters and come from the runtime secret mechanism, never Git, chat or command-line arguments. No token was provisioned or persisted during this session. The endpoint is disabled when the environment variable is absent. A configured token without a valid audit path refuses service startup.
+The request requires `Authorization: Bearer …`. `IVAN_DECISION_TOKEN` must be a cryptographically random token of at least 32 non-whitespace characters and come from the runtime secret mechanism, never Git, chat or command-line arguments. No persistent token was provisioned during these sessions. The endpoint is disabled when the environment variable is absent. A configured token without an absolute audit path refuses service startup.
 
-`IVAN_AUDIT_PATH` selects an absolute path in an existing private directory. `IVAN_WORKSPACE_ROOT` selects the trusted project root for filesystem inspection. The optional endpoint is not activated in the already-running Mac smoke service. Its HTTP behavior was tested using ephemeral loopback servers and synthetic credentials.
+`IVAN_AUDIT_PATH` selects an absolute path in an existing private directory. Missing/invalid audit configuration refuses startup; filesystem write/permission/capacity failures at evaluation time return HTTP 503. `IVAN_WORKSPACE_ROOT` selects the trusted project root for filesystem inspection. The optional endpoint is not activated in the already-running Mac smoke service. Its HTTP behavior was tested using ephemeral loopback servers and synthetic credentials.
+
+Every structurally valid bounded call now receives an `action_binding`: HMAC-SHA256 of canonical JSON tool name/arguments, keyed by the runtime token and a versioned domain separator. The service snapshots input before awaiting the provider and records the same binding in its audit. It is correlation evidence, not authorization. Limits and native-hook verification are documented in `hooks/openclaw/ivan-observer/README.md`.
 
 ## Deterministic path
 
@@ -32,12 +34,12 @@ The POSIX journal is created mode `0600`, rejects a symlink or multiply linked d
 
 ## Remaining trust boundary
 
-The authenticated caller can still submit a tool name different from the action it later executes. An actual trusted runtime hook must capture and bind the exact pending call. This endpoint neither observes all OpenClaw calls nor executes or blocks any action. Filesystem inspection is advisory and does not solve execution-time path races. The bearer identity is one local adapter, not a multi-user authorization model.
+The authenticated caller can still submit a tool name different from the action it later executes. A separate, inactive OpenClaw observer now captures original and completion parameters, verifies the evaluator's binding, and detects rewrites. It was verified with the installed hook runner in isolation, not with the live gateway. Neither endpoint nor observer executes or blocks actions. Hook coverage, native approval snapshots and execution-time path races remain trust boundaries. The bearer identity is one local adapter, not a multi-user authorization model.
 
 The legacy `/v1/decide` and `/v1/route` endpoints remain unauthenticated and advisory. Protecting this new endpoint does not secure the whole server. Keep loopback/private access; do not expose the service or interpret legacy ALLOW as permission. The Docker skeleton is unchanged; enabling this path there would additionally require the policy catalog and private audit directory to be mounted, plus runtime-only credentials.
 
-Next: review this prototype, calibrate with labeled scenarios, integrate a native `before_tool_call` observer against the installed runtime contract, then implement exact-action approvals and durable private secret provisioning before enabling enforcement. Existing exposed credentials must be replaced before broadening live integration.
+Next: calibrate with labeled scenarios, implement exact-action approvals and durable private secret provisioning, then verify the observer in a scoped live pilot before enabling enforcement. Existing exposed credentials must be replaced before broadening live integration.
 
 ## Verification
 
-24 local tests passed on Node 24.19.0: the existing provider/router/plugin suite plus real loopback HTTP authentication tests, forged metadata/approval rejection, sensitive/protected paths and symlinks, unknown tools, provider failures, policy drift, redaction, journal capacity, permissions and write failure behavior. All provider responses in the new evaluator tests are synthetic; these tests spend no provider credits.
+38 local tests pass on Node 24.19.0: the original 24 tests plus canonical binding, hook correlation, rewritten parameters, missing identity, bounded pending state, cancellation, client validation and inactive plugin registration. An additional isolated test against the actual OpenClaw 2026.9.5 hook runner verifies two correlated calls and a rewrite. Provider responses in these tests are synthetic; these tests spend no provider credits.

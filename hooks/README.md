@@ -18,7 +18,11 @@ ALLOW / DENY / REQUIRE_HUMAN / ESCALATE
 
 Provider-specific adapters must not duplicate the constitution.
 
-Planned:
+Current OpenClaw adapters:
+- `hooks/openclaw/ivan-route/` — advisory routing, verified through Telegram and live Jev.
+- `hooks/openclaw/ivan-observer/` — inactive before/after observer with keyed correlation; tested against the installed native runner in isolation. It does not grant or block permission.
+
+Planned enforcement adapters:
 - `hooks/claude/`
 - `hooks/codex/`
 - `hooks/openclaw/`

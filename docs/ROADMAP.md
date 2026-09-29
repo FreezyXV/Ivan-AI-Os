@@ -12,7 +12,7 @@
 - [x] TypeSafe API access confirmed by Ivan; no key stored in this repository
 - [x] Live Jev route smoke from Ivan's Mac with a hidden, ephemeral API key (HTTP 200, engineering ROUTED); persistent runtime remains pending
 - [x] Shadow evaluator loads global kernel policies from the repository and rejects caller policy lists; catalog revision recorded
-- [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative concrete-call classification and bounded redacted audit; 24 local tests pass (see `docs/TRUSTED-EVALUATION.md`)
+- [x] Optional authenticated `/v1/evaluate-tool` prototype: conservative classification, bounded redacted audit and keyed action correlation; 38 local tests pass (see `docs/TRUSTED-EVALUATION.md`)
 - [ ] Activate private authenticated runtime and trusted native call capture; legacy endpoints remain advisory/unauthenticated
 - [ ] Calibration on labeled requests and permission scenarios
 
@@ -23,6 +23,8 @@
 - [x] Direct OpenClaw Gateway `tools.invoke` reached the linked plugin and returned a live Jev engineering route (`provider: jev`); the CLI required `--timeout 45000`
 - [x] Actual Telegram DM calls `ivan_route` and returns live `provider: jev`; verified 2026-09-28 at 19:26 UTC with explicit dynamic-tool discovery (see `docs/TELEGRAM-VERIFICATION.md`)
 - [ ] Reassess the official TypeSafe decision plugin once a compatible OpenClaw release and package are available (host 2026.9.6+)
+- [x] Inactive native observer captures original/completion parameters and detects rewrites; verified against the installed 2026.9.5 hook runner in isolation (see `hooks/openclaw/ivan-observer/README.md`)
+- [ ] Scoped live observer pilot after private secret provisioning and credential replacement
 - [ ] Native OpenClaw `before_tool_call` policy gate, based on trusted tool metadata
 - [ ] Claude Code and Codex adapters verified against their current runtime hook contracts
 - [ ] Human approvals bound to exact proposed actions
