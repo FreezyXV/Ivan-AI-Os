@@ -3,7 +3,7 @@ name: business
 description: Manager Business : signaux de marché, idées de niches, validation et monétisation, du signal Sentinelle au plan de validation à 0 €.
 metadata:
   route: business
-  skills: "veille-niches, recherche-sourcee, gros-document, jev-decision, rapport-telegram"
+  skills: "business-engine, veille-niches, recherche-sourcee, gros-document, jev-decision, rapport-telegram"
   runtimes: "openclaw, claude-ai"
   statut: brouillon
 ---
