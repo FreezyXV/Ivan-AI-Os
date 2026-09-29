@@ -5,6 +5,8 @@
 - [x] Jev Gateway skeleton and Docker control-plane skeleton
 - [ ] VPS provisioned; runtime secrets configured
 
+- [x] Activate a private Mac LaunchAgent with Keychain-backed credential, six tests and native isolated/live restart proof; shared budget preserved (services/mac-runtime/README.md)
+
 ## Phase 1 — Decision plane
 - [x] Correct TypeSafe System One request/response adapter for Choice
 - [x] Batched Choice/Noul/Score request router for the six domains
