@@ -30,13 +30,10 @@ export function checkManagers(managers = loadManagers(), skills = buildRegistry(
     if (!ROUTES.includes(m.route)) errors.push(`${where}: route must be one of ${ROUTES.join("|")}`);
     if (routes.filter(r => r === m.route).length > 1) errors.push(`${where}: duplicate route ${m.route}`);
     if (!m.runtimes.length || m.runtimes.some(r => !RUNTIMES.includes(r))) errors.push(`${where}: runtimes must be among ${RUNTIMES.join("|")}`);
-    for (const s of m.skills) {
-      const skill = byName.get(s);
-      if (!skill) { errors.push(`${where}: unknown skill ${s}`); continue; }
-      // Ivan's rule: clients and personal finances never reach OpenClaw.
-      if (m.runtimes.includes("openclaw") && OPENCLAW_EXCLUDED_MANAGERS.includes(skill.manager)) errors.push(`${where}: ${s} is excluded from OpenClaw`);
-    }
-    if (m.runtimes.includes("openclaw") && OPENCLAW_EXCLUDED_MANAGERS.includes(m.route)) errors.push(`${where}: ${m.route} manager cannot run on OpenClaw`);
+    for (const s of m.skills) if (!byName.has(s)) errors.push(`${where}: unknown skill ${s}`);
+    // Ivan's rule: personal-finance skills never reach OpenClaw (package.mjs --openclaw drops
+    // them); a manager running there must keep at least one public skill.
+    if (m.runtimes.includes("openclaw") && !openclawSkills(m, skills).length) errors.push(`${where}: no OpenClaw skill left after exclusions`);
   }
   for (const skill of skills) {
     const owner = managers.find(m => m.route === skill.manager);
@@ -44,6 +41,11 @@ export function checkManagers(managers = loadManagers(), skills = buildRegistry(
     else if (!owner.skills.includes(skill.name)) errors.push(`skill ${skill.name}: not listed by its manager ${owner.name}`);
   }
   return errors;
+}
+
+export function openclawSkills(manager, skills) {
+  const byName = new Map(skills.map(s => [s.name, s]));
+  return manager.skills.filter(s => byName.has(s) && !OPENCLAW_EXCLUDED_MANAGERS.includes(byName.get(s).manager));
 }
 
 export function skillsForRoute(route, managers = loadManagers()) {

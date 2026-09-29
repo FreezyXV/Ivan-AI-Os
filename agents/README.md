@@ -28,4 +28,5 @@ node --test 'agents/test/*.test.mjs'
 node skills/tools/package.mjs --openclaw --manager career --out <dir>   # one manager's skills
 ```
 
-Finance runs on claude.ai only: clients and personal finances never reach OpenClaw (Ivan, 2026-09-29).
+Finance runs on OpenClaw for public research only; `veille-investissements` and the investment
+frame stay on Claude. Clients and personal finances never reach OpenClaw (Ivan, 2026-09-29).
