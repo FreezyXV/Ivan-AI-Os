@@ -1,13 +1,16 @@
 // Default validates the public corpus without network/model calls. --live uses
 // the authenticated, budgeted gateway; no provider key enters this process.
 import { ROUTING_CALIBRATION, validateCalibration, summarizeCalibration } from "../services/jev-gateway/src/calibration.js";
+import { ROUTING_HOLDOUT } from "../services/jev-gateway/src/routing-holdout.js";
 import { readDecisionToken } from "../services/jev-gateway/src/runtime-token.js";
 
 try {
-  if (process.argv.slice(2).some(arg => !["--live", "--dry-run"].includes(arg))) throw new Error("INVALID_CALIBRATION_OPTION");
-  validateCalibration();
+  const args = process.argv.slice(2);
+  if (new Set(args).size !== args.length || args.some(arg => !["--live", "--dry-run", "--holdout"].includes(arg)) || (args.includes("--live") && args.includes("--dry-run"))) throw new Error("INVALID_CALIBRATION_OPTION");
+  const holdout = args.includes("--holdout"), cases = holdout ? ROUTING_HOLDOUT : ROUTING_CALIBRATION;
+  validateCalibration(cases, { holdout });
   if (!process.argv.includes("--live")) {
-    console.log(JSON.stringify({ corpus_valid: true, cases: ROUTING_CALIBRATION.length, provider_calls: 0, measured_accuracy: null }));
+    console.log(JSON.stringify({ corpus_valid: true, corpus: holdout ? "holdout-v1" : "training-v1", cases: cases.length, provider_calls: 0, measured_accuracy: null }));
   } else {
     const url = new URL(process.env.IVAN_GATEWAY_URL || "http://127.0.0.1:4310");
     if (url.protocol !== "http:" || !["127.0.0.1", "[::1]"].includes(url.hostname) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) throw new Error("GATEWAY_MUST_BE_LOOPBACK");
@@ -20,12 +23,12 @@ try {
       return response.json();
     };
     const before = await request("/v1/usage"), observations = [];
-    for (const item of ROUTING_CALIBRATION) {
+    for (const item of cases) {
       try { observations.push({ id: item.id, result: await request("/v1/route", item.metadata) }); }
       catch { observations.push({ id: item.id }); break; } // No retries or repeated failures.
     }
     const after = await request("/v1/usage");
-    const summary = summarizeCalibration(observations);
+    const summary = summarizeCalibration(observations, cases, { holdout });
     const delta = before.month === after.month && Number.isSafeInteger(before.charged_micro_eur) && Number.isSafeInteger(after.charged_micro_eur)
       ? (after.charged_micro_eur - before.charged_micro_eur) / 1_000_000 : null;
     console.log(JSON.stringify({ ...summary, local_budget_estimate: true,
