@@ -25,7 +25,11 @@ with `systemd-analyze verify`. After installation, check `systemctl is-active
 ivan-jev-gateway` and the journal's `JEV_GATEWAY_READY` marker. Keep the
 previous release and unit for rollback; never remove or reset the state
 directory during a rollback. A Mac-to-VPS routing cutover requires a separate
-canary and coordinated OpenClaw configuration change.
+canary and coordinated OpenClaw configuration change. The Mac and VPS cannot
+run against independent 10 EUR budget files as if they were one allowance:
+before a real cutover, stop new Mac Jev requests, transfer the exact budget
+state, verify it on Linux, then redirect OpenClaw. Keep the Mac fallback
+stopped until rollback is deliberately chosen.
 
 `npm test` runs a local mock daemon, authenticated health probe, denied
 unauthenticated request, and credential/port invariants without TypeSafe or
