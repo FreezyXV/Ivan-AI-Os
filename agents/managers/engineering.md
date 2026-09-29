@@ -3,7 +3,7 @@ name: engineering
 description: Manager Engineering : développement, dépôts, débogage, architecture et livraison logicielle par Claude Code et Codex, l'un bâtit, l'autre relit.
 metadata:
   route: engineering
-  skills: "dev-studio, design-original, revue-croisee, revue-securite-diff, passation-session, jev-decision"
+  skills: "usine-logicielle, dev-studio, design-original, revue-croisee, revue-securite-diff, passation-session, jev-decision"
   runtimes: "claude-code, codex"
   statut: brouillon
 ---

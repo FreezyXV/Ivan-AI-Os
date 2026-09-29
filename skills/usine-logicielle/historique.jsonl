@@ -1,0 +1,14 @@
+{"pr":2,"date":"2026-09-29","categorie":"securite","constructeur":"codex","relecteur":"claude","resultat":"corrige","bloquants":1,"note":"regex sensible : faux positifs sur policies/kernel/secrets.yaml"}
+{"pr":3,"date":"2026-09-29","categorie":"outillage","constructeur":"claude","relecteur":"codex","resultat":"corrige","bloquants":1,"note":"empaqueteur : lien profil.md suivi, écriture hors sortie"}
+{"pr":4,"date":"2026-09-29","categorie":"backend","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"gateway authentifié et budget ; 2 remarques"}
+{"pr":5,"date":"2026-09-29","categorie":"integration","constructeur":"claude","relecteur":"codex","resultat":"accepte","bloquants":0,"note":"adaptateur PreToolUse shadow"}
+{"pr":6,"date":"2026-09-29","categorie":"infra","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"sept rôles ; point à vérifier avant bascule"}
+{"pr":7,"date":"2026-09-29","categorie":"tests","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"corpus de calibration ; holdout demandé"}
+{"pr":8,"date":"2026-09-29","categorie":"outillage","constructeur":"claude","relecteur":"codex","resultat":"corrige","bloquants":2,"note":"mémoire : formes de jetons non refusées, notes en 644"}
+{"pr":10,"date":"2026-09-29","categorie":"infra","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"bascule préparée ; 2 effets à annoncer"}
+{"pr":11,"date":"2026-09-29","categorie":"tests","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"holdout 19 cas, étiquettes correctes"}
+{"pr":13,"date":"2026-09-29","categorie":"integration","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"correctif NO_REPLY des managers"}
+{"pr":14,"date":"2026-09-29","categorie":"backend","constructeur":"codex","relecteur":"claude","resultat":"corrige","bloquants":1,"note":"recherche mémoire en échec après 200 fichiers (corrigé par #16)"}
+{"pr":16,"date":"2026-09-29","categorie":"backend","constructeur":"claude","relecteur":"codex","resultat":"accepte","bloquants":0,"note":"correctif de passage à l'échelle intégré par Codex"}
+{"pr":20,"date":"2026-09-29","categorie":"infra","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"service launchd + Trousseau ; risque oracle documenté"}
+{"pr":21,"date":"2026-09-29","categorie":"integration","constructeur":"codex","relecteur":"claude","resultat":"accepte","bloquants":0,"note":"livraison Telegram par le chef"}
