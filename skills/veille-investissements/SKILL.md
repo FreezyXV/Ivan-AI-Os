@@ -30,7 +30,8 @@ ASPIM, émetteurs d'ETF, justETF.
 ## 1 bis. Dérive et versement (calcul, 0 token)
 Allocation privée : `~/.ivan-ai-os/finance/allocation.json` (jamais Git, OpenClaw ni Jev).
 `node skills/finance-engine/scripts/dca.mjs derive` : écart réel/cible en points (bande ±5 pts).
-`node skills/finance-engine/scripts/dca.mjs repartir <montant> [--valeur <total>]` : répartition
+`node skills/finance-engine/scripts/dca.mjs repartir [montant] --valeur <total>` : répartition
+(versement mensuel par défaut ; valeur actuelle du portefeuille requise)
 **sans vente** du prochain versement (combler les écarts, puis suivre la cible). Proposition seulement.
 
 ## 2. Livrer (dans le chat)

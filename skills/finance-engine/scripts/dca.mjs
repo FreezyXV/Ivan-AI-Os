@@ -1,7 +1,8 @@
 // Private DCA module: drift vs target and a buy-only split of the next contribution. Pure
 // arithmetic, no LLM, no network. Reads ~/.ivan-ai-os/finance/allocation.json (0600, never Git,
 // never OpenClaw or Jev). Proposals only: buying remains Ivan's manual action.
-// Usage: node dca.mjs derive | repartir <montant_eur> [--valeur <total_eur>]
+// Usage: node dca.mjs derive [--valeur <total_eur>] | repartir [montant_eur] --valeur <total_eur>
+// Defaults: montant = versement_mensuel_eur; valeur = valeur_portefeuille_eur (current value).
 import { lstatSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -40,10 +41,10 @@ export function drift(a, bande = 5) {
 }
 
 // Buy-only split: fill the lines furthest below target first, then follow the target weights.
-// Never proposes a sale. `valeur` is the current portfolio value (defaults to the reference amount).
-export function split(a, montant, valeur = a.montant_reference_eur) {
+// Never proposes a sale. `valeur` is the current portfolio value.
+export function split(a, montant = a.versement_mensuel_eur, valeur = a.valeur_portefeuille_eur) {
   if (!Number.isFinite(montant) || montant <= 0) fail("MONTANT_INVALID");
-  if (!Number.isFinite(valeur) || valeur <= 0) fail("VALEUR_INVALID");
+  if (!Number.isFinite(valeur) || valeur <= 0) fail("VALEUR_PORTEFEUILLE_REQUIRED");
   const total = valeur + montant;
   const lines = a.lignes.map(l => ({ id: l.id, actuel: (valeur * l.reel_pct) / 100, cible: (total * l.cible_pct) / 100 }));
   const deficits = lines.map(l => Math.max(0, l.cible - l.actuel));
@@ -62,7 +63,8 @@ export function split(a, montant, valeur = a.montant_reference_eur) {
 }
 
 // Contribution needed to reach every target without selling.
-export function toTarget(a, valeur = a.montant_reference_eur) {
+export function toTarget(a, valeur = a.valeur_portefeuille_eur) {
+  if (!Number.isFinite(valeur) || valeur <= 0) return null;
   const needed = Math.max(...a.lignes.map(l => (valeur * l.reel_pct) / l.cible_pct)) - valeur;
   return round2(Math.max(0, needed));
 }
@@ -72,8 +74,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.a
   const opt = flag => { const i = args.indexOf(flag); return i < 0 ? undefined : Number(args[i + 1]); };
   try {
     const a = readAllocation(process.env.IVAN_ALLOCATION_PATH);
-    if (command === "derive") console.log(JSON.stringify({ lignes: drift(a), versement_pour_cible_sans_vente_eur: toTarget(a, opt("--valeur")) }, null, 2));
-    else if (command === "repartir") console.log(JSON.stringify(split(a, Number(args[0]), opt("--valeur")), null, 2));
+    const valeur = opt("--valeur") ?? a.valeur_portefeuille_eur;
+    if (command === "derive") console.log(JSON.stringify({ lignes: drift(a), versement_pour_cible_sans_vente_eur: toTarget(a, valeur) }, null, 2));
+    else if (command === "repartir") console.log(JSON.stringify(split(a, args[0] && !args[0].startsWith("--") ? Number(args[0]) : a.versement_mensuel_eur, valeur), null, 2));
     else fail("USAGE: derive | repartir <montant_eur> [--valeur <total_eur>]");
   } catch (error) {
     console.error(error instanceof DcaError ? error.message : "DCA_ERROR");

@@ -66,7 +66,7 @@ test("a quiet day says so and keeps sources linked", async () => {
 });
 
 import { drift, split, toTarget, validateAllocation } from "../finance-engine/scripts/dca.mjs";
-const allocation = { version: 1, montant_reference_eur: 1000, lignes: [
+const allocation = { version: 1, versement_mensuel_eur: 1000, valeur_portefeuille_eur: 1000, lignes: [
   { id: "A", reel_pct: 48.9, cible_pct: 45 }, { id: "B", reel_pct: 21.1, cible_pct: 20 }, { id: "C", reel_pct: 14.1, cible_pct: 15 },
   { id: "D", reel_pct: 8.5, cible_pct: 10 }, { id: "E", reel_pct: 7.4, cible_pct: 10 }] };
 
@@ -82,4 +82,7 @@ test("DCA: drift, buy-only split that never sells, and the contribution needed t
   for (const l of big) assert.ok(Math.abs(l.apres_pct - l.cible_pct) < 0.01, `${l.id} reaches target`);
   assert.throws(() => validateAllocation({ ...allocation, lignes: allocation.lignes.slice(1) }), /SOMME_REEL_PCT/);
   assert.throws(() => split(allocation, 0), /MONTANT_INVALID/);
+  assert.equal(split(allocation).reduce((s, l) => s + l.achat_eur, 0).toFixed(2), "1000.00", "monthly contribution by default");
+  assert.throws(() => split({ ...allocation, valeur_portefeuille_eur: null }), /VALEUR_PORTEFEUILLE_REQUIRED/);
+  assert.equal(toTarget({ ...allocation, valeur_portefeuille_eur: null }), null);
 });
