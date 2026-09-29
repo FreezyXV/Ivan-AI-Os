@@ -3,6 +3,7 @@
 import { chmodSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { isOpenClawSkillAvailable } from "../services/manager-runtime/src/openclaw-skills.js";
 
 export async function installOpenClawSkills({ source, workspace, profile, selectedNames, profileMode = "reduced" }) {
   if (![source, workspace, profile].every(p => typeof p === "string" && path.isAbsolute(p))) throw new Error("ABSOLUTE_PATHS_REQUIRED");
@@ -15,7 +16,7 @@ export async function installOpenClawSkills({ source, workspace, profile, select
   const registry = buildRegistry(path.join(sourceRoot, "skills"), { privateTerms });
   if (!registry.ok) throw new Error("INVALID_SKILLS");
   if (selectedNames && (!Array.isArray(selectedNames) || selectedNames.some(name => !registry.results.some(r => r.entry.name === name)))) throw new Error("UNKNOWN_SELECTED_SKILL");
-  const names = registry.results.filter(r => r.entry.statut === "actif" && r.entry.manager !== "finance" &&
+  const names = registry.results.filter(r => isOpenClawSkillAvailable(r.entry) &&
     (selectedNames ? selectedNames.includes(r.entry.name) : ["career", "knowledge", "system"].includes(r.entry.manager))).map(r => r.entry.name);
   for (const result of registry.results.filter(r => names.includes(r.entry.name))) inspectTree(result.dir);
   const destination = path.join(workspaceRoot, "skills");

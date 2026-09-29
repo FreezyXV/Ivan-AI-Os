@@ -44,3 +44,15 @@ test("incomplete, duplicated or unknown manager definitions are rejected", () =>
     assert.throws(() => createManagerPlan({ managers: bad, skills, runtimeRoot: "/synthetic-private-runtime/managers" }), /INVALID_MANAGER_REGISTRY/);
   }
 });
+
+test("activation preserves the Secretary workspace and excludes unavailable memory access", () => {
+  const extraSkills = [...skills, { name: "memoire-obsidian", manager: "system", statut: "actif" }];
+  const definitions = managers.map(m => ["system", "knowledge"].includes(m.route)
+    ? { ...m, skills: [...m.skills, "memoire-obsidian"] } : m);
+  const plan = createManagerPlan({ managers: definitions, skills: extraSkills,
+    runtimeRoot: "/synthetic-private-runtime/managers", mainWorkspace: "/existing-secretary" });
+  assert.equal(plan.openclawFragment.agents.entries.main.workspace, "/existing-secretary");
+  assert.equal(plan.roles.find(r => r.agentId === "main").preparedWorkspace,
+    "/synthetic-private-runtime/managers/chief-of-staff");
+  assert.ok(plan.roles.every(r => !r.skills.includes("memoire-obsidian")));
+});

@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import { createManagerPlan } from "../services/manager-runtime/src/plan.js";
 import { installOpenClawSkills } from "./install-openclaw-skills.mjs";
 
-const [source, target, profile] = process.argv.slice(2);
+const [source, target, profile, mainWorkspace] = process.argv.slice(2);
 let stage;
 try {
   if (![source, target, profile].every(p => p && path.isAbsolute(p))) throw new Error("ABSOLUTE_PATHS_REQUIRED");
@@ -22,7 +22,8 @@ try {
   const { buildRegistry } = await import(pathToFileURL(path.join(sourceRoot, "skills/tools/registry.mjs")));
   const managers = loadManagers(), registry = buildRegistry();
   if (!registry.ok || checkManagers(managers).length) throw new Error("INVALID_MANAGER_REGISTRY");
-  const plan = createManagerPlan({ managers, skills: registry.results.map(r => r.entry), runtimeRoot: target });
+  if (mainWorkspace && !lstatSync(mainWorkspace).isDirectory()) throw new Error("INVALID_MAIN_WORKSPACE");
+  const plan = createManagerPlan({ managers, skills: registry.results.map(r => r.entry), runtimeRoot: target, mainWorkspace });
   stage = mkdtempSync(path.join(parent, ".ivan-manager-stage-"));
   for (const role of plan.roles) {
     const workspace = path.join(stage, role.role); mkdirSync(workspace, { mode: 0o700 });
@@ -38,7 +39,7 @@ try {
   }
   writeFileSync(path.join(stage, "manager-plan.json"), JSON.stringify(plan, null, 2), { mode: 0o600 });
   renameSync(stage, target); stage = undefined;
-  console.log(JSON.stringify({ roles_prepared: plan.roles.length, openclaw_roles: plan.roles.filter(r => r.runtime === "openclaw").length, private_finance_context: "claude-only", distinct_workspaces: true, live_config_modified: false, models_started: 0 }));
+  console.log(JSON.stringify({ roles_prepared: plan.roles.length, openclaw_roles: plan.roles.filter(r => r.runtime === "openclaw").length, private_finance_context: "claude-only", distinct_workspaces: true, secretary_workspace_preserved: Boolean(mainWorkspace), live_config_modified: false, models_started: 0 }));
 } catch (error) {
   const code = error.code ?? error.message;
   console.error(/^[A-Z][A-Z_]{0,63}$/.test(code) ? code : "MANAGER_PREPARATION_REFUSED"); process.exitCode = 1;

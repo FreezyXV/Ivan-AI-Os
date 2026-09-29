@@ -1,5 +1,10 @@
 # Sept rôles : préparation et preuve attendue
 
+État après fusions #6/#7/#8 : lire [COORDINATED-ACTIVATION.md](COORDINATED-ACTIVATION.md).
+La préparation suivante conserve le workspace existant de main et exclut memoire-obsidian
+d'OpenClaw jusqu'à un outil dédié. Le quatrième argument du préparateur fixe ce workspace.
+Les sept rôles restent prévus ; aucune activation n'est déduite de leur validation native.
+
 Ivan a confirmé tous les rôles initialement prévus : chef de cabinet, business, career,
 finance, knowledge/Anakalypto, engineering et system. Aucun rôle n'est supprimé.
 

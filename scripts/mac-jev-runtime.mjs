@@ -1,6 +1,6 @@
 // Private local smoke/runtime launcher. Secrets never enter argv, config or Git.
 import { randomBytes } from "node:crypto";
-import { mkdirSync, statSync, writeFileSync, openSync, fsyncSync, closeSync } from "node:fs";
+import { mkdirSync, statSync, realpathSync, writeFileSync, openSync, fsyncSync, closeSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import net from "node:net";
@@ -48,6 +48,9 @@ process.on("SIGINT", () => { void stop(); });
 process.on("SIGTERM", () => { void stop(); });
 try {
   if (!path.isAbsolute(directory) || !Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("INVALID_RUNTIME_CONFIG");
+  const requestedWorkspace = process.env.IVAN_WORKSPACE_ROOT || root;
+  if (!path.isAbsolute(requestedWorkspace) || !statSync(requestedWorkspace).isDirectory()) throw new Error("INVALID_WORKSPACE_ROOT");
+  const workspaceRoot = realpathSync(requestedWorkspace);
   const probe = net.createServer();
   try { probe.listen(port, "127.0.0.1"); await once(probe, "listening"); }
   catch { throw new Error("LOCAL_PORT_IN_USE"); }
@@ -74,7 +77,7 @@ try {
     PATH: process.env.PATH, HOST: "127.0.0.1", PORT: String(port),
     JEV_PROVIDER: mock ? "mock" : "jev", JEV_MODEL: PRICED_MODEL,
     IVAN_DECISION_TOKEN_FILE: tokenFile, IVAN_AUDIT_PATH: path.join(directory, "evaluation.jsonl"),
-    IVAN_WORKSPACE_ROOT: root, IVAN_JEV_BUDGET_PATH: path.join(directory, "jev-budget.json"),
+    IVAN_WORKSPACE_ROOT: workspaceRoot, IVAN_JEV_BUDGET_PATH: path.join(directory, "jev-budget.json"),
     JEV_USD_TO_EUR_BUDGET_RATE: process.env.JEV_USD_TO_EUR_BUDGET_RATE || "1",
     ...(key ? { TYPESAFE_API_KEY: key } : {})
   };

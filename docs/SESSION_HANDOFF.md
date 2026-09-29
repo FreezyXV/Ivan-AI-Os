@@ -1,5 +1,35 @@
 # Session handoff — 2026-09-29
 
+## État actuel après GO #6 → #7 → #8
+
+Les trois PR sont réellement fusionnées dans foundation/v1 @f6bb2e3. Les paragraphes plus anciens
+qui les disent en attente sont historiques. Lire `docs/COORDINATED-ACTIVATION.md` en premier.
+Ivan a choisi le coffre unique `~/Ivan AI OS Brain/Obsidian/Ivan AI Os Notes`, déclaré dans
+`~/.ivan-ai-os/config.json` ; l'ancien chemin Documents n'est plus la cible. Pas de recréation.
+La capture utilisateur montre la décision de fusion validée ; aucune lecture de note personnelle.
+Codex prépare la suite sur agent/codex/coordinated-runtime : workspace actuel de main conservé,
+memoire-obsidian exclu d'OpenClaw, proposition privée validée nativement, runtime versionné hors
+checkout. Sept artefacts sous ~/.ivan-ai-os/managers-f6bb2e3-coordinated ; aucun rôle activé.
+Quatre fichiers de contexte et douze fichiers mémoire de main inchangés ; corps mémoire non lus.
+Base fusionnée 88 tests ; résultat Codex 95 tests. Aucun appel modèle/TypeSafe payant.
+Les défauts synthétiques credentials/mode du helper mémoire #8 subsistent : relayés à Claude.
+Bascule live, clé privée TypeSafe, rotation credentials et GO d'activation restent à accomplir.
+Le pilote Claude sera shadow et vise le gateway 4311 ; ne pas changer son worktree/settings ici.
+PR #9 est l'ancien seed/contrat mémoire : ne pas appliquer ses chemins ou relais devenus obsolètes.
+
+Livraison effective : PR #10, commit runtime 151b2b1, CI 6/6 verte. Snapshot préparé dans
+~/.ivan-ai-os/releases/151b2b1 ; chargeur natif sur cette copie vérifié, authentification et
+métadonnées uniquement, zéro appel TypeSafe réel. Candidate privée
+~/.ivan-ai-os/activation-151b2b1/openclaw.proposed.json validée : ne jamais afficher ce fichier,
+il conserve les credentials de la configuration existante. Source/context fingerprints associés.
+Le GO d'activation a été demandé ; ne pas assimiler son absence à une autorisation.
+Claude doit relire #10 ; après bascule seulement, son hook vise 4311 en shadow dans ce projet.
+PR #11 indépendante, agent/codex/jev-holdout @d484849 : 19 cas de validation disjoints,
+13 multi-tâches, priorités inversées, six managers ; 48 tests gateway et CI 6/6 verts.
+Labels écrits avant toute prédiction ; revue Claude demandée. Aucune mesure live ni seuil modifié.
+Le runner de #11 accepte --holdout ; 19 + 19 appels réels éventuels, avec le budget commun.
+La quatrième question action.permission exige toujours un corpus distinct.
+
 ## Dernière continuation : sept espaces et revue Claude
 
 Calibration livrée séparément sur `agent/codex/jev-calibration` : lire `docs/JEV-CALIBRATION.md`.
