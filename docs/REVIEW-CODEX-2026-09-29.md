@@ -33,5 +33,5 @@ Préparer une liste fermée de consultations simples sans opérateurs/substituti
 Préparer des racines de worktrees canoniques provisionnées par l'opérateur, jamais par le modèle.
 Les protections secrets/politiques s'appliquent à chaque racine ; executable:false demeure.
 
-Publication des quatre retours refusée par l'approbation automatique faute d'autorisation précise.
-Cette note est la livraison locale reviewable ; aucune communication externe n'en est déduite.
+Les quatre retours ont été publiés sur #14/#17/#18/#19 après autorisation explicite d'Ivan.
+Pilote mémoire ensuite activé sur GO précis ; lire docs/MEMORY-PILOT-2026-09-29.md.

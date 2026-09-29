@@ -1,4 +1,4 @@
-# Lecture mémoire OpenClaw — source à relire, non activée
+# Lecture mémoire OpenClaw — pilote activé
 
 `ivan_memory_search` recherche les titres ; `ivan_memory_read` lit une note avec ses sources.
 Zéro dépendance, zéro écriture, zéro shell, zéro appel Jev ou autre réseau.
@@ -29,21 +29,21 @@ vérifié sur coffre synthétique : deux outils, lecture/recherche correctes, ma
 Lecture locale ciblée de la décision de fusion #6/#7/#8 désignée par Ivan : valide/interne,
 une source, 266 caractères ; corps non affiché, aucun fichier du coffre modifié.
 
-## Configuration préparée, non activée
+## Pilote actif sur GO d'Ivan
 
-La première proposition privée a été validée nativement sous
-`~/.ivan-ai-os/activation-memory-a660d81/`. Elle conserve main, Finance, le routage et les
-restrictions génériques. Son snapshot antérieur ne contient pas encore le correctif #16 :
-il doit être remplacé par une nouvelle proposition versionnée avant toute activation.
-Une note de journal explicitement validée reste lisible par son id ; la recherche exclut
-ce dossier pour préserver le budget. Le statut `journal` seul demeure insuffisant.
+Snapshot corrigé 8151c01, candidat privé `~/.ivan-ai-os/activation-memory-8151c01/`.
+RPC réels : recherche/lecture pour System et Knowledge, outils indisponibles chez main/Finance.
+Telegram → Jev → System → lecture de la note de fusion validée → worker → rapport observé.
+La livraison Telegram a demandé un reçu supplémentaire après la reprise privée du chef.
+Lire [le compte rendu](../../../docs/MEMORY-PILOT-2026-09-29.md) pour la preuve et cette limite.
+Ne pas appliquer l'ancien candidat a660d81. Un journal explicitement validé reste lisible par id ;
+la recherche exclut ce dossier. Le statut journal seul demeure insuffisant.
 
-## Installation future après revue
+## Installation et retour arrière
 
-Épingler le plugin dans un snapshot hors checkout et valider une proposition privée fusionnée avec
-la configuration actuelle. Plugin optionnel ; ajouter ses deux noms à `tools.alsoAllow` de system
-et knowledge seulement. Conserver `fs.workspaceOnly` pour les outils fichiers génériques et exec
-interdit. Le plugin donne sa propre capacité de lecture bornée hors workspace ; il n'élargit pas read.
-Ne pas activer memoire-obsidian, ses commandes shell ou l'écriture du coffre avec cette livraison.
-Le skill et les instructions managers restent dans le périmètre Claude, à adapter après revue.
-Une validation isolée ne prouve pas un appel modèle réel sur Telegram.
+Épingler le plugin hors checkout et valider une proposition fusionnée avec la configuration actuelle.
+Plugin optionnel ; ajouter ses deux noms à `tools.alsoAllow` de system et knowledge seulement.
+Conserver `fs.workspaceOnly` pour les outils fichiers génériques et exec interdit. Le plugin
+porte sa propre lecture bornée ; il n'élargit pas read. Aucune écriture de coffre par ce plugin.
+Le rollback privé activation-original.json restaure la configuration précédant ce pilote.
+Skills et instructions managers restent dans le périmètre Claude, à adapter au contrat sans shell.

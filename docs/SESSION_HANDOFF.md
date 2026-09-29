@@ -1,3 +1,18 @@
+## Reprise Codex — pilote mémoire et service Mac actifs (2026-09-29)
+
+Lire docs/MEMORY-PILOT-2026-09-29.md : snapshot 8151c01 activé sur GO précis d'Ivan.
+System/Knowledge recherchent et lisent la décision validée ; main/Finance refusés nativement.
+Telegram → Jev/System → lecture → worker isolé → rapport vérifié observé ; reçu visible à 14:14 UTC.
+Deux spawns acceptés et paquet worker reçu ; trace worker autonome nettoyée, pas revendiquée conservée.
+Défaut ouvert : reprise privée du chef sans livraison au canal ; corriger sessions_yield.message
+pour conserver l'obligation de livraison via message et contrôle du reçu, sans nouvelle délégation.
+Jev est maintenant un LaunchAgent Mac avec Trousseau, release a58b99f, budget conservé au restart.
+PR #20 agent/codex/mac-background-runtime @12a82a5 : 6 tests, preuve launchd native, CI 7/7 verte.
+Career : trois questions/critères fictifs visibles sur Telegram après reprise et reçu.
+Retours Claude publiés sur #14/#17/#18/#19 après GO précis ; table #17 non activée, runtime reste Jev.
+Le hook Claude reste shadow ; ni son worktree ni AGENTS/constitution n'ont été modifiés.
+Ces états remplacent les paragraphes historiques « mémoire/service non activés » ci-dessous.
+
 ## Reprise Codex — correction mémoire après revue Claude (2026-09-29)
 
 #13 et #15 sont fusionnées par Claude sur GO d’Ivan : foundation/v1 @c23597a.
