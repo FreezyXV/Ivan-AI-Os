@@ -9,7 +9,8 @@ La clé fournisseur est dans un élément du Trousseau local macOS, service
 et restitue la clé au runner par pipe privé. Jamais dans argv, JSON/plist, fichiers du dépôt,
 sorties ordinaires ou logs. Si le Trousseau est indisponible, le même runner attend et
 réessaie après 5, 15 puis 60 secondes. Il reprend le démarrage sans redémarrage du processus
-dès que l'accès revient. L'attente s'arrête immédiatement sur SIGTERM/SIGINT.
+dès que l'accès revient. SIGTERM/SIGINT interrompt l'attente temporisée ; une lecture
+du helper déjà en cours reste bornée à 10 secondes.
 Ne pas invoquer directement le helper en mode read : cette sortie est réservée au pipe du runner.
 
 Le runner utilise une release épinglée hors checkout et une configuration privée 0600, dans un
@@ -50,6 +51,9 @@ Le code reste sur la branche Codex pour revue ; pas de fusion foundation/v1 déd
    un avis shell déterministe et un seul appel ivan_route natif ; enfin une DM Telegram utile.
 6. Tester un redémarrage du job et la conservation du compteur. Ne jamais faire de kickstart
    du processus Node avec arguments/env secrets ni afficher launchctl print/env ou les configs.
+   Le job a un `ThrottleInterval` de 60 secondes : prévoir au moins 75 secondes pour
+   la commande `kickstart -k`, puis attendre un état READY avec un **nouveau PID**.
+   Un contrôle à 15 secondes peut restaurer inutilement une version précédente.
 
 Retour arrière : `launchctl bootout gui/UID/com.ivan-ai-os.jev`, retirer uniquement le plist
 installé pour cette étape puis relancer l'ancien lanceur masqué. Garder jeton, compteur,
@@ -78,6 +82,8 @@ après un arrêt brutal.
 Preuve synthétique Mac du 2026-10-04 : premier accès refusé par le helper, retry puis état READY,
 même PID, budget à zéro appel, arrêt STOPPED/exit 0 ; aucun détail stderr du helper reflété.
 Les neuf tests du service passent. Cette preuve ne verrouille pas le Trousseau de production.
+La release `mac-resilience-cc1d2a5` est active sur 4311 depuis le 4 octobre :
+authentification et restart natif vérifiés, jeton et compteur inchangés, zéro appel payant.
 
 Références : [agents launchd](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html),
 [Trousseau Apple](https://developer.apple.com/documentation/security/using-the-keychain-to-manage-user-secrets).

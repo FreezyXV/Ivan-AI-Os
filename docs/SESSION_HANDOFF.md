@@ -4,7 +4,13 @@ Source sur `agent/codex/mac-runtime-resilience`, basée sur la PR #45 de Claude.
 Lire `docs/REVIEW-CODEX-2026-10-04.md`. Boucle de démarrage reproduite avec helper
 synthétique : exit 1, aucun diagnostic. Correctif : attente dans le même runner,
 retry 5/15/60 s, état privé borné et CLI de santé. Neuf tests et preuve Mac synthétique
-passent : attente → READY, même PID, zéro appel Jev, arrêt propre. Bascule live en préparation.
+passent : attente → READY, même PID, zéro appel Jev, arrêt propre. PR #46, CI 11/11 verte.
+Release privée mac-resilience-cc1d2a5 activée sur 4311 : restart natif vérifié,
+jeton et budget identiques, zéro appel payant. Preuve privée dans
+~/.ivan-ai-os/background-mac-resilience-cc1d2a5/activation.json.
+Le job launchd impose 60 s de throttle : un timeout de commande de 15 s provoque
+un faux échec de restart. Prévoir au moins 75 s pour kickstart, sans attente UI bloquante.
+Les deux premiers essais ont restauré l'ancien plist ; l'essai avec délai adapté a réussi.
 PRs #35/#36/#37 réellement intégrées par Claude ; foundation/v1 @454b21e.
 Jev 4311 et OpenClaw 18789 répondent à la reprise. Ne pas refaire de provisioning de clé.
 
