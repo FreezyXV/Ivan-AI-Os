@@ -3,9 +3,10 @@
 import { chmodSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { READ_SKILL_TOOLS, adaptReadSkill } from "../services/manager-runtime/src/openclaw-read-skills.js";
 import { isOpenClawSkillAvailable } from "../services/manager-runtime/src/openclaw-skills.js";
 
-export async function installOpenClawSkills({ source, workspace, profile, selectedNames, profileMode = "reduced" }) {
+export async function installOpenClawSkills({ source, workspace, profile, selectedNames, profileMode = "reduced", availableTools = [] }) {
   if (![source, workspace, profile].every(p => typeof p === "string" && path.isAbsolute(p))) throw new Error("ABSOLUTE_PATHS_REQUIRED");
   const sourceRoot = realpathSync(source), workspaceRoot = realpathSync(workspace);
   if (workspaceRoot === sourceRoot || workspaceRoot.startsWith(sourceRoot + path.sep) || existsSync(path.join(workspaceRoot, ".git"))) throw new Error("RUNTIME_WORKSPACE_REQUIRED");
@@ -16,8 +17,11 @@ export async function installOpenClawSkills({ source, workspace, profile, select
   const registry = buildRegistry(path.join(sourceRoot, "skills"), { privateTerms });
   if (!registry.ok) throw new Error("INVALID_SKILLS");
   if (selectedNames && (!Array.isArray(selectedNames) || selectedNames.some(name => !registry.results.some(r => r.entry.name === name)))) throw new Error("UNKNOWN_SELECTED_SKILL");
-  const names = registry.results.filter(r => isOpenClawSkillAvailable(r.entry) &&
+  if (!Array.isArray(availableTools) || availableTools.some(name => typeof name !== "string")) throw new Error("INVALID_TOOL_CAPABILITIES");
+  if (selectedNames?.some(name => !isOpenClawSkillAvailable(registry.results.find(r => r.entry.name === name).entry, { availableTools }))) throw new Error("SKILL_CAPABILITY_UNAVAILABLE");
+  const names = registry.results.filter(r => isOpenClawSkillAvailable(r.entry, { availableTools }) &&
     (selectedNames ? selectedNames.includes(r.entry.name) : ["career", "knowledge", "system"].includes(r.entry.manager))).map(r => r.entry.name);
+  if (profileMode !== "none" && names.some(name => READ_SKILL_TOOLS[name])) throw new Error("READ_SKILL_PUBLIC_CONTEXT_REQUIRED");
   for (const result of registry.results.filter(r => names.includes(r.entry.name))) inspectTree(result.dir);
   const destination = path.join(workspaceRoot, "skills");
   if (existsSync(destination) && (!lstatSync(destination).isDirectory() || lstatSync(destination).isSymbolicLink())) throw new Error("UNSAFE_SKILL_DESTINATION");
@@ -38,6 +42,10 @@ export async function installOpenClawSkills({ source, workspace, profile, select
       let body = readFileSync(entrypoint, "utf8").replaceAll("~/.ivan-ai-os/profil.md", "profil.md")
         .replace(/^1\. \*\*Secrets\*\* : `git diff --cached \| grep[^\n]*$/m, "1. **Secrets** : scanner le diff sans afficher les lignes correspondantes ; signaler uniquement fichier, numéro de ligne et type.");
       if (profileMode === "none") body = body.replace(/^  profil: "oui"$/m, '  profil: "non"').replace(/^.*profil\.md.*$/gm, "Aucun profil personnel n'est disponible dans ce rôle. Utiliser uniquement des informations publiques.");
+      if (READ_SKILL_TOOLS[name]) {
+        body = adaptReadSkill(name, body);
+        rmSync(path.join(dir, "scripts"), { recursive: true, force: true });
+      }
       writeFileSync(entrypoint, body + (profileMode === "none" ? "\n\n## Contexte public OpenClaw\nAucun accès à un profil, portefeuille ou objectif financier personnel. Ne pas demander ces données sur Telegram ; l'analyse personnelle reste dans Claude.\n" : guard), { mode: 0o600 });
       const profileFile = path.join(dir, "profil.md");
       if (existsSync(profileFile)) {

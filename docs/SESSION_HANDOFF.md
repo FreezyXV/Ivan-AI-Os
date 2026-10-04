@@ -1,3 +1,15 @@
+## Reprise Codex — capacités et skills OpenClaw (2026-10-04)
+
+Lire docs/OPENCLAW-READ-SKILLS.md. Branche agent/codex/openclaw-capability-skills,
+base foundation/v1 @454b21e. Sources Claude intactes. Adaptations Business,
+Finance publique et Obsidian lecture via outils natifs ; sélection indisponible
+refusée explicitement, scripts inutilisables retirés des paquets. 14/14 tests.
+Installation live à vérifier ; aucun changement de la personnalité/mémoire main.
+PR #46 : release mac-resilience-cc1d2a5 active sur 4311, restart natif vérifié,
+jeton et compteur inchangés, zéro appel payant. CI 11/11 verte. Le timeout initial
+15 s provoquait un faux échec à cause du throttle launchd 60 s ; prévoir 75 s.
+Ne pas refaire de provisioning de clé. Source Mac en PR #45/#46, pas dans foundation.
+
 ## Reprise Codex — pilote mémoire et service Mac actifs (2026-09-29)
 
 Lire docs/MEMORY-PILOT-2026-09-29.md : snapshot 8151c01 activé sur GO précis d'Ivan.
