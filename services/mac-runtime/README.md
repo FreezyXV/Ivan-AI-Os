@@ -7,7 +7,10 @@ ce n'est pas un VPS 24/7. Aucun changement de sommeil, de routage ou de modèles
 La clé fournisseur est dans un élément du Trousseau local macOS, service
 `com.ivan-ai-os.typesafe`, compte `jev-gateway`. Un petit helper Swift capture la saisie par stdin
 et restitue la clé au runner par pipe privé. Jamais dans argv, JSON/plist, fichiers du dépôt,
-sorties ordinaires ou logs. Le service échoue si le Trousseau n'est pas disponible sans interaction.
+sorties ordinaires ou logs. Si le Trousseau est indisponible, le même runner attend et
+réessaie après 5, 15 puis 60 secondes. Il reprend le démarrage sans redémarrage du processus
+dès que l'accès revient. SIGTERM/SIGINT interrompt l'attente temporisée ; une lecture
+du helper déjà en cours reste bornée à 10 secondes.
 Ne pas invoquer directement le helper en mode read : cette sortie est réservée au pipe du runner.
 
 Le runner utilise une release épinglée hors checkout et une configuration privée 0600, dans un
@@ -48,6 +51,9 @@ Le code reste sur la branche Codex pour revue ; pas de fusion foundation/v1 déd
    un avis shell déterministe et un seul appel ivan_route natif ; enfin une DM Telegram utile.
 6. Tester un redémarrage du job et la conservation du compteur. Ne jamais faire de kickstart
    du processus Node avec arguments/env secrets ni afficher launchctl print/env ou les configs.
+   Le job a un `ThrottleInterval` de 60 secondes : prévoir au moins 75 secondes pour
+   la commande `kickstart -k`, puis attendre un état READY avec un **nouveau PID**.
+   Un contrôle à 15 secondes peut restaurer inutilement une version précédente.
 
 Retour arrière : `launchctl bootout gui/UID/com.ivan-ai-os.jev`, retirer uniquement le plist
 installé pour cette étape puis relancer l'ancien lanceur masqué. Garder jeton, compteur,
@@ -62,6 +68,22 @@ doit vérifier le helper Swift et launchd avec un compte/label test isolés avan
 `node scripts/verify-mac-background.mjs RELEASE NODE HELPER`. Le script utilise et supprime
 seulement son compte Trousseau test, vérifie une authentification et un redémarrage natif,
 sans lire la clé de production ni appeler un endpoint payant.
+
+## Diagnostic de reprise
+
+Le runtime conserve uniquement son dernier état dans `background-status.json`, fichier privé
+0600 et borné. Les champs sont état, PID, date, nombre de tentatives et délai de retry ; aucune
+clé, configuration, entrée utilisateur ou erreur brute. États : `WAITING_KEYCHAIN`,
+`BACKGROUND_GATEWAY_READY`, `BACKGROUND_GATEWAY_UNAVAILABLE`, `BACKGROUND_GATEWAY_STOPPED`.
+`node scripts/mac-jev-status.mjs SETTINGS_PATH` lit ces métadonnées et contrôle `/health`,
+sans lire le Trousseau. La santé HTTP complète l'état enregistré, qui peut devenir ancien
+après un arrêt brutal.
+
+Preuve synthétique Mac du 2026-10-04 : premier accès refusé par le helper, retry puis état READY,
+même PID, budget à zéro appel, arrêt STOPPED/exit 0 ; aucun détail stderr du helper reflété.
+Les neuf tests du service passent. Cette preuve ne verrouille pas le Trousseau de production.
+La release `mac-resilience-cc1d2a5` est active sur 4311 depuis le 4 octobre :
+authentification et restart natif vérifiés, jeton et compteur inchangés, zéro appel payant.
 
 Références : [agents launchd](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html),
 [Trousseau Apple](https://developer.apple.com/documentation/security/using-the-keychain-to-manage-user-secrets).
