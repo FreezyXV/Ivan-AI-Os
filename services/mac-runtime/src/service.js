@@ -1,4 +1,6 @@
-import { constants, openSync, closeSync, fstatSync, readFileSync, lstatSync, realpathSync } from "node:fs";
+import { constants, openSync, closeSync, fstatSync, readFileSync, lstatSync, realpathSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { setTimeout as pauseFor } from "node:timers/promises";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { once } from "node:events";
@@ -46,6 +48,58 @@ export function readKey(settings) {
   catch { throw new Error("KEYCHAIN_UNAVAILABLE"); }
   if (!result || result.length > 4000 || /\s/.test(result)) throw new Error("KEYCHAIN_UNAVAILABLE");
   return result;
+}
+const statusStates = new Set(["WAITING_KEYCHAIN", "BACKGROUND_GATEWAY_READY",
+  "BACKGROUND_GATEWAY_UNAVAILABLE", "BACKGROUND_GATEWAY_STOPPED"]);
+function validateStatusUpdate(value) {
+  if (!value || Object.keys(value).sort().join() !== "attempts,retryAfterSeconds,state" ||
+      !statusStates.has(value.state) || !Number.isSafeInteger(value.attempts) || value.attempts < 0 ||
+      ![0, 5, 15, 60].includes(value.retryAfterSeconds)) throw new Error("STATUS_REFUSED");
+}
+export function writeRuntimeStatus(settings, update) {
+  validateStatusUpdate(update);
+  privateDirectory(settings.runtimeDirectory);
+  const filename = path.join(settings.runtimeDirectory, "background-status.json");
+  const existing = lstatSync(filename, { throwIfNoEntry: false });
+  if (existing && (!existing.isFile() || existing.isSymbolicLink() || existing.nlink !== 1 ||
+      existing.uid !== process.getuid?.() || (existing.mode & 0o077))) throw new Error("STATUS_REFUSED");
+  const temporary = path.join(settings.runtimeDirectory, `.background-status-${randomUUID()}.tmp`);
+  try {
+    writeFileSync(temporary, JSON.stringify({ version: 1, pid: process.pid,
+      updatedAt: new Date().toISOString(), ...update }), { mode: 0o600, flag: "wx" });
+    renameSync(temporary, filename);
+  } finally { try { unlinkSync(temporary); } catch (error) { if (error.code !== "ENOENT") throw error; } }
+}
+export function readRuntimeStatus(settings) {
+  privateDirectory(settings.runtimeDirectory);
+  let fd;
+  try {
+    fd = openSync(path.join(settings.runtimeDirectory, "background-status.json"), constants.O_RDONLY | constants.O_NOFOLLOW);
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || stat.uid !== process.getuid?.() || (stat.mode & 0o077) || stat.nlink !== 1 || stat.size > 1024) throw new Error("STATUS_REFUSED");
+    const value = JSON.parse(readFileSync(fd, "utf8"));
+    if (Object.keys(value).sort().join() !== "attempts,pid,retryAfterSeconds,state,updatedAt,version" ||
+        value.version !== 1 || !Number.isSafeInteger(value.pid) || value.pid < 1 ||
+        !/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(value.updatedAt ?? "")) throw new Error("STATUS_REFUSED");
+    validateStatusUpdate({ state: value.state, attempts: value.attempts, retryAfterSeconds: value.retryAfterSeconds });
+    return value;
+  } catch (error) { if (error.code === "ENOENT") return null; throw new Error("STATUS_REFUSED"); }
+  finally { if (fd !== undefined) closeSync(fd); }
+}
+export async function waitForKey(settings, { reader = readKey, signal,
+  pause = ms => pauseFor(ms, undefined, { signal }),
+  report = update => writeRuntimeStatus(settings, update) } = {}) {
+  let attempts = 0;
+  for (;;) {
+    signal?.throwIfAborted();
+    try { return reader(settings); }
+    catch (error) {
+      if (error.message !== "KEYCHAIN_UNAVAILABLE") throw error;
+      const retryAfterSeconds = [5, 15, 60][Math.min(attempts++, 2)];
+      report({ state: "WAITING_KEYCHAIN", attempts, retryAfterSeconds });
+      await pause(retryAfterSeconds * 1000);
+    }
+  }
 }
 export function serviceEnvironment(settings, key) {
   if (typeof key !== "string" || !key || key.length > 4000 || /\s/.test(key)) throw new Error("KEYCHAIN_UNAVAILABLE");

@@ -7,7 +7,9 @@ ce n'est pas un VPS 24/7. Aucun changement de sommeil, de routage ou de modèles
 La clé fournisseur est dans un élément du Trousseau local macOS, service
 `com.ivan-ai-os.typesafe`, compte `jev-gateway`. Un petit helper Swift capture la saisie par stdin
 et restitue la clé au runner par pipe privé. Jamais dans argv, JSON/plist, fichiers du dépôt,
-sorties ordinaires ou logs. Le service échoue si le Trousseau n'est pas disponible sans interaction.
+sorties ordinaires ou logs. Si le Trousseau est indisponible, le même runner attend et
+réessaie après 5, 15 puis 60 secondes. Il reprend le démarrage sans redémarrage du processus
+dès que l'accès revient. L'attente s'arrête immédiatement sur SIGTERM/SIGINT.
 Ne pas invoquer directement le helper en mode read : cette sortie est réservée au pipe du runner.
 
 Le runner utilise une release épinglée hors checkout et une configuration privée 0600, dans un
@@ -62,6 +64,20 @@ doit vérifier le helper Swift et launchd avec un compte/label test isolés avan
 `node scripts/verify-mac-background.mjs RELEASE NODE HELPER`. Le script utilise et supprime
 seulement son compte Trousseau test, vérifie une authentification et un redémarrage natif,
 sans lire la clé de production ni appeler un endpoint payant.
+
+## Diagnostic de reprise
+
+Le runtime conserve uniquement son dernier état dans `background-status.json`, fichier privé
+0600 et borné. Les champs sont état, PID, date, nombre de tentatives et délai de retry ; aucune
+clé, configuration, entrée utilisateur ou erreur brute. États : `WAITING_KEYCHAIN`,
+`BACKGROUND_GATEWAY_READY`, `BACKGROUND_GATEWAY_UNAVAILABLE`, `BACKGROUND_GATEWAY_STOPPED`.
+`node scripts/mac-jev-status.mjs SETTINGS_PATH` lit ces métadonnées et contrôle `/health`,
+sans lire le Trousseau. La santé HTTP complète l'état enregistré, qui peut devenir ancien
+après un arrêt brutal.
+
+Preuve synthétique Mac du 2026-10-04 : premier accès refusé par le helper, retry puis état READY,
+même PID, budget à zéro appel, arrêt STOPPED/exit 0 ; aucun détail stderr du helper reflété.
+Les neuf tests du service passent. Cette preuve ne verrouille pas le Trousseau de production.
 
 Références : [agents launchd](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html),
 [Trousseau Apple](https://developer.apple.com/documentation/security/using-the-keychain-to-manage-user-secrets).
