@@ -4,7 +4,17 @@ Lire docs/OPENCLAW-READ-SKILLS.md. Branche agent/codex/openclaw-capability-skill
 base foundation/v1 @454b21e. Sources Claude intactes. Adaptations Business,
 Finance publique et Obsidian lecture via outils natifs ; sélection indisponible
 refusée explicitement, scripts inutilisables retirés des paquets. 14/14 tests.
-Installation live à vérifier ; aucun changement de la personnalité/mémoire main.
+PR #47 : quatre paquets actifs, native config valide et restart contrôlé.
+Chargement éligible + outils des quatre managers confirmés par
+scripts/verify-openclaw-read-skills.mjs --installed ; main refusé en mémoire.
+Aucun changement de personnalité/mémoire main, des workspaces ou des outils.
+5756 caractères pour les quatre paquets ; aucun profil lu. Preuves privées dans
+~/.ivan-ai-os/activation-read-skills-7b4b7c4/. Essais managers réels sans --deliver : Finance 13,5 s (brief natif), System
+10,1 s (recherche/lecture mémoire, aussi route). Skills chargés dans les prompts
+confirmés. CI #47 10/10 verte. Collecte/planification et écriture restent distinctes.
+Le nouveau vérificateur utilise le client natif, qui résout les SecretRefs ; le
+RPC tools.invoke prend name et retourne output. Aucun bearer fabriqué depuis
+la référence de config. Un timeout de l'auto-review a été surmonté sans nouveau GO.
 PR #46 : release mac-resilience-cc1d2a5 active sur 4311, restart natif vérifié,
 jeton et compteur inchangés, zéro appel payant. CI 11/11 verte. Le timeout initial
 15 s provoquait un faux échec à cause du throttle launchd 60 s ; prévoir 75 s.
