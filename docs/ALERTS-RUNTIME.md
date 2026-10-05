@@ -95,6 +95,16 @@ gateway loopback, refuse les redirects et borne le délai réseau. Il transmet
 un extrait public de 500 caractères au maximum ; une source non lue reste en
 review localement, sans requête Jev. Source/test intégrés, runtime live inchangé.
 
+Release privée préparée `~/.ivan-ai-os/releases/alerts-59fbd7e` : gateway
+59fbd7e + runner Mac cc1d2a5, deux provenances consignées dans le manifeste.
+La copie figée démarre sur un port temporaire avec des credentials synthétiques :
+health 200, entrée sans bearer 401, Career écarté, zéro appel fournisseur.
+Candidate privée `~/.ivan-ai-os/background-alerts-59fbd7e/settings.json` validée,
+préservant les chemins du jeton, du compteur et du Trousseau existants.
+Service live, plist, settings, jeton et budget inchangés par cette préparation.
+Pas de lecture du Trousseau ni d'activation. Preuve privée dans `result.json`
+à côté de la candidate. La bascule et le test Jev réel restent à réaliser.
+
 ## Preuves
 
 `node --test services/alerts-runtime/test/*.test.js` : 22 tests passent.

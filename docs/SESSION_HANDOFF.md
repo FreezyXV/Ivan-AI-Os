@@ -17,6 +17,12 @@ Telegram ; Sentinelle montre calibrage/liens/scores, producteur toujours inconnu
 Claude n'a pas encore publié telegram-syntheses ; ne pas toucher à ses trois
 fichiers hooks/claude non commités. Son skill jev-decision garde des passages
 obsolètes (« classify n'existe pas ») : à corriger dans son audit K05.
+Source commit 59fbd7e et release privée alerts-59fbd7e préparés ; runner
+cc1d2a5 conservé avec provenance distincte. Probe de la vraie copie figée :
+health, authentification et exclusion Career OK, zéro appel fournisseur.
+Candidate ~/.ivan-ai-os/background-alerts-59fbd7e/settings.json valide,
+settings/plist/jeton/budget live inchangés. Pas de lecture du Trousseau.
+Bascule encore à faire lorsque le Mac est déverrouillé ; ne pas reprovisionner.
 
 ## Checklists et file des alertes — Codex (2026-10-05)
 
