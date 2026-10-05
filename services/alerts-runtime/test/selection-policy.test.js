@@ -24,3 +24,9 @@ test('invalid policies are refused',()=>{
   for(const bad of [{keepMinConfidence:-1,skipMinConfidence:0},{keepMinConfidence:0,skipMinConfidence:2},{keepMinConfidence:0,skipMinConfidence:0,keepMinProbability:0}])
     assert.throws(()=>selectionOutcome({decision:'keep',confidence:1},bad),{code:'ALERT_SELECTION_POLICY_INVALID'});
 });
+
+test('malformed or contradictory distributions never produce an actionable outcome',()=>{
+  const policy={keepMinConfidence:1,skipMinConfidence:1,keepMinProbability:0.3,skipMinProbability:0.3};
+  assert.equal(selectionOutcome({decision:'review',confidence:0.4,probabilities:{keep:0.4,review:0.2,skip:0.4}},policy),'review');
+  assert.equal(selectionOutcome({decision:'review',confidence:0.4,probabilities:{keep:0.99,review:0.99,skip:0.99}},policy),'review');
+});

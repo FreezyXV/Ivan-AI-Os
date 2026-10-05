@@ -1,5 +1,6 @@
 import { PILOT_CONTEXT, prefilter, fail } from './context.js';
 import { withDeadline } from './deadline.js';
+import {createHash} from 'node:crypto';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
 const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)/g)??[]).map(n=>{
   const s=n.replace(/[ \u00a0\u202f]/g,'').replace('−','-');
@@ -29,11 +30,15 @@ export const DEFAULT_SELECTION_POLICY=Object.freeze({keepMinConfidence:0.75,skip
 export function selectionOutcome(selection,policy=DEFAULT_SELECTION_POLICY){
   const unit=v=>Number.isFinite(v)&&v>=0&&v<=1,optional=v=>v===undefined||(unit(v)&&v>0);
   if(!policy||!unit(policy.keepMinConfidence)||!unit(policy.skipMinConfidence)||!optional(policy.keepMinProbability)||!optional(policy.skipMinProbability))fail('ALERT_SELECTION_POLICY_INVALID');
+  if(!selection||!['keep','review','skip'].includes(selection.decision)||!unit(selection.confidence))return 'review';
   const p=selection.probabilities;
-  if(p&&policy.keepMinProbability!==undefined&&p.keep>=policy.keepMinProbability)return 'keep';
-  if(selection.decision==='keep'&&selection.confidence>=policy.keepMinConfidence)return 'keep';
-  if(p&&policy.skipMinProbability!==undefined&&p.skip>=policy.skipMinProbability)return 'skip';
-  if(selection.decision==='skip'&&selection.confidence>=policy.skipMinConfidence)return 'skip';
+  if(p&&(Array.isArray(p)||Object.keys(p).length!==3||!['keep','review','skip'].every(k=>unit(p[k]))||Math.abs(p.keep+p.review+p.skip-1)>0.03))return 'review';
+  const keep=(p&&policy.keepMinProbability!==undefined&&p.keep>=policy.keepMinProbability)||
+    (selection.decision==='keep'&&selection.confidence>=policy.keepMinConfidence);
+  const skip=(p&&policy.skipMinProbability!==undefined&&p.skip>=policy.skipMinProbability)||
+    (selection.decision==='skip'&&selection.confidence>=policy.skipMinConfidence);
+  if(keep&&skip)return 'review';
+  if(keep)return 'keep';if(skip)return 'skip';
   return 'review';
 }
 export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
@@ -46,9 +51,11 @@ export async function processNext({ledger,select,synthesize,now=Date.now(),maxAg
   };
   const local=prefilter(job.item,{now,maxAgeHours});
   if(local.decision!=='select')return complete(local.decision==='skip'?'skipped':'review',local.reason);
-  if(typeof select!=='function')return complete('review','SELECTION_NOT_CONFIGURED');
+  const recorded=job.brief?.selectionReplay?.itemSha256===createHash('sha256').update(JSON.stringify(job.item)).digest('hex')&&
+    job.brief?.selection?.provider==='jev'&&job.brief.selection.context_version===PILOT_CONTEXT.version;
+  if(!recorded&&typeof select!=='function')return complete('review','SELECTION_NOT_CONFIGURED');
   let selection;
-  try{selection=await withDeadline(signal=>select(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SELECTION_TIMEOUT');}
+  try{selection=recorded?job.brief.selection:await withDeadline(signal=>select(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SELECTION_TIMEOUT');}
   catch(error){return complete('review',error?.code==='SELECTION_TIMEOUT'?'SELECTION_TIMEOUT':'SELECTION_UNAVAILABLE');}
   if(!selection||!['keep','skip','review'].includes(selection.decision)||
      !Number.isFinite(selection.confidence)||selection.confidence<0||selection.confidence>1)return complete('review','SELECTION_INVALID');
@@ -56,7 +63,8 @@ export async function processNext({ledger,select,synthesize,now=Date.now(),maxAg
     ...(['jev','deterministic-kernel'].includes(selection.provider)?{provider:selection.provider}:{}),
     ...(/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??'')?{request_id:selection.request_id}:{}),
     ...(selection.context_version===PILOT_CONTEXT.version?{context_version:selection.context_version}:{}),
-    ...(selection.probabilities?{probabilities:selection.probabilities}:{})};
+    ...(selection.probabilities?{probabilities:selection.probabilities}:{}),policy:{...selectionPolicy},
+    ...(recorded?{replayed:true}: {})};
   const outcome=selectionOutcome(selection,selectionPolicy);
   if(outcome==='skip')return complete('skipped','SELECTION_REJECTED',{selection:trace});
   if(outcome!=='keep')return complete('review','SELECTION_UNCERTAIN',{selection:trace});

@@ -10,6 +10,8 @@ import {createNativeSynthesis} from '../services/alerts-runtime/src/synthesis.js
 import {createTelegramDelivery} from '../services/alerts-runtime/src/telegram-delivery.js';
 import {createJevSelector} from '../services/alerts-runtime/src/jev-selector.js';
 import {processNext} from '../services/alerts-runtime/src/pipeline.js';
+import {selectionOutcome,DEFAULT_SELECTION_POLICY} from '../services/alerts-runtime/src/pipeline.js';
+import {createHash} from 'node:crypto';
 import {sendDigest} from '../services/alerts-runtime/src/digest.js';
 import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
@@ -30,7 +32,18 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger}),business=()=>businessCycle({ledger}),
  select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
+ const selectionPolicy=settings.selectionPolicy??DEFAULT_SELECTION_POLICY;
+ selectionOutcome({decision:'review',confidence:0},selectionPolicy);
  const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.settleReady(now.getTime());ledger.retryTransient();
+ let policyRevisions=0;
+ if(settings.selectionPolicy){
+  const revision='policy-'+createHash('sha256').update(JSON.stringify(selectionPolicy)).digest('hex').slice(0,16);
+  for(const row of ledger.list('review',100)){
+    if(row.reason!=='SELECTION_UNCERTAIN')continue;
+    const outcome=selectionOutcome(row.brief?.selection,selectionPolicy);
+    if(outcome!=='review'&&ledger.reconsiderReviewedSelection(row.id,{revision,outcome}).revised)policyRevisions++;
+  }
+ }
  const staleReviews=ledger.settleStaleReviews(now.getTime());let retention;
  try{retention={...ledger.archiveTerminal(),expiredReviews:staleReviews.expired};}
  catch(error){retention={error_code:error?.code==='ALERT_ARCHIVE_UNAVAILABLE'?error.code:'ALERT_RETENTION_UNAVAILABLE',expiredReviews:staleReviews.expired};}
@@ -51,7 +64,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  await perform('process',processKey,async()=>{
   let decisions=0,generations=0;const states={};
   for(let i=0;i<100&&decisions<8&&generations<2;i++){
-   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,
+   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,selectionPolicy,
     select:async(...args)=>{decisions++;return select(...args);},
     synthesize:async(...args)=>{generations++;return synthesize(...args);}});
    if(result.state==='idle')break;states[result.reason??result.state]=(states[result.reason??result.state]??0)+1;
@@ -60,7 +73,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  });
  if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select'))
   await perform('digest',slots.digest,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
- return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),retention};
+ return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),retention,policyRevisions};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  let ledger;

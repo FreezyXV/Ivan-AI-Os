@@ -25,7 +25,8 @@ export function calibrate(rows){
   if(withProb)for(const kp of grid.filter(x=>x>0))for(const sp of grid.filter(x=>x>0))candidates.push({keepMinConfidence:1,skipMinConfidence:1,keepMinProbability:kp,skipMinProbability:sp});
   const safe=candidates.map(policy=>({policy,dev:score(dev,policy)})).filter(c=>c.dev.falseKeep===0&&c.dev.droppedKeep===0);
   // Most keeps found, then fewest items left in review; among equivalent policies take the
-  // middle of the safe interval (largest margin), not its edge, to avoid fitting dev exactly.
+  // middle of the ordered equivalent grid policies. This is a deterministic tie-break,
+  // not a proof of the largest margin or future precision.
   safe.sort((a,b)=>(b.dev.keepRecall??0)-(a.dev.keepRecall??0)||a.dev.reviewShare-b.dev.reviewShare);
   const tied=safe.filter(c=>c.dev.keepRecall===safe[0]?.dev.keepRecall&&c.dev.reviewShare===safe[0]?.dev.reviewShare)
     .sort((a,b)=>a.policy.keepMinConfidence-b.policy.keepMinConfidence||a.policy.skipMinConfidence-b.policy.skipMinConfidence||
@@ -35,9 +36,12 @@ export function calibrate(rows){
     recommended:best?{policy:best.policy,dev:best.dev,holdout:score(holdout,best.policy)}:null};
 }
 export function join(labels,run){
+  if(!Array.isArray(labels?.labels)||!Array.isArray(run)||new Set(labels.labels.map(l=>l.id)).size!==labels.labels.length||
+    labels.labels.some(l=>!['dev','holdout'].includes(l.set)||!['keep','review','skip'].includes(l.label)))throw Error('ALERT_CALIBRATION_LABELS_INVALID');
   const byId=new Map(labels.labels.map(l=>[l.id,l])),seen=new Set(),rows=[];
   for(const r of run){if(seen.has(r.id)||r.error||!byId.has(r.id))continue;seen.add(r.id);// first repetition only
     rows.push({id:r.id,set:byId.get(r.id).set,label:byId.get(r.id).label,selection:{decision:r.decision,confidence:r.confidence,...(r.probabilities?{probabilities:r.probabilities}:{})}});}
+  if(rows.length!==byId.size||rows.some(r=>!['keep','review','skip'].includes(r.selection.decision)||!Number.isFinite(r.selection.confidence)||r.selection.confidence<0||r.selection.confidence>1))throw Error('ALERT_CALIBRATION_INCOMPLETE');
   return rows;
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){

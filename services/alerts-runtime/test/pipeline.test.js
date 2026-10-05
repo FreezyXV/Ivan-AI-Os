@@ -174,7 +174,7 @@ test('synthesis timeout preserves the Jev decision receipt instead of retrying',
   const {ledger}=fixture(t);ledger.ingest(item());
   const selected={decision:'keep',confidence:0.9,provider:'jev',request_id:'00000000-0000-4000-a000-000000000000',context_version:PILOT_CONTEXT.version};
   const result=await processNext({ledger,now:at,stageTimeoutMs:15,select:async()=>selected,synthesize:async()=>new Promise(()=>{})});
-  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual(result.brief.selection,selected);
+  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual(result.brief.selection,{...selected,policy:{keepMinConfidence:0.75,skipMinConfidence:0.75}});
 });
 
 test('a sender that never returns becomes uncertain and is never invoked twice',async t=>{

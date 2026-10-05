@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {calibrate,score} from './calibrate-alert-selection.mjs';
+import {calibrate,score,join} from './calibrate-alert-selection.mjs';
 const row=(id,set,label,decision,confidence,probabilities)=>({id,set,label,selection:{decision,confidence,...(probabilities?{probabilities}:{})}});
 test('the historical rule keeps nothing when Jev answers keep with modest confidence',()=>{
   const rows=[row('a','dev','keep','keep',0.5),row('b','dev','skip','skip',0.4),row('c','dev','skip','review',0.6),row('d','holdout','keep','keep',0.45)];
@@ -15,4 +15,10 @@ test('a policy that would send noise is never recommended',()=>{
   const r=calibrate(rows);
   assert.ok(!r.recommended||r.recommended.dev.falseKeep===0);
   assert.equal(score(rows,{keepMinConfidence:1,skipMinConfidence:1,keepMinProbability:0.4}).falseKeep,1);
+});
+
+test('a failed or missing labelled case cannot silently disappear from calibration',()=>{
+ const labels={labels:[{id:'a',set:'dev',label:'keep'},{id:'b',set:'holdout',label:'skip'}]};
+ assert.throws(()=>join(labels,[{id:'a',decision:'keep',confidence:0.3},{id:'b',error:'TIMEOUT'}]),/ALERT_CALIBRATION_INCOMPLETE/);
+ assert.throws(()=>join({...labels,labels:[...labels.labels,labels.labels[0]]},[]),/ALERT_CALIBRATION_LABELS_INVALID/);
 });

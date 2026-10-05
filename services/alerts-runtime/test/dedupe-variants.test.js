@@ -37,3 +37,10 @@ test('short or different evidence is never merged by the relaxed key',t=>{
   L.ingest({...base,producer:'sentinelle',topic:'system',url:'https://simonwillison.net/y',title:'Y'});
   assert.equal(d.duplicate,false,'same text on another host is not merged');
 });
+
+test('a deferred route cannot suppress the same source needed by an active route',t=>{
+  const L=ledger(t);
+  L.ingest({...base,producer:'sentinelle',topic:'career',url:'https://example.org/career',title:'A'});
+  const active=L.ingest({...base,producer:'secretaire',topic:'system',url:'https://example.org/system',title:'B'});
+  assert.equal(active.duplicate,false);assert.equal(L.get(active.id).item.topic,'system');
+});

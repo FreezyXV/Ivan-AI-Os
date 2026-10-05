@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, lstatSync, openSync, closeSync, readFileSync, writeFileSync, linkSync, unlinkSync } from 'node:fs';
 import {gzipSync,gunzipSync} from 'node:zlib';
 import path from 'node:path';
-import { validateItem, prefilter, fail } from './context.js';
+import { validateItem, prefilter, fail, PILOT_CONTEXT } from './context.js';
 
 // SQLite owns transaction locks: process crashes cannot leave an application
 // lock file blocking all producers. Provider calls occur outside transactions.
@@ -18,7 +18,8 @@ const normalizedEvidence=text=>text.normalize('NFKC').replace(/[\u2018\u2019\u02
 const evidenceKeys=item=>{
   const v1=fingerprint(item);if(!v1)return [];
   const text=normalizedEvidence(item.excerpt);
-  return text.length<200?[v1]:[v1,'v2:'+createHash('sha256').update(JSON.stringify([new URL(item.url).hostname,item.publishedAt.slice(0,10),text])).digest('hex')];
+  const route=PILOT_CONTEXT.deferred.includes(item.topic)?'deferred:'+item.topic:'active';
+  return text.length<200?[v1]:[v1,'v3:'+createHash('sha256').update(JSON.stringify([route,new URL(item.url).hostname,item.publishedAt.slice(0,10),text])).digest('hex')];
 };
 export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000, capacity=10000 } = {}) {
   if (!path.isAbsolute(filename) || !Number.isSafeInteger(leaseMs) || leaseMs < 1000 || !Number.isInteger(capacity)||capacity<1||capacity>10000) fail('ALERT_LEDGER_CONFIG_INVALID');
@@ -170,6 +171,21 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
       db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT') AND retries<1 AND updated<=?")
         .run(now(),now()-minDelayMs).changes);},
     get,
+    reconsiderReviewedSelection(id,{revision,outcome}={}){
+      if(!/^policy-[a-f\d]{16}$/.test(revision??'')||!['keep','skip'].includes(outcome))fail('ALERT_REVISION_INVALID');
+      return tx(()=>{
+        const old=get(id),selection=old?.brief?.selection;
+        if(!old||old.state!=='review'||old.reason!=='SELECTION_UNCERTAIN'||prefilter(old.item,{now:now()}).decision!=='select'||
+          selection?.provider!=='jev'||selection.context_version!==PILOT_CONTEXT.version||
+          !/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??'')||
+          db.prepare('SELECT id FROM evidence_revisions WHERE id=? AND revision=?').get(id,revision))return {revised:false};
+        db.prepare('INSERT INTO evidence_revisions VALUES(?,?,?,?,?,?)').run(id,revision,JSON.stringify(old.item),JSON.stringify(old.brief),old.reason,now());
+        const brief={...old.brief,selectionReplay:{revision,itemSha256:createHash('sha256').update(JSON.stringify(old.item)).digest('hex')}};
+        db.prepare('UPDATE alerts SET state=?,reason=?,brief=?,updated=? WHERE id=?')
+          .run(outcome==='keep'?'pending':'skipped',outcome==='keep'?'SELECTION_POLICY_REPLAY':'SELECTION_REJECTED',JSON.stringify(brief),now(),id);
+        return {revised:true,id,outcome};
+      });
+    },
     reviseReviewedEvidence(raw,{revision}={}){
       // Explicit operator repair after a reader change, never a scheduled retry
       // of a semantic decision. Preserve the old evidence and Jev receipt.
