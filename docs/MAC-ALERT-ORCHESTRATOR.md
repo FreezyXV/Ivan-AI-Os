@@ -67,6 +67,10 @@ dans services/alerts-runtime, sans modifier son skill : ICP retiré en février
 calcul. Sources : [BCE, changement de dataset](https://www.ecb.europa.eu/stats/inflation/html/index.mt.html),
 [nouvelle série totale](https://data.ecb.europa.eu/data/datasets/HICP/HICP.M.U2.N.000000.4D0.ANR).
 Une variation sans avis Jev disponible n'entre pas dans les synthèses automatiques.
+Une expiration réseau transitoire reçoit un seul nouvel essai ; deux requêtes
+BCE au plus sont simultanées, avec délai démarré après réservation du créneau.
+Erreur permanente HTTP : aucun nouvel essai immédiat. Après ce correctif, les
+sept indicateurs publics répondent réellement, zéro erreur (probe du 5 octobre).
 Un cycle partiellement indisponible est dégradé et conserve une tentative bornée
 après quinze minutes ; il ne compte pas comme une collecte complète réussie.
 URLs d'observation datées empêchent de supprimer à vie les événements futurs
@@ -91,9 +95,9 @@ ne pas inventer un coût premium ni assimiler zéro coût Jev à zéro coût tot
 Le corpus indépendant Claude et une période de mesure sont encore nécessaires
 pour déclarer la qualité ou la fiabilité en usage quotidien.
 
-## Vérifications du 5 octobre — avant bascule du planning
+## Vérifications du 5 octobre — planning actif
 
-- 46 tests Node file/cycles/prose/envoi/installation, 6 lecteur Python et 5
+- 47 tests Node file/cycles/prose/envoi/installation, 3 diagnostic, 6 lecteur Python et 5
   collecteur : 57 passent. Gateway 58, managers 18 et diagnostic 2 passent dans
   le lot précédent ; ils ne mesurent pas la qualité éditoriale.
 - Lectures publiques : neuf pages acquièrent une preuve. Un signal Ask HN entre
@@ -119,6 +123,17 @@ release officielle, test de transport). File commune conservée dans
 
 Installation réversible : `scripts/install-mac-alerts.mjs <settings> --prepare`,
 puis `--activate` après arrêt du workflow Sentinelle et contrôle de santé.
+Mise à jour : `--update <anciens-settings>` vérifie le planning précédent,
+conserve la même file, sauvegarde le plist et restaure l'ancien si bootstrap échoue.
 Le plist épingle Node et la release ; aucun destinataire ou secret en arguments.
 Retour : `launchctl bootout gui/$(id -u)/com.ivan-ai-os.alerts`, puis
 `gh workflow enable sentinelle.yml --repo FreezyXV/sentinelle`. Pas les deux actifs.
+
+Sentinelle distant confirmé `disabled_manually` avant activation locale.
+LaunchAgent `com.ivan-ai-os.alerts` chargé, passages courts à sortie 0. Reprise
+native contrôlée : aucune sélection, génération ou livraison répétée ; la seule
+collecte rejouée est l'essai Finance dégradé autorisé par son bail, puis borné.
+Jev : 241 → 252 appels, 0,004367 → 0,004726 EUR estimés, soit 0,000359 EUR
+pour dix sélections et un tri Business. Plafond existant 10 EUR conservé.
+Ces mesures ne comprennent pas un coût premium inconnu et ne prouvent pas
+la fiabilité quotidienne. Lecture de santé : `node scripts/inspect-mac-pilot.mjs`.

@@ -16,6 +16,21 @@ la dernière étape de cette livraison. La pause Career et le report OVH ne
 bloquent pas cette définition. Ne pas annoncer un service permanent pendant
 le sommeil du Mac sans en avoir mesuré le comportement.
 
+## Avancement du 5 octobre — intégration des alertes
+
+Branche `agent/codex/alerts-integration`, planning Mac actif, workflow Sentinelle
+distant désactivé de façon réversible. Lire `MAC-ALERT-ORCHESTRATOR.md` pour les
+preuves et limites. C04 identifié ; C05 lecteurs limités actifs ; C06 file commune
+et reprises actives, rétention et doublons sémantiques non résolus ; C08 générateur
+natif provisoire actif, contrat Claude attendu ; C09 digest technique reçu 58,
+reprise sans doublon. C10 reste ouvert : aucun KEEP Jev réel assez confiant sur
+les sources de cette campagne. Le tri du test Telegram est explicitement simulé.
+C11 planning exclusif actif, cycles réels et restart vérifiés ; C12 reste limité
+à veille/tri Business et Finance publique, pas d'opportunité rentable inventée.
+C14 diagnostic étendu aux cycles, erreurs sources, backlog et reçu. C18 mesures
+initiales consignées (11 appels Jev, 0,000359 EUR estimé), coût prose non exposé.
+K01–K03 et qualité indépendante restent à Claude ; aucun de ses lots annoncé fini.
+
 ## Checklist Codex — responsable de la réalisation et de l'intégration
 
 ### 1. Périmètre et état réel

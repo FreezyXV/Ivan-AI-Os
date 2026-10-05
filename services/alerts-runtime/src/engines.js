@@ -8,17 +8,32 @@ import {createHash} from 'node:crypto';
 // module untouched and adapt its public fetch/result at the runtime boundary.
 export const modernFinanceUrl=url=>url.replace('/ICP/','/HICP/').replace('.4.ANR','.4D0.ANR');
 export async function collectFinance(fetchImpl=fetch,now=new Date()){
+ let ecbSlots=0;const waiting=[];
+ const limited=async fn=>{
+  if(ecbSlots<2)ecbSlots++;else await new Promise(resolve=>waiting.push(resolve));
+  try{return await fn();}finally{if(waiting.length)waiting.shift()();else ecbSlots--;}
+ };
  const result=await collect(async(url,opts)=>{
-  const response=await fetchImpl(modernFinanceUrl(url),opts);
-  if(!response.ok)return response;
-  const raw=await response.text();if(raw.length>1000000)throw Error('FINANCE_RESPONSE_TOO_LARGE');
-  if(url.includes('api.kraken.com')){
-   const value=JSON.parse(raw);
-   // Kraken's final OHLC row is still forming: do not call it a close.
-   for(const [key,rows] of Object.entries(value.result??{}))if(key!=='last'&&Array.isArray(rows))rows.pop();
-   return {ok:true,text:async()=>JSON.stringify(value)};
-  }
-  return {ok:true,text:async()=>raw};
+  const fetchSource=async()=>{
+   for(let attempt=0;attempt<2;attempt++)try{
+    // The legacy collector starts its timeout before waiting. Start this bounded
+    // request deadline after obtaining an ECB slot, including on the one retry.
+    const response=await fetchImpl(modernFinanceUrl(url),{...opts,signal:AbortSignal.timeout(15000)});
+    if(!response.ok){if(attempt===0&&[502,503,504].includes(response.status))continue;return response;}
+    const raw=await response.text();if(raw.length>1000000)throw Error('FINANCE_RESPONSE_TOO_LARGE');
+    if(url.includes('api.kraken.com')){
+     const value=JSON.parse(raw);
+     // Kraken's final OHLC row is still forming: do not call it a close.
+     for(const [key,rows] of Object.entries(value.result??{}))if(key!=='last'&&Array.isArray(rows))rows.pop();
+     return {ok:true,text:async()=>JSON.stringify(value)};
+    }
+    return {ok:true,text:async()=>raw};
+   }catch(error){
+    const transient=error.name==='TimeoutError'||['ETIMEDOUT','ECONNRESET','EAI_AGAIN'].includes(error.cause?.code);
+    if(attempt===1||!transient)throw error;
+   }
+  };
+  return url.includes('data-api.ecb.europa.eu')?limited(fetchSource):fetchSource();
  },now);
  result.indicateurs=result.indicateurs.map(i=>({...i,source:modernFinanceUrl(i.source)}));return result;
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { summarizeAutomations, inspectPilot } from './inspect-mac-pilot.mjs';
+import { summarizeAutomations, summarizeAlertCycles, inspectPilot } from './inspect-mac-pilot.mjs';
 
 test('native automation inventory reveals Career activity without leaking prompts or addresses',()=>{
   const jobs=[{agentId:'ivan-career',enabled:true,payload:{kind:'agentTurn',message:'PRIVATE PROMPT'},
@@ -22,4 +22,10 @@ test('diagnostic reports partial failure without reflecting command output or cr
   assert.equal(result.jev.usage.calls,4);
   assert.equal(result.automations.error_code,'AUTOMATION_INVENTORY_UNAVAILABLE');
   assert.equal(JSON.stringify(result).includes('PRIVATE'),false);assert.equal(JSON.stringify(result).includes('synthetic-private-token'),false);
+});
+test('alert health exposes backlog and partial source failures without article, prompt or recipient',()=>{
+ const result=summarizeAlertCycles({counts:[{state:'review',n:12}],cycles:[{name:'finance',status:'done',attempts:1,
+  metrics:JSON.stringify({durationMs:15000,result:{sourceErrors:[{code:'UNAVAILABLE'}],prompt:'PRIVATE',target:'PRIVATE'}})}]});
+ assert.equal(result.queue.review,12);assert.equal(result.latest[0].degraded,true);assert.equal(result.latest[0].sourceErrors,1);
+ assert.equal(result.prose_usage_available,false);assert.doesNotMatch(JSON.stringify(result),/PRIVATE/);
 });

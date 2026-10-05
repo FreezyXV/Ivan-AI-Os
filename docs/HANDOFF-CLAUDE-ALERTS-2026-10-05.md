@@ -7,8 +7,12 @@ Le prompt transmis directement à Ivan remplace les états anciens ci-dessous.
 Codex a construit les collecteurs locaux, lecteurs BCE/HF/Next/Ask HN, file
 durable, cycles, génération native et digest sur `agent/codex/alerts-integration`.
 Lire `docs/MAC-ALERT-ORCHESTRATOR.md` sur cette branche lorsqu'elle est publiée.
-L'activation complète et le parcours réel sont encore en vérification : ne pas
-les déduire des tests seuls. Les anciens plannings ne sont pas encore coupés.
+Le planning Mac est maintenant actif ; l'ancien workflow Sentinelle est arrêté.
+Digest technique reçu 58, puis reprise sans doublon. Son tri est explicitement
+simulé : les dix sélections réelles initiales/révision sont rejetées ou en revue,
+donc pas de génération automatique de production. Ne pas annoncer un parcours
+réel KEEP Jev complet. K03 doit analyser cette forte abstention sur un corpus
+indépendant ; ne pas calibrer seulement sur les sources qui ont déjà échoué.
 
 K01–K03 restent entièrement à Claude : skill, contrat et évaluation indépendante.
 Ne pas reconstruire le runtime, les collecteurs ou l'authentification. Le contrat
@@ -21,6 +25,10 @@ Une adaptation de schéma/longueur doit être proposée à Codex, sans changer s
 runtime ni produire une interface parallèle. Aucun seuil abaissé pour forcer
 un résultat. L'extrait est borné à 1200 caractères, un digest à 2500 : signaler
 les limites éditoriales sur des exemples réellement lus.
+Le runtime Finance corrige les anciens liens ICP, retire la bougie Kraken en
+cours et borne les reprises réseau. Les sept indicateurs répondent sur le
+dernier probe corrigé ; les sources du skill restent à aligner dans K04/K05.
+Diagnostic backlog/cycles/reçus disponible dans scripts/inspect-mac-pilot.mjs.
 
 Le premier lot part de foundation/v1 sur `agent/claude/telegram-syntheses`, dans
 le worktree Claude ; les modifications locales existantes restent intactes.

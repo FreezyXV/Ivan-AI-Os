@@ -41,3 +41,15 @@ test('partial source outages are visible and reserve a bounded retry instead of 
  assert.equal(ledger.cycleStatus().find(r=>r.name==='finance').status,'failed');
  await runCycle(options);assert.equal(calls,1);
 });
+test('one transient public-source timeout is recovered; permanent HTTP errors are not hammered',async()=>{
+ let attempts=0;
+ const rows=Array.from({length:33},(_,i)=>[Date.parse('2026-09-01T00:00:00Z')/1000+i*86400,'0','0','0',String(100+i)]);
+ const result=await collectFinance(async url=>{
+  if(url.includes('pair=XBTEUR')){
+   attempts++;if(attempts===1)throw Object.assign(Error(),{name:'TimeoutError'});
+   return {ok:true,text:async()=>JSON.stringify({error:[],result:{PAIR:rows,last:0}})};
+  }
+  return {ok:false,status:404};
+ },now);
+ assert.equal(attempts,2);assert.equal(result.indicateurs.find(i=>i.id==='btc_eur')?.valeur,131);
+});
