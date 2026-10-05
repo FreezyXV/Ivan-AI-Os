@@ -23,7 +23,21 @@ export function renderBrief(item,brief){
     ...(limits?[`\nLimite : ${limits}`]:[]),`\nSource : ${item.url}`];
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
 }
-export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours,stageTimeoutMs=30000}){
+// Selection policy (Claude calibration 2026-10-05). Default = historical 0.75 rule; a
+// calibrated policy is configuration, validated here, never a model choice.
+export const DEFAULT_SELECTION_POLICY=Object.freeze({keepMinConfidence:0.75,skipMinConfidence:0.75});
+export function selectionOutcome(selection,policy=DEFAULT_SELECTION_POLICY){
+  const unit=v=>Number.isFinite(v)&&v>=0&&v<=1,optional=v=>v===undefined||(unit(v)&&v>0);
+  if(!policy||!unit(policy.keepMinConfidence)||!unit(policy.skipMinConfidence)||!optional(policy.keepMinProbability)||!optional(policy.skipMinProbability))fail('ALERT_SELECTION_POLICY_INVALID');
+  const p=selection.probabilities;
+  if(p&&policy.keepMinProbability!==undefined&&p.keep>=policy.keepMinProbability)return 'keep';
+  if(selection.decision==='keep'&&selection.confidence>=policy.keepMinConfidence)return 'keep';
+  if(p&&policy.skipMinProbability!==undefined&&p.skip>=policy.skipMinProbability)return 'skip';
+  if(selection.decision==='skip'&&selection.confidence>=policy.skipMinConfidence)return 'skip';
+  return 'review';
+}
+export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
+  selectionOutcome({decision:'review',confidence:0},selectionPolicy); // invalid configuration fails before any claim
   if(!Number.isInteger(stageTimeoutMs)||stageTimeoutMs<10||stageTimeoutMs>60000)fail('ALERT_DEADLINE_CONFIG_INVALID');
   const job=ledger.claim();if(!job)return {state:'idle'};
   const complete=(state,reason,brief)=>{
@@ -41,9 +55,11 @@ export async function processNext({ledger,select,synthesize,now=Date.now(),maxAg
   const trace={decision:selection.decision,confidence:selection.confidence,
     ...(['jev','deterministic-kernel'].includes(selection.provider)?{provider:selection.provider}:{}),
     ...(/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??'')?{request_id:selection.request_id}:{}),
-    ...(selection.context_version===PILOT_CONTEXT.version?{context_version:selection.context_version}:{})};
-  if(selection.decision==='skip'&&selection.confidence>=0.75)return complete('skipped','SELECTION_REJECTED',{selection:trace});
-  if(selection.decision!=='keep'||selection.confidence<0.75)return complete('review','SELECTION_UNCERTAIN',{selection:trace});
+    ...(selection.context_version===PILOT_CONTEXT.version?{context_version:selection.context_version}:{}),
+    ...(selection.probabilities?{probabilities:selection.probabilities}:{})};
+  const outcome=selectionOutcome(selection,selectionPolicy);
+  if(outcome==='skip')return complete('skipped','SELECTION_REJECTED',{selection:trace});
+  if(outcome!=='keep')return complete('review','SELECTION_UNCERTAIN',{selection:trace});
   if(!ledger.ownsLease(job.id,job.owner))return{id:job.id,state:'lease_lost'};
   if(typeof synthesize!=='function')return complete('review','SYNTHESIS_NOT_CONFIGURED',{selection:trace});
   try{
