@@ -27,12 +27,24 @@ export function validateAlertSelection(payload) {
     excerpt: payload.excerpt, context_version: PILOT_CONTEXT.version };
 }
 
+// Per-option probabilities from TypeSafe, exposed only when complete and coherent
+// (Claude calibration 2026-10-05: the chosen option's confidence alone does not separate
+// true keeps from noise). Absent or malformed → omitted, never invented.
+export function alertProbabilities(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const keys = Object.keys(criteria);
+  if (Object.keys(value).length !== keys.length || !keys.every(k => Number.isFinite(value[k]) && value[k] >= 0 && value[k] <= 1)) return undefined;
+  if (Math.abs(keys.reduce((s, k) => s + value[k], 0) - 1) > 0.03) return undefined;
+  return Object.fromEntries(keys.map(k => [k, value[k]]));
+}
+
 export function validAlertSelection(result) {
   return result?.question === ALERT_SELECTION_QUESTION &&
     Object.hasOwn(criteria, result.decision) &&
     Number.isFinite(result.confidence) && result.confidence >= 0 && result.confidence <= 1 &&
     ['jev', 'deterministic-kernel'].includes(result.provider) &&
-    result.context_version === PILOT_CONTEXT.version;
+    result.context_version === PILOT_CONTEXT.version &&
+    (result.probabilities === undefined || alertProbabilities(result.probabilities) !== undefined);
 }
 
 export async function selectAlert(payload, { budget, fetchImpl } = {}) {
@@ -52,6 +64,8 @@ export async function selectAlert(payload, { budget, fetchImpl } = {}) {
   const answer = raw?.answers?.alert_selection;
   const result = { question: ALERT_SELECTION_QUESTION, decision: answer?.choice,
     confidence: answer?.confidence, provider: 'jev', context_version: PILOT_CONTEXT.version };
+  const probabilities = alertProbabilities(answer?.probabilities);
+  if (probabilities) result.probabilities = probabilities;
   if (answer?.type !== 'choice' || !validAlertSelection(result))
     throw new ProviderError('TYPESAFE_ALERT_SELECTION_RESPONSE_INVALID');
   return result;
