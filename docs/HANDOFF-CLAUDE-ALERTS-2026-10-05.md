@@ -1,6 +1,31 @@
+## Actualisation Codex — v3 active et sorties K06 disponibles
+
+Runtime @9136f58, PR #57, CI 11/11. Lire REVIEW-CODEX-K04-K07-2026-10-05.md
+et ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md avant les sections historiques.
+#49 corrigée/12 tests ; #52–#56 relues sans modifier ton checkout.
+Corrections de #56 : trois releases examinées, panne de page isolée, installation
+idempotente et rollback vérifié. Extrait entier de 1200 vers Jev, contexte v3.
+Compatibility/runtimes respectés en source ; sept rôles conservés, aucun natif supprimé live.
+À corriger #54 : l'écart total/sous-jacent ne prouve pas à lui seul la contribution de l'énergie.
+Parser Kraken e7653a8 testé avec le retrait déjà effectué par le runtime : même clôture.
+
+K06 : quatre sorties natives dans ~/.ivan-ai-os/mac-alerts-9136f58/editorial-samples-current.jsonl.
+Elles sont explicitement éditoriales, sans sélection mesurée ni Telegram ; I12 synthétique.
+Ton vérificateur de PR #55 : contrôles OK sur les quatre. Son 0/8 pertinence est inapplicable
+sans selection : ne pas ajouter de faux KEEP pour remplir le score.
+À toi : noter fidélité/utilité/action/effort ; rendre la recommandation des vingt répétitions
+proportionnée ; construire un nouveau jeu disjoint de la référence déjà mesurée en v2.
+Variante compacte non exécutée, coûts/tokens natifs inconnus ; pas de gain A/B annoncé.
+Nouvel essai réel Next.js v3 : keep 0,26, donc review ; diagnostic, pas validation indépendante.
+Ne pas refaire les 12 sélections du protocole ancien pour « démarrer » la calibration.
+Career reste en pause, OVH différé ; Knowledge/Anakalypto en dernier avec Codex.
+
 # Mission Claude Code — synthèses Telegram utiles à Ivan
 
-## Actualisation du lot — intégration Codex en cours le 5 octobre
+## Historique du lot — intégration Codex le 5 octobre
+
+Les demandes de cette section sont historiques ; l'actualisation v3 ci-dessus
+fait foi. Ne pas recommencer les lots proposés ni la correction #49 déjà relue.
 
 Claude a proposé K01–K03 dans la PR #50, une première partie K05 dans #51
 et le changement du hook gate dans #49. Rien n'est fusionné ni activé.

@@ -29,3 +29,11 @@ test('alert health exposes backlog and partial source failures without article, 
  assert.equal(result.queue.review,12);assert.equal(result.latest[0].degraded,true);assert.equal(result.latest[0].sourceErrors,1);
  assert.equal(result.prose_usage_available,false);assert.doesNotMatch(JSON.stringify(result),/PRIVATE/);
 });
+test('healthy services still expose why no alert is delivered; uncertainty and unread pages have different next actions',()=>{
+ const uncertain=summarizeAlertCycles({counts:[{state:'review',n:14},{state:'expired_unsent',n:2}],reviewReasons:[{reason:'SELECTION_UNCERTAIN',n:10},{reason:'SOURCE_NOT_READ',n:4}]});
+ assert.equal(uncertain.queue.expired_unsent,2);assert.equal(uncertain.diagnosis.code,'CALIBRATE_RELEVANCE');
+ const unread=summarizeAlertCycles({counts:[{state:'review',n:4}],reviewReasons:[{reason:'SOURCE_NOT_READ',n:4}]});
+ assert.equal(unread.diagnosis.code,'EXPAND_READERS');
+ const sending=summarizeAlertCycles({counts:[{state:'delivery_unknown',n:1},{state:'ready',n:2}]});
+ assert.equal(sending.diagnosis.code,'CHECK_DELIVERY_RECEIPT');
+});

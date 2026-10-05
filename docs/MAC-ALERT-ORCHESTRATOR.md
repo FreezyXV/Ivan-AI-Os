@@ -4,6 +4,14 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
+État courant : release active `orchestrator-9136f58`, contexte v3, PR #57,
+CI 11/11 au commit 9136f58. 171 tests affectés passent : 75 alertes/scripts,
+60 gateway, 21 managers, 15 Python. Les sections de vérification v2 ci-dessous
+restent historiques ; voir SESSION_HANDOFF.md pour le dernier état natif.
+Quatre sorties éditoriales natives mesurées, zéro envoi du corpus ; source réelle
+Next.js keep 0,26 retenue en review. Pas de parcours complet de production revendiqué.
+Mesures : ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md.
+
 ## Chemin technique
 
 `scripts/mac-alerts-cycle.mjs <settings.json>` est un passage borné. Launchd
@@ -140,7 +148,7 @@ ne pas inventer un coût premium ni assimiler zéro coût Jev à zéro coût tot
 Le corpus indépendant Claude et une période de mesure sont encore nécessaires
 pour déclarer la qualité ou la fiabilité en usage quotidien.
 
-## Vérifications du 5 octobre — planning actif
+## Historique des vérifications du 5 octobre — planning v2
 
 Actualisation après relecture Claude : Jev et générateur épinglés à `2ab2042`,
 contexte v2 actif, planning migré sur cette release avec la même file. Bascule
@@ -175,9 +183,9 @@ d'appels seul. Coût/tokens de prose isolée toujours non disponibles.
 Preuves : `~/.ivan-ai-os/mac-alerts-2ab2042/` (activation, mesure indépendante,
 Next.js réel, révision, cycles publics et inspections de santé).
 
-- 47 tests Node file/cycles/prose/envoi/installation, 3 diagnostic, 6 lecteur Python et 5
-  collecteur : 57 passent. Gateway 58, managers 18 et diagnostic 2 passent dans
-  le lot précédent ; ils ne mesurent pas la qualité éditoriale.
+- Les validations antérieures file/cycles/prose/envoi et moteurs sont conservées
+  dans l'historique Git. Le compteur combiné courant est donné en tête de document ;
+  il ne mesure pas la qualité éditoriale.
 - Lectures publiques : neuf pages acquièrent une preuve. Un signal Ask HN entre
   dans le vrai ledger Business et reçoit son tri Jev. Aucune preuve de paiement
   ou opportunité rentable inventée. Finance : 5–6/7 réponses selon le passage ;

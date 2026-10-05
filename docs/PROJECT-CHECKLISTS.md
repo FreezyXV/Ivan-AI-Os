@@ -18,23 +18,22 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ## Avancement du 5 octobre — intégration des alertes
 
-Branche `agent/codex/alerts-integration`, planning Mac actif, workflow Sentinelle
-distant désactivé de façon réversible. Lire `MAC-ALERT-ORCHESTRATOR.md` pour les
-preuves et limites. C04 identifié ; C05 lecteurs limités actifs ; C06 file commune
-et reprises actives, rétention et doublons sémantiques non résolus ; C08 générateur
-natif provisoire actif, contrat Claude attendu ; C09 digest technique reçu 58,
-reprise sans doublon. C10 reste ouvert : aucun KEEP Jev réel assez confiant sur
-les sources de cette campagne. Le tri du test Telegram est explicitement simulé.
-C11 planning exclusif actif, cycles réels et restart vérifiés ; C12 reste limité
-à veille/tri Business et Finance publique, pas d'opportunité rentable inventée.
-C14 diagnostic étendu aux cycles, erreurs sources, backlog et reçu. C18 mesures
-initiales consignées (11 appels Jev, 0,000359 EUR estimé), coût prose non exposé.
-Claude a livré K01–K03 en source dans la PR #50 et un premier passage K05
-dans la PR #51 ; rien n'est fusionné ni activé. La relecture Codex et la mesure
-des sorties automatiques restent ouvertes. K05 restant, K04 et K06 peuvent
-avancer en parallèle ; K07 relira les nouveaux commits du runtime.
-La PR #49 nécessite une correction : son mode gate rend aussi silencieux un
-REQUIRE_HUMAN concernant la constitution ; voir REVIEW-CODEX-CLAUDE-2026-10-05.md.
+PR #57, runtime Mac actif @9136f58, contexte v3. CI 11/11 ; 171 tests affectés passent.
+Planning exclusif, workflow Sentinelle distant désactivé. Digest paginé, lecture par
+passages, erreurs de releases isolées, reprise/idempotence d'installation vérifiées.
+Jev reçoit les 1200 caractères lus ; confiance de livraison conservée à 0,75.
+C10 reste ouvert : source réelle → vrai Jev keep 0,26 → review, aucun message forcé.
+Le reçu 58 antérieur est un test de transport avec tri simulé ; ce n'est pas C10.
+C08/K06 : quatre sorties natives isolées mesurées, 950–1146 caractères,
+10,4–42,5 s, contrôles Claude OK ; fidélité/utilité indépendante et A/B encore ouverts.
+C14 : diagnostic enrichi avec les raisons du backlog et la prochaine action.
+C18 : compteur partagé 262 appels / 0,005123 EUR estimé ; coût prose non exposé.
+C15 : plan source respectant runtimes/compatibility, Engineering externe conservé ;
+son agent live reste intact, pas d'usine native prétendument exécutée.
+Claude a proposé #50–#56. Revue détaillée : REVIEW-CODEX-K04-K07-2026-10-05.md.
+#49 est corrigée et relue (12/12), source non activée. Exemple Finance #54 à corriger.
+Les cases finales restent ouvertes lorsqu'une preuve source/test ne remplit pas
+le critère de qualité ou d'usage réel défini ci-dessous.
 
 ## Checklist Codex — responsable de la réalisation et de l'intégration
 
@@ -62,9 +61,9 @@ REQUIRE_HUMAN concernant la constitution ; voir REVIEW-CODEX-CLAUDE-2026-10-05.m
 - [ ] **C05** : brancher la collecte et la lecture effective des sources.
   Fin : dates et extrait vérifiés, accès incomplet visible, source inaccessible
   jamais transformée en résumé supposé.
-  Lecture réelle d'un article Sentinelle et preuve de date/empreinte conservées ;
-  premier adaptateur blog et consommateur `ingest-alert-candidates.mjs` testés.
-  Autres sites et consommation planifiée de l'artifact encore à réaliser.
+  Planning et lecteurs bornés activés : Simon, HF, Next.js, BCE et Ask HN ;
+  preuve réelle Next.js v3 conservée. Les sites hors périmètre restent non lus.
+  Réception directe des flux publics sur Mac ; aucun artifact distant à attendre.
 - [ ] **C06** : file durable commune, dédoublonnage entre bots, filtre de
   fraîcheur/périmètre, reprise après panne et réservation des tâches.
   Fin : preuves de concurrence, de redémarrage et de doublon interproducteur.
@@ -78,20 +77,23 @@ REQUIRE_HUMAN concernant la constitution ; voir REVIEW-CODEX-CLAUDE-2026-10-05.m
   Fin : requêtes du vrai client acceptées et budget commun conservé.
   API `/v1/alerts/select` active sur 4311, reçu Jev réel vérifié ; vrai client
   Finance contre ce gateway : les deux formats acceptés. Budget conservé.
-  Calibration indépendante de la pertinence encore requise.
+  Référence indépendante v2 mesurée et insuffisante (3/7 Jev) ; v3 à améliorer
+  puis mesurer sur un nouveau jeu, en gardant les exclusions locales séparées.
 - [ ] **C08** : synthèse après sélection, consommant le contrat Claude K01/K02.
   Fin : faits étayés, utilité liée à une priorité active, action ou rien à faire,
   limites et lien final ; pas de génération pour les éléments écartés.
+  Générateur/contrat activés ; quatre sorties natives K06 réelles contrôlées,
+  sans sélection ni envoi. La mesure indépendante de fidélité/utilité reste ouverte.
 - [ ] **C09** : digest pour l'ordinaire, urgence justifiée pour l'immédiat,
   reçu Telegram, absence de renvoi automatique après un envoi incertain.
   Fin : un même élément livré une fois, même si les deux bots le proposent.
-  Adaptateur natif livré, reçu réel 57 et contrôle visuel. Digest et bascule
-  vers la file commune restent à terminer ; aperçu manuel distinct du tri.
+  Digest paginé, reçu technique 58 et file commune actifs ; test de reprise
+  sans doublon. Urgence liée à l'inventaire reste ouverte ; aperçu manuel distinct du tri.
 - [ ] **C10** : parcours réel source → filtre → synthèse → Telegram pour
   Sentinelle puis Secrétaire, avec K03. Fin : reçu et appréciation d'Ivan ;
   distinguer test synthétique, source réelle et test Telegram.
-  Article réellement lu → aperçu manuel Codex → Secrétaire Ivan reçu ;
-  chaîne automatique Sentinelle et contrat Claude K01/K02 encore ouverts.
+  Article réellement lu → vrai Jev keep 0,26 → review en v3. Pas de génération
+  ni reçu forcés ; la chaîne réelle retenue reste à prouver. Le contrat est intégré.
 
 ### 3. Moteurs Business / Finance et cycle Mac
 
@@ -106,18 +108,21 @@ REQUIRE_HUMAN concernant la constitution ; voir REVIEW-CODEX-CLAUDE-2026-10-05.m
   Fin : reproduction avant correctif et vérification après panne simulée,
   sans effacer le budget, la mémoire ou la personnalité de la Secrétaire.
   Career/maintenance Workshop corrigés et vérifiés nativement ; #21 reste ouvert.
-- [ ] **C14** : vue locale de santé et diagnostic exploitable : services,
+- [x] **C14 — diagnostic vérifié** : vue locale de santé et diagnostic exploitable : services,
   tâches, backlog, erreurs, dernière livraison, coût estimé.
   Fin : cause et prochaine action compréhensibles, sans inspection manuelle
   de multiples journaux ni contenu privé dans les messages d'état.
-  Premier diagnostic natif : `scripts/inspect-mac-pilot.mjs` ; backlog et reçus
-  des nouveaux producteurs encore à brancher.
+  `scripts/inspect-mac-pilot.mjs` : services, budget, cycles, backlog, raisons,
+  prochaine action et reçu. Santé native 14:11 UTC, worker 9136f58, sortie 0.
+  Queue prod 14 review/3 skipped, zéro reçu ; symptômes distingués de la santé des services.
 
 ### 4. Engineering et System
 
 - [ ] **C15** : parcours tâche → builder → reviewer → tests → branche/PR,
   sans double travail Codex/Claude. Fin : une tâche réelle livrée et relue,
   provenance et limites d'exécution enregistrées.
+  Plan source conforme à compatibility/runtimes ; Engineering Codex/Claude
+  conservé, passation explicite. Son worker natif live n'est pas migré implicitement.
 - [ ] **C16** : déterminer le contrat de hook réellement supporté par Codex,
   puis adapter les mêmes règles que Claude si possible. Fin : preuve native ;
   si aucune interface existe, documenter la limite et le contrôle alternatif,
@@ -159,9 +164,14 @@ REQUIRE_HUMAN concernant la constitution ; voir REVIEW-CODEX-CLAUDE-2026-10-05.m
 
 ## Checklist Claude — travail en parallèle, sans toucher au runtime Codex
 
-K01–K03 sont proposés en PR #50 ; la case finale attend relecture et intégration.
-K05 est partiellement proposé en PR #51. Les prochains lots restent sur une
-branche par sujet, dans le même worktree séparé ; aucun runtime live à modifier.
+K01–K03 : PR #50 relue, contrat repris au runtime ; intégration finale ouverte.
+K05 : propositions #51–#53 relues ; raccord capability fait côté Codex en source.
+K04 : #54 relue, parser compatible, déduction économique de l'exemple à qualifier.
+K06 : #55 relue, quatre sorties automatiques remises ; noter leur qualité puis
+construire un nouveau jeu indépendant. Ne pas refaire la référence déjà payée.
+K07 : #56 relue, défauts de collecte/installation traités et testés côté Codex.
+K08 attend la dernière étape ; K09/K10 peuvent préparer la clôture après ces preuves.
+Aucune PR Claude fusionnée ni sa configuration live modifiée dans cette session.
 
 ### 1. Contrat éditorial et évaluations — commencer maintenant
 
