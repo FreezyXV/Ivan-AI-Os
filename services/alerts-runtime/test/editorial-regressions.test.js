@@ -15,7 +15,7 @@ const item=(patch={})=>({producer:'sentinelle',scope:'public',topic:'system',url
 function fixture(t){const dir=mkdtempSync(path.join(tmpdir(),'ivan-editorial-'));
  const ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>now});
  t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return ledger;}
-function ready(ledger,n,length=1400){const {id}=ledger.ingest(item({url:'https://example.org/'+n}));
+function ready(ledger,n,length=1400){const {id}=ledger.ingest(item({url:'https://example.org/'+n,title:`Annonce indépendante ${n}`}));
  const job=ledger.claim();ledger.finish(id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:String(n)+' '+ 'x'.repeat(length-2)}});return id;}
 test('three long briefs paginate completely and never resend',async t=>{
  const ledger=fixture(t),ids=[1,2,3].map(n=>ready(ledger,n));let calls=0;

@@ -1,5 +1,5 @@
 // Independent selection measurement only: no generation, delivery or label in the request.
-import {readFileSync,writeFileSync,lstatSync} from 'node:fs';
+import {readFileSync,lstatSync,openSync,writeSync,ftruncateSync,closeSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -7,6 +7,11 @@ import {validateItem,prefilter,canonicalUrl,PILOT_CONTEXT} from '../services/ale
 import {createJevSelector} from '../services/alerts-runtime/src/jev-selector.js';
 export async function evaluateCorpus(corpus,{select}={}){
  if(corpus?.role!=='evaluation-independante'||!Array.isArray(corpus.cas)||corpus.cas.length>50||new Set(corpus.cas.map(c=>c.id)).size!==corpus.cas.length)throw Error('ALERT_CORPUS_INVALID');
+ // Validate the whole set before the first provider call, not halfway through it.
+ for(const c of corpus.cas){
+  if(c.entree?.source){const raw=c.entree.source;validateItem({...raw,...(raw.sourceStatus==='read'&&!raw.readAt?{readAt:raw.observedAt}:{})});}
+  if(c.entree?.candidats)for(const source of c.entree.candidats)canonicalUrl(source.url);
+ }
  const results=[];let providerAttempts=0;
  for(const c of corpus.cas){
   const expected=c.attendu?.selection;
@@ -36,12 +41,19 @@ export async function evaluateCorpus(corpus,{select}={}){
   providerAttempts,errors:results.filter(r=>r.status==='ERROR').length,deliveryMeasured:false,proseMeasured:false,results};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+ let outputFd;
  try{
   const [mode,input,output]=process.argv.slice(2);if(!['--offline','--live'].includes(mode)||!path.isAbsolute(input)||!path.isAbsolute(output))throw Error('ALERT_EVALUATION_USAGE');
   const dir=lstatSync(path.dirname(output));if(!dir.isDirectory()||dir.isSymbolicLink()||dir.uid!==process.getuid()||(dir.mode&0o077))throw Error('PRIVATE_EVALUATION_OUTPUT_REQUIRED');
   const bytes=readFileSync(input);if(bytes.length>512000)throw Error('ALERT_CORPUS_INVALID');
-  const report=await evaluateCorpus(JSON.parse(bytes),{select:mode==='--live'?createJevSelector():undefined});
-  writeFileSync(output,JSON.stringify({...report,mode,corpusSha256:createHash('sha256').update(bytes).digest('hex'),at:new Date().toISOString()},null,2),{mode:0o600,flag:'wx'});
+  const corpus=JSON.parse(bytes),corpusSha256=createHash('sha256').update(bytes).digest('hex');
+  // Claim the result BEFORE any paid operation. A crash leaves a visible marker
+  // for reconciliation rather than letting a repeated command spend twice.
+  outputFd=openSync(output,'wx',0o600);
+  writeSync(outputFd,JSON.stringify({status:'IN_PROGRESS',mode,corpusSha256,contextVersion:PILOT_CONTEXT.version}));
+  const report=await evaluateCorpus(corpus,{select:mode==='--live'?createJevSelector():undefined});
+  ftruncateSync(outputFd,0);writeSync(outputFd,JSON.stringify({...report,mode,corpusSha256,at:new Date().toISOString()},null,2),0,'utf8');
   console.log(JSON.stringify(report));if(report.errors)process.exitCode=1;
- }catch(error){console.error(/^[A-Z_]+$/.test(error.message)?error.message:'ALERT_EVALUATION_FAILED');process.exitCode=1;}
+ }catch(error){console.error(error.code==='EEXIST'?'ALERT_EVALUATION_ALREADY_STARTED':/^[A-Z_]+$/.test(error.message)?error.message:'ALERT_EVALUATION_FAILED');process.exitCode=1;}
+ finally{if(outputFd!==undefined)closeSync(outputFd);}
 }

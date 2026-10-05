@@ -74,7 +74,7 @@ test('uncertain, malformed and unavailable selections do not trigger prose gener
     async()=>{throw Error('provider outage');},async()=>({decision:'skip',confidence:0.9})];
   const expected=['SELECTION_UNCERTAIN','SELECTION_INVALID','SELECTION_UNAVAILABLE','SELECTION_REJECTED'];
   for(let i=0;i<selections.length;i++){
-    ledger.ingest(item({url:`https://example.org/selection/${i}`}));
+    ledger.ingest(item({url:`https://example.org/selection/${i}`,title:`Sélection indépendante ${i}`}));
     const result=await processNext({ledger,now:at,select:selections[i],synthesize:()=>{calls++;}});
     assert.equal(result.reason,expected[i]);
   }
@@ -97,7 +97,7 @@ test('fabricated quotation or unsupported number prevents automatic delivery',as
     {summary:'Reprise en 2 secondes.',quote:'une reprise après 15 secondes'},
     {summary:'Tout fonctionne.',quote:'Cette phrase ne figure pas dans la source.'}
   ].entries()){
-    ledger.ingest(item({url:`https://example.org/fact/${i}`}));
+    ledger.ingest(item({url:`https://example.org/fact/${i}`,title:`Vérification indépendante ${i}`}));
     const result=await processNext({ledger,now:at,select:keep,synthesize:async()=>({...brief(),facts:[fact]})});
     assert.equal(result.state,'review');assert.equal(result.reason,'ALERT_FACT_UNSUPPORTED');
   }
@@ -166,7 +166,7 @@ test('a hanging provider is cancelled and cannot block the next queued alert',as
   const result=await processNext({ledger,now:at,stageTimeoutMs:15,
     select:async(_item,_context,options)=>{signal=options.signal;return new Promise(()=>{});}});
   assert.equal(result.reason,'SELECTION_TIMEOUT');assert.equal(result.state,'review');assert.equal(signal.aborted,true);
-  ledger.ingest(item({url:'https://example.org/next'}));
+  ledger.ingest(item({url:'https://example.org/next',title:'Une autre annonce après la panne'}));
   assert.equal((await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()})).state,'ready');
 });
 
@@ -226,7 +226,7 @@ test('operator reader repair permits one changed evidence revision but never reo
  assert.equal(ledger.reviseReviewedEvidence(original,{revision:'reader-clean-v2'}).revised,false);
  assert.equal(ledger.get(id).state,'review');
  assert.equal(ledger.reviseReviewedEvidence({...original,topic:'finance'},{revision:'reader-clean-v3'}).revised,false);
- const {id:other}=ledger.ingest(item({url:'https://example.org/sent'}));
+ const {id:other}=ledger.ingest(item({url:'https://example.org/sent',title:'Une autre annonce à livrer'}));
  await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()});
  await deliverReady({ledger,id:other,deliver:async()=>{throw Error();}});
  assert.equal(ledger.reviseReviewedEvidence({...updated,url:'https://example.org/sent'},{revision:'reader-clean-v2'}).revised,false);

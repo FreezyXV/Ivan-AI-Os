@@ -31,6 +31,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
  const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.settleReady(now.getTime());ledger.retryTransient();
+ const retention=ledger.archiveTerminal();
  const perform=async(name,key,fn)=>{
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
@@ -57,7 +58,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  });
  if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select'))
   await perform('digest',slots.digest,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
- return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts()};
+ return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),retention};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  let ledger;

@@ -1,13 +1,18 @@
 import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdirSync, lstatSync, openSync, closeSync } from 'node:fs';
+import { mkdirSync, lstatSync, openSync, closeSync, readFileSync, writeFileSync, linkSync, unlinkSync } from 'node:fs';
+import {gzipSync,gunzipSync} from 'node:zlib';
 import path from 'node:path';
 import { validateItem, prefilter, fail } from './context.js';
 
 // SQLite owns transaction locks: process crashes cannot leave an application
 // lock file blocking all producers. Provider calls occur outside transactions.
-export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 } = {}) {
-  if (!path.isAbsolute(filename) || !Number.isSafeInteger(leaseMs) || leaseMs < 1000) fail('ALERT_LEDGER_CONFIG_INVALID');
+const terminal="'delivered','skipped','expired_unsent'";
+const fingerprint=item=>item.sourceStatus==='read'?createHash('sha256').update(JSON.stringify([
+  item.topic,item.publishedAt.slice(0,10),item.title.normalize('NFKC').replace(/\s+/g,' ').trim(),
+  item.excerpt])).digest('hex'):null;
+export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000, capacity=10000 } = {}) {
+  if (!path.isAbsolute(filename) || !Number.isSafeInteger(leaseMs) || leaseMs < 1000 || !Number.isInteger(capacity)||capacity<1||capacity>10000) fail('ALERT_LEDGER_CONFIG_INVALID');
   const directory=path.dirname(filename);mkdirSync(directory,{recursive:true,mode:0o700});
   const safe=(s,dir=false)=>(dir?s.isDirectory():s.isFile()&&s.nlink===1)&&!s.isSymbolicLink()&&s.uid===process.getuid?.()&&!(s.mode&0o077);
   if(!safe(lstatSync(directory),true))fail('ALERT_LEDGER_UNAVAILABLE');
@@ -23,10 +28,27 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
     CREATE TABLE IF NOT EXISTS digests(key TEXT PRIMARY KEY,ids TEXT NOT NULL,text TEXT NOT NULL,
       owner TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER,updated INTEGER NOT NULL,receipt TEXT);
     CREATE TABLE IF NOT EXISTS evidence_revisions(id TEXT NOT NULL,revision TEXT NOT NULL,item TEXT NOT NULL,
-      brief TEXT,reason TEXT,updated INTEGER NOT NULL,PRIMARY KEY(id,revision));`);
+      brief TEXT,reason TEXT,updated INTEGER NOT NULL,PRIMARY KEY(id,revision));
+    CREATE TABLE IF NOT EXISTS evidence_keys(key TEXT PRIMARY KEY,id TEXT NOT NULL);`);
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='retries'))db.exec('ALTER TABLE alerts ADD COLUMN retries INTEGER NOT NULL DEFAULT 0');
+  if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='archive'))db.exec('ALTER TABLE alerts ADD COLUMN archive TEXT');
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
-  const get=id=>{const r=db.prepare('SELECT * FROM alerts WHERE id=?').get(id);return r?{...r,item:JSON.parse(r.item),brief:r.brief?JSON.parse(r.brief):null,receipt:r.receipt?JSON.parse(r.receipt):null}:null;};
+  const get=id=>{const r=db.prepare('SELECT * FROM alerts WHERE id=?').get(id);if(!r)return null;
+    let original=r,archive=null;
+    if(r.archive)try{
+      archive=JSON.parse(r.archive);
+      if(!/^[a-f\d]{64}\.json\.gz$/.test(archive.filename)||!(/^[a-f\d]{64}$/).test(archive.sha256))throw Error();
+      const file=path.join(directory,'archive',archive.filename);
+      if(!safe(lstatSync(path.dirname(file)),true)||!safe(lstatSync(file))||lstatSync(file).size>1000000)throw Error();
+      const bytes=readFileSync(file);if(createHash('sha256').update(bytes).digest('hex')!==archive.sha256)throw Error();
+      original=JSON.parse(gunzipSync(bytes,{maxOutputLength:1000000})).row;
+      if(original.id!==r.id||original.url!==r.url||original.state!==r.state)throw Error();
+    }catch{fail('ALERT_ARCHIVE_UNAVAILABLE');}
+    return {...r,item:JSON.parse(original.item),brief:original.brief?JSON.parse(original.brief):null,receipt:r.receipt?JSON.parse(r.receipt):null,archive};};
+  // Backfill only read evidence on upgrade; URL identity and old receipts stay intact.
+  for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all()){
+    const key=fingerprint(JSON.parse(row.item));if(key)db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,row.id);
+  }
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
     ingest(raw){const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');return tx(()=>{
@@ -35,14 +57,25 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
         // Never alter a lease, an evaluated read source or an attempted send.
         if(prior.item.sourceStatus!=='read'&&item.sourceStatus==='read'&&
            (prior.state==='pending'||(prior.state==='review'&&prior.reason==='SOURCE_NOT_READ'))){
+          const key=fingerprint(item),equivalent=db.prepare('SELECT id FROM evidence_keys WHERE key=?').get(key);
+          if(equivalent&&equivalent.id!==id){
+            db.prepare("UPDATE alerts SET item=?,state='skipped',reason='DUPLICATE_EVIDENCE',brief=?,updated=? WHERE id=?")
+              .run(JSON.stringify(item),JSON.stringify({duplicateOf:equivalent.id}),now(),id);
+            return {id:equivalent.id,duplicate:true,state:get(equivalent.id).state,deduplication:'read-evidence'};
+          }
           db.prepare("UPDATE alerts SET item=?,state='pending',reason=NULL,brief=NULL,updated=? WHERE id=?")
             .run(JSON.stringify(item),now(),id);
+          db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,id);
           return {id,duplicate:true,state:'pending',evidenceUpdated:true};
         }
         return {id,duplicate:true,state:prior.state};
       }
-      if(db.prepare('SELECT count(*) AS n FROM alerts').get().n>=10000)fail('ALERT_QUEUE_FULL');
+      const key=fingerprint(item),equivalent=key?db.prepare('SELECT id FROM evidence_keys WHERE key=?').get(key):null;
+      if(equivalent){const row=db.prepare('SELECT state FROM alerts WHERE id=?').get(equivalent.id);
+        if(row)return {id:equivalent.id,duplicate:true,state:row.state,deduplication:'read-evidence'};}
+      if(db.prepare(`SELECT count(*) AS n FROM alerts WHERE state NOT IN (${terminal})`).get().n>=capacity)fail('ALERT_QUEUE_FULL');
       const at=now();db.prepare("INSERT INTO alerts(id,url,item,state,created,updated) VALUES(?,?,?,'pending',?,?)").run(id,item.url,JSON.stringify(item),at,at);
+      if(key)db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,id);
       return {id,duplicate:false,state:'pending'};
     });},
     claim(){return tx(()=>{
@@ -132,6 +165,29 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
     },
     ownsLease(id,owner){const r=get(id);return !!r&&r.state==='processing'&&r.owner===owner&&r.expires>now();},
     counts(){return Object.fromEntries(db.prepare('SELECT state,count(*) AS n FROM alerts GROUP BY state').all().map(r=>[r.state,r.n]));},
+    archiveTerminal({afterDays=30,limit=100}={}){
+      if(!Number.isInteger(afterDays)||afterDays<7||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_RETENTION_INVALID');
+      return tx(()=>{
+        const rows=db.prepare(`SELECT * FROM alerts WHERE state IN (${terminal}) AND archive IS NULL AND updated<? ORDER BY updated,id LIMIT ?`).all(now()-afterDays*86400000,limit);
+        if(!rows.length)return {archived:0};
+        const archiveDir=path.join(directory,'archive');mkdirSync(archiveDir,{mode:0o700,recursive:true});
+        if(!safe(lstatSync(archiveDir),true))fail('ALERT_ARCHIVE_UNAVAILABLE');
+        for(const row of rows){
+          const revisions=db.prepare('SELECT * FROM evidence_revisions WHERE id=?').all(row.id);
+          const bytes=gzipSync(Buffer.from(JSON.stringify({version:1,row,revisions}))),sha256=createHash('sha256').update(bytes).digest('hex');
+          const name=sha256+'.json.gz',target=path.join(archiveDir,name),temp=path.join(archiveDir,randomUUID()+'.tmp');
+          try{
+            // Link publishes a complete blob atomically without replacing an existing one.
+            writeFileSync(temp,bytes,{mode:0o600,flag:'wx'});
+            try{linkSync(temp,target);}catch(error){if(error.code!=='EEXIST')throw error;}
+          }finally{try{unlinkSync(temp);}catch{}}
+          if(!safe(lstatSync(target))||!readFileSync(target).equals(bytes))fail('ALERT_ARCHIVE_UNAVAILABLE');
+          db.prepare("UPDATE alerts SET item='{}',brief=NULL,archive=? WHERE id=?").run(JSON.stringify({filename:name,sha256}),row.id);
+          db.prepare('DELETE FROM evidence_revisions WHERE id=?').run(row.id);
+        }
+        return {archived:rows.length};
+      });
+    },
     close(){db.close();}
   };
 }

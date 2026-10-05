@@ -9,7 +9,7 @@ import {scheduleSlots} from '../src/schedule.js';
 const at=Date.parse('2026-10-05T18:00:00Z');
 function fixture(t){const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-digest-'));let time=at;
  const ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>time,leaseMs:1000});t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return {ledger,advance:()=>time+=1001};}
-function ready(ledger,suffix){const {id}=ledger.ingest({producer:'sentinelle',scope:'public',topic:'system',url:'https://example.org/'+suffix,title:'Un fait public',publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z',sourceStatus:'read',excerpt:'Une preuve publique complète.'});
+function ready(ledger,suffix){const {id}=ledger.ingest({producer:'sentinelle',scope:'public',topic:'system',url:'https://example.org/'+suffix,title:`Un fait public distinct ${suffix}`,publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z',sourceStatus:'read',excerpt:'Une preuve publique complète.'});
  const job=ledger.claim();ledger.finish(id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Fait vérifié, utilité et action. Source : https://example.org/'+suffix}});return id;}
 test('Paris schedules survive DST and wake up in one current slot, no backlog replay',()=>{
  assert.deepEqual(scheduleSlots(new Date('2026-10-05T05:00:00Z')),{feeds:'feeds:2026-10-05:1'});

@@ -25,6 +25,7 @@ jobs:
       - run: node --test ../../scripts/install-mac-alerts.test.mjs
       - run: node --test ../../scripts/evaluate-alert-corpus.test.mjs
       - run: node --test ../../scripts/generate-alert-editorial-samples.test.mjs
+      - run: node --test ../../scripts/update-claude-hook.test.mjs
       - run: python3 ../../scripts/read-public-alert.test.py
       - run: python3 ../../scripts/test_collector_export.py
 

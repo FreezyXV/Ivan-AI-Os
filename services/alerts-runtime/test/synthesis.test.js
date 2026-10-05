@@ -39,3 +39,15 @@ test('indexed evidence supplies the exact quote; invalid indices and invented nu
  response.facts[0]={summary:'Le plafond est de 100 euros.',evidence_index:0};
  assert.equal((await tool.execute('test',{item:source})).details.status,'UNAVAILABLE');
 });
+test('a compact prompt is evaluation-only and its receipt cannot be mistaken for the baseline',async()=>{
+ assert.throws(()=>synthesisPrompt(item,{promptVariant:'compact-v1'}),{code:'ALERT_SYNTHESIS_PURPOSE_INVALID'});
+ const compact=synthesisPrompt(item,{purpose:'editorial-evaluation',promptVariant:'compact-v1'});
+ assert.match(compact,/aucune sélection Jev/);assert.match(compact,/evidence_index/);
+ assert.ok(compact.length<synthesisPrompt(item,{purpose:'editorial-evaluation'}).length);
+ let calls=0;const tool=createSynthesisTool({agentId:'ivan-system'},{complete:async args=>{calls++;assert.equal(args.message,compact);return{text:JSON.stringify(brief)};}});
+ assert.equal((await tool.execute('fixture',{item,purpose:'selected',promptVariant:'compact-v1'})).details.status,'UNAVAILABLE');
+ const result=await tool.execute('fixture',{item,purpose:'editorial-evaluation',promptVariant:'compact-v1'});
+ assert.equal(result.details.promptVariant,'compact-v1');assert.equal(calls,1);
+ const wrong=createNativeSynthesis({purpose:'editorial-evaluation',promptVariant:'compact-v1',runImpl:async()=>({stdout:JSON.stringify({ok:true,output:{details:{status:'READY',execution:'native-isolated-completion',purpose:'editorial-evaluation',promptVariant:'current',brief}}})})});
+ await assert.rejects(wrong(item),{code:'ALERT_SYNTHESIS_UNAVAILABLE'});
+});
