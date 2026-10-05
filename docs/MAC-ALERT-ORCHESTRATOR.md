@@ -4,12 +4,15 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État actif : worker, plugin System et gateway @1c769a3, contexte v5.
+État actif : worker @9f7f653, plugin System/gateway @1c769a3, contexte v5.
 Mode jev-native-editorial : sélection Jev à 0,75 puis jugement/rédaction native.
 Mode natif seul conservé pour comparaison ; benchmark neuf : trois faux keep natifs.
 La politique probabiliste en réserve produit un faux keep sur ce contrôle, non activée.
 Deux sources réelles retenues et synthétisées automatiquement, reçu Telegram 59 ;
-aucune sélection simulée, aucun appel Jev supplémentaire. Processus 25 955 ms,
+aucune sélection simulée, aucun appel Jev pour ce premier passage natif.
+Puis Next.js officiel : keep Jev 0,92, validation native et reçu 60 ; quatre
+sélections et une génération au passage conservateur, aucun renvoi au second.
+223 tests locaux passent. Processus natif précédent 25 955 ms,
 digest 5 187 ms. Qualité indépendante/usage quotidien restent à mesurer.
 La file, les secrets locaux et la personnalité de la Secrétaire sont conservés.
 Pas de fusion foundation/main. Voir le relais courant pour la provenance complète.

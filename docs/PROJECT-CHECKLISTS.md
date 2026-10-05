@@ -18,11 +18,13 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ## Avancement du 5 octobre — intégration des alertes
 
-PR #57 : worker, plugin et gateway @1c769a3, contexte v5, jev-native-editorial actif.
+PR #57 : worker @9f7f653, plugin/gateway @1c769a3, contexte v5, jev-native-editorial actif.
+223 tests locaux passent. Source Next.js officielle → vrai Jev keep 0,92 →
+validation native → digest page 2, reçu 60 ; aucun renvoi ni nouvel appel au second passage.
 Benchmark neuf : Jev .75 trouve 4/5 sans faux keep ; natif 4/5 avec trois faux keep.
 Mode conservateur E : 3/5 sans faux keep, rappel limité conservé dans le rapport.
 CI 11/11 à cette activation ; 212 tests locaux. Planning exclusif et file conservés.
-C10 technique : deux vraies sources → jugement natif → synthèse → reçu Telegram 59.
+C10 technique : trois vraies sources livrées, reçus 59 et 60.
 Appréciation d'Ivan/qualité indépendante restent ouvertes ; aucun KEEP simulé.
 C07 : Jev reste consultatif et facultatif ; probabilités contradictoires → review.
 C08 : une seule complétion pour utilité et prose ; au plus deux par passage.
@@ -95,7 +97,8 @@ une vraie nuit de veille, qualité quotidienne et inventaire d'urgence restent �
 - [ ] **C10** : parcours réel source → filtre → synthèse → Telegram pour
   Sentinelle puis Secrétaire, avec K03. Fin : reçu et appréciation d'Ivan ;
   distinguer test synthétique, source réelle et test Telegram.
-  Parcours technique réel vérifié : deux articles publics, jugement natif et reçu 59.
+  Parcours technique réel vérifié : trois articles publics, reçus 59/60, avec
+  vrai Jev puis validation native pour Next.js dans le mode courant.
   La case reste ouverte jusqu’à la revue de qualité et l’appréciation d’Ivan.
 
 ### 3. Moteurs Business / Finance et cycle Mac

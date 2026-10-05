@@ -1,3 +1,13 @@
+## Mode conservateur — troisième synthèse réelle
+
+Worker 9f7f653, gateway/plugin 1c769a3 : Next.js Security Release du 30 septembre
+lu par le lecteur de production (fenêtre sécurité sept jours), vrai Jev keep 0,92,
+validation/rédaction native, digest page 2 livré avec reçu 60. Quatre sélections,
+une génération, 23 984 ms de traitement. Reprise digest : zéro renvoi.
+Budget final 740 appels, 0,028133 EUR Jev estimé ; coût natif non disponible.
+Preuve : ~/.ivan-ai-os/mac-alerts-9f7f653/qualified-runtime-and-delivery.json.
+Claude doit noter ce message réel avec les deux antérieurs ; qualité encore ouverte.
+
 ## Production réelle et revue indépendante — actualisation du 5 octobre
 
 Runtime a604aa6, native-editorial : deux sources publiques réellement lues,

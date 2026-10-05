@@ -1,3 +1,39 @@
+## État courant vérifié — 5 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 sur #48/#47 ; aucune fusion foundation/main.
+Worker actif 9f7f653 ; plugin System et gateway Jev 1c769a3 (inchangés par le dernier correctif).
+Contexte mac-alerts-20261005-v5, mode jev-native-editorial, seuils de confiance 0,75.
+Code local : 223 tests passent ; CI du code 9f7f653 : 11/11. Node 24.19.0 pour les services ; runner provenance cc1d2a5.
+File/budget/Trousseau/Secrétaire/roster conservés, planning exclusif, Sentinelle distant arrêté.
+
+Trois synthèses réelles livrées : reçu 59 (Simon budget et HF ThinkingBox, mode natif précédent),
+puis reçu 60 (Next.js officiel, Jev keep 0,92 + validation native, mode conservateur courant).
+Le worker conservateur a évalué quatre éléments et rédigé seulement l'élément retenu.
+La page Next.js est datée du 30 septembre ; fenêtre sécurité explicite de sept jours.
+Après livraison 60 : zéro pending/ready, 3 delivered, 14 review, 5 skipped, 3 expired_unsent.
+Second passage digest : zéro renvoi. Budget : 740 appels, 0,028133 EUR estimé, inconnus 0.
+Preuve privée : ~/.ivan-ai-os/mac-alerts-9f7f653/qualified-runtime-and-delivery.json.
+Les pages devenues prêtes tardivement continuent le soir même, trois maximum ;
+un reçu incertain bloque la continuation. Le test échouait avant la correction.
+
+Benchmark Claude #60 @6c6e36a : une seule passe, 26 cas, 22 tentatives par fournisseur.
+Jev .75 : 4/5 utiles, zéro faux keep ; natif seul : 4/5 mais trois faux keep.
+Mode conservateur courant dérivé des mêmes sorties : 3/5, zéro faux keep ; rappel limité.
+Une erreur Jev et cinq natives sont comptées ; ni qualité universelle ni fraîcheur réelle prouvées.
+Coût benchmark Jev 0,001250 EUR estimé ; coût natif inconnu. Aucun label transmis.
+Erreurs de contenu distinguées des pannes, reprise native avec reçu payé préservé.
+Ne pas rejouer les benchmarks ni les huit exemples. Claude doit corriger #60 et
+noter les sorties existantes et les trois messages réels : mission précise dans
+CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md, terminal Cursor, son worktree et sa branche.
+
+Reste : qualité/utilité quotidienne et Business recommandations approfondies ;
+sommeil réel du Mac ; inventaire d'urgence ; hook Codex source untrusted, non actif.
+Career reste en pause, OVH différé, Knowledge/Anakalypto dernière étape commune.
+Lire PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
+REVIEW-CODEX-ARCHITECTURE-BENCHMARK-2026-10-05.md et les mesures éditoriales.
+
+## Historique immédiatement précédent — conservé pour provenance
+
 ## Mise à jour — mode conservateur activé (2026-10-05, 20:30 Paris)
 
 Gateway, plugin et worker @1c769a3, contexte v5, selectionMode jev-native-editorial.

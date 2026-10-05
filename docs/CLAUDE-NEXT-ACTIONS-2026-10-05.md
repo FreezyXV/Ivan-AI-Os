@@ -5,8 +5,8 @@ Codex ; ne pas refaire les huit générations ni les mesures de pertinence.
 La mission courante est [CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md](CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md).
 Dans Cursor / Claude Code : worktree `~/Ivan-AI-Os-claude`, branche
 `agent/claude/architecture-benchmark` depuis `origin/agent/codex/alerts-integration`.
-Noter le SHA examiné. Runtime actif `a604aa6`, contexte v5, mode native-editorial.
-Deux synthèses automatiques sont livrées (reçu 59). Codex maintient le runtime.
+Noter le SHA examiné. Runtime : worker 9f7f653, plugin/gateway 1c769a3, contexte v5, mode jev-native-editorial.
+Trois synthèses automatiques livrées (reçus 59/60). Codex maintient le runtime.
 PR #60 est livrée : ne pas recréer le benchmark ni refaire les anciennes passes.
 Lire REVIEW-CODEX-ARCHITECTURE-BENCHMARK-2026-10-05.md ; corriger le calcul
 des seuils contradictoires, puis relire les mesures et les vrais messages.

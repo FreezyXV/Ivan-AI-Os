@@ -44,7 +44,11 @@ comme un benchmark Jev. Exploiter les tests existants avant toute nouvelle mesur
 
 ## 3. Relire les deux synthèses de production et améliorer le contrat
 
-Preuve : ~/.ivan-ai-os/mac-alerts-a604aa6/native-editorial-cycle-followup.json.
+Preuves : ~/.ivan-ai-os/mac-alerts-a604aa6/native-editorial-cycle-followup.json,
+et ~/.ivan-ai-os/mac-alerts-9f7f653/qualified-runtime-and-delivery.json.
+Runtime courant : worker 9f7f653, gateway/plugin 1c769a3, mode conservateur E.
+Troisième message réellement livré : Next.js sécurité, reçu 60, Jev keep 0,92
+puis validation native. Relire également sa fidélité et son action conditionnelle.
 Relire les messages Simon Willison et ThinkingBox effectivement livrés (reçu 59).
 Le message budget se focalise trop sur Jev : son plafond ne couvre que TypeSafe,
 pas les autres modèles/services. Proposer une utilité/action claire pour le système
