@@ -33,8 +33,10 @@ Relevé le 2026-10-05.
 • L'inflation sous-jacente, hors énergie et alimentation, est de 2,5 % sur la même période.
 • Le taux de dépôt de la BCE est de 2,5 % depuis le 16 septembre 2026.
 
-Utilité pour toi : lecture (déduction) — l'écart entre les deux chiffres indique que l'énergie
-pèse surtout sur l'inflation totale. Le chiffre qui dira si la hausse se diffuse est la sous-jacente.
+Utilité pour toi : l'inflation totale est nettement au-dessus de la sous-jacente. Ce relevé ne dit
+pas quelle composante (énergie, alimentation…) explique l'écart : il faudrait la décomposition par
+poste. Le chiffre à suivre pour voir si la hausse s'installe hors énergie et alimentation reste la
+sous-jacente, au prochain relevé.
 
 À faire : Rien à faire maintenant. Si tu veux confronter ces chiffres à ta propre allocation, le
 faire en local dans Claude (veille-investissements). Aucune transaction.

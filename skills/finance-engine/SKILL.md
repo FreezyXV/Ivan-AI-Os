@@ -33,7 +33,9 @@ Contrat : `workflows/finance-engine.md`. Aucun LLM pour collecter : 0 token.
 - **Fait** : indicateur, valeur, date d'observation (« Relevé le » ≠ date de publication),
   valeur précédente si connue, source primaire. Tout chiffre vient du relevé.
 - **Lecture** (déduction, annoncée comme telle) : ce que le mouvement signifie pour la veille
-  publique (énergie vs sous-jacente, écart à la cible de 2 %, taux réels). Une opinion de la BCE
+  publique (écart à la cible de 2 %, taux réels, écart totale/sous-jacente). Un écart entre
+  inflation totale et sous-jacente ne prouve pas à lui seul la part de l'énergie : l'attribuer
+  seulement avec une décomposition par poste ou une source qui l'affirme (citée). Une opinion de la BCE
   est attribuée (« selon Schnabel »), jamais présentée comme une décision.
 - **Action** : « Rien à faire maintenant » par défaut ; sinon une observation datée à refaire.
   Jamais d'achat, de vente ni d'allocation ; la confrontation au cadre personnel se fait en local
