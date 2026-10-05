@@ -4,6 +4,7 @@ import {mkdtempSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {measure} from './measure-alert-selection.mjs';
 const item={scope:'public',producer:'sentinelle',topic:'system',url:'https://example.org/proof',title:'Une mesure',publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z',sourceStatus:'read',excerpt:'La file conserve les reçus de livraison après un redémarrage.'};
 test('one request per input preserves probabilities and never sends labels',async()=>{
@@ -18,7 +19,7 @@ test('all inputs are checked before any call and a failed request is never repea
 test('an existing output stops before credentials or provider are needed',()=>{
  const dir=mkdtempSync(path.join(tmpdir(),'measure-once-'));try{
   const input=path.join(dir,'inputs.jsonl'),output=path.join(dir,'results.jsonl');writeFileSync(input,JSON.stringify({id:'a',item}));writeFileSync(output,'claimed');
-  const run=spawnSync(process.execPath,['scripts/measure-alert-selection.mjs',input,output],{encoding:'utf8',env:{...process.env,IVAN_JEV_TOKEN:'short'}});
+  const run=spawnSync(process.execPath,[fileURLToPath(new URL('./measure-alert-selection.mjs',import.meta.url)),input,output],{encoding:'utf8',env:{...process.env,IVAN_JEV_TOKEN:'short'}});
   assert.equal(run.status,1);assert.match(run.stderr,/ALERT_MEASURE_ALREADY_STARTED/);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
