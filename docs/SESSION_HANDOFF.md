@@ -1,3 +1,17 @@
+## Priorités Ivan — pilote Mac et alertes utiles (2026-10-05)
+
+Lire docs/MAC-PILOT-PRIORITIES.md et docs/HANDOFF-CLAUDE-ALERTS-2026-10-05.md.
+Career en pause pour plusieurs mois, données préservées. Finaliser Knowledge/
+Anakalypto à la toute fin avec Codex + Claude. OVH reporté pendant le pilote Mac.
+Priorité aux synthèses Telegram sourcées et utiles au contexte, pas aux liens seuls.
+Codex : pipeline/filtre/collectes/envoi ; Claude : rapport-telegram, contrat éditorial
+et évaluations. Pas de modification concurrente des fichiers de l'autre.
+Sentinelle non identifié dans le dépôt/LaunchAgents examinés ; ne pas annoncer
+un raccordement ou des nouvelles alertes actifs avant preuve. Pause Career appliquée : retiré des allowAgents du chef, config native validée,
+restart sain ; workspace Career et reste de config conservés. Préférences USER.md
+ajoutées sans remplacer le contenu existant. Preuve privée :
+~/.ivan-ai-os/pilot-mac-20261005/result.json. Synthèses pas encore implémentées.
+
 ## Reprise Codex — capacités et skills OpenClaw (2026-10-04)
 
 Lire docs/OPENCLAW-READ-SKILLS.md. Branche agent/codex/openclaw-capability-skills,
