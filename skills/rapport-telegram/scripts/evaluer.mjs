@@ -26,10 +26,13 @@ export function noter(sorties, { independant } = chargerCorpus()) {
   const resultats = sorties.map(s => {
     const cas = parId.get(s.id);
     if (!cas) return { id: s.id, erreurs: ["CAS_INCONNU"] };
-    const decision = s.selection?.decision;
-    const pertinence = decisionAttendue(cas).includes(decision) ? 2 : (decision === "review" || cas.attendu.selection === "review") ? 1 : 0;
+    // Prose-only measurements (selectionMeasured: false or no selection) have no relevance
+    // score: N/A, excluded from the denominator, never a failed or invented KEEP.
+    const decision = s.selectionMeasured === false ? undefined : s.selection?.decision;
+    const pertinence = decision === undefined ? null
+      : decisionAttendue(cas).includes(decision) ? 2 : (decision === "review" || cas.attendu.selection === "review") ? 1 : 0;
     const erreurs = [];
-    if (s.brief && cas.attendu.selection !== "keep") erreurs.push("SYNTHESE_POUR_UN_CAS_NON_RETENU");
+    if (s.brief && decision !== undefined && cas.attendu.selection !== "keep") erreurs.push("SYNTHESE_POUR_UN_CAS_NON_RETENU");
     if (s.brief) {
       erreurs.push(...verifierBrief(cas.entree.source, s.brief));
       const texte = [s.message ?? "", ...s.brief.facts.map(f => f.summary)].join(" ").replaceAll(".", ",");
@@ -41,17 +44,20 @@ export function noter(sorties, { independant } = chargerCorpus()) {
       promptChars: s.promptChars ?? null, durationMs: s.durationMs ?? null, erreurs };
   });
   const decides = resultats.filter(r => r.decision !== "-");
-  const taux = d => decides.length ? Math.round(100 * decides.filter(r => r.decision === d).length / decides.length) : 0;
+  const taux = d => decides.length ? Math.round(100 * decides.filter(r => r.decision === d).length / decides.length) : null;
   return { resultats, synthese: { cas: resultats.length, keep: taux("keep"), review: taux("review"), skip: taux("skip"),
-    pertinence: resultats.reduce((a, r) => a + (r.pertinence ?? 0), 0), pertinenceMax: 2 * resultats.length,
+    pertinence: resultats.reduce((a, r) => a + (r.pertinence ?? 0), 0), pertinenceMax: 2 * decides.length,
     controlesEnEchec: resultats.filter(r => r.erreurs.length).length } };
 }
 
 export function tableau({ resultats, synthese }) {
   const lignes = ["| Cas | Variante | Attendu | Décision (conf.) | Pertinence | Contrôles | Longueur | Fidélité | Utilité | Action | Effort |",
     "|---|---|---|---|---|---|---|---|---|---|---|",
-    ...resultats.map(r => `| ${r.id} | ${r.variante} | ${r.attendu} | ${r.decision}${r.confiance === null ? "" : ` (${r.confiance})`} | ${r.pertinence}/2 | ${r.erreurs.join(", ") || "ok"} | ${r.longueur ?? "-"} | _ | _ | _ | _ |`)];
-  return `${lignes.join("\n")}\n\nKEEP ${synthese.keep} % · REVIEW ${synthese.review} % · SKIP ${synthese.skip} % · pertinence ${synthese.pertinence}/${synthese.pertinenceMax} · contrôles en échec ${synthese.controlesEnEchec}\nFidélité, utilité, action, effort : 0–2 chacun, à noter par un humain (contrat § 9).\n`;
+    ...resultats.map(r => `| ${r.id} | ${r.variante} | ${r.attendu} | ${r.decision}${r.confiance === null ? "" : ` (${r.confiance})`} | ${r.pertinence === null ? "N/A" : `${r.pertinence}/2`} | ${r.erreurs.join(", ") || "ok"} | ${r.longueur ?? "-"} | _ | _ | _ | _ |`)];
+  const selection = synthese.pertinenceMax
+    ? `KEEP ${synthese.keep} % · REVIEW ${synthese.review} % · SKIP ${synthese.skip} % · pertinence ${synthese.pertinence}/${synthese.pertinenceMax}`
+    : "sélection non mesurée : pertinence N/A";
+  return `${lignes.join("\n")}\n\n${selection} · contrôles en échec ${synthese.controlesEnEchec}\nFidélité, utilité, action, effort : 0–2 chacun, à noter par un humain (contrat § 9).\n`;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

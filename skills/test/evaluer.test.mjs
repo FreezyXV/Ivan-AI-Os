@@ -37,3 +37,22 @@ test("scoring separates relevance from the coded checks", () => {
   assert.equal(synthese.keep, 50);
   assert.match(tableau({ resultats, synthese }), /à noter par un humain/);
 });
+
+test("prose-only outputs have no relevance score (N/A), mixed runs count only measured selections", () => {
+  const i13 = corpus.independant.cas.find(c => c.id === "I13").entree.source;
+  const quote = "Figure 1: ThinkingBox runs an agent against isolated MCP tool sessions, then grades the terminal backend state and side effects it leaves behind.";
+  assert.ok(i13.excerpt.includes(quote));
+  const brief = { goal: "system", facts: [{ summary: "ThinkingBox évalue l'état final laissé par l'agent.", quote }],
+    utility: "Vérifier l'état produit.", action: "Rien à faire maintenant.", uncertainty: "Extrait partiel." };
+  const prose = noter([{ id: "I13", variante: "current-v3", selectionMeasured: false, brief },
+    { id: "I01", variante: "current-v3", selectionMeasured: false }], corpus);
+  for (const r of prose.resultats) assert.equal(r.pertinence, null, "never 0/2 without a measured selection");
+  assert.equal(prose.synthese.pertinenceMax, 0);
+  assert.equal(prose.synthese.keep, null, "no KEEP rate invented");
+  assert.match(tableau(prose), /\| N\/A \|/);
+  assert.match(tableau(prose), /pertinence N\/A/);
+  const mixed = noter([{ id: "I13", selectionMeasured: false, brief }, { id: "I07", selection: { decision: "review", confidence: 0.6 } }], corpus);
+  assert.equal(mixed.synthese.pertinence, 2);
+  assert.equal(mixed.synthese.pertinenceMax, 2, "only the measured selection is in the denominator");
+  assert.equal(mixed.synthese.review, 100);
+});
