@@ -12,9 +12,10 @@ export const MANAGER_RESUME_MESSAGE = "La mission reste à terminer : vérifier 
 export const MANAGER_COMPLETION_GUIDANCE = `Après sessions_spawn, attendre via sessions_yield avec ce paramètre exact : ${JSON.stringify({ message: MANAGER_RESUME_MESSAGE })}. Utiliser message, pas acknowledgment. À la reprise, achever la vérification et retourner le rapport au parent.`;
 
 // Input comes from Claude's reviewed registry, never a model-provided role list.
-export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace, availableToolsByRoute = {} }) {
+export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace, availableToolsByRoute = {}, pausedRoutes = [] }) {
   if (!path.isAbsolute(runtimeRoot) || !Array.isArray(managers) || managers.length !== 7 || !Array.isArray(skills)) throw new Error("INVALID_MANAGER_REGISTRY");
   if (mainWorkspace !== undefined && (typeof mainWorkspace !== "string" || !path.isAbsolute(mainWorkspace))) throw new Error("INVALID_MAIN_WORKSPACE");
+  if (!Array.isArray(pausedRoutes) || new Set(pausedRoutes).size !== pausedRoutes.length || pausedRoutes.some(route=>!ROUTES.includes(route))) throw new Error("INVALID_PAUSED_ROUTES");
   const nativeReadTools = { business: ["ivan_business_brief"], finance: ["ivan_finance_brief"],
     system: ["ivan_memory_search", "ivan_memory_read"], knowledge: ["ivan_memory_search", "ivan_memory_read"] };
   if (!availableToolsByRoute || typeof availableToolsByRoute !== "object" || Array.isArray(availableToolsByRoute) ||
@@ -41,12 +42,12 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
         ? mainWorkspace : path.join(runtimeRoot, manager.route === "orchestrator" ? "chief-of-staff" : manager.route),
       ...(manager.route === "orchestrator" && mainWorkspace ? { preparedWorkspace: path.join(runtimeRoot, "chief-of-staff") } : {}),
       skills: allowed, availableTools, description: publicFinance ? "Veille financière publique : macro, taux, évolutions et opportunités sourcées pour éclairer les décisions d'Ivan." : manager.description,
-      publicContextOnly: publicFinance, status: "PREPARED_NOT_ACTIVATED"
+      publicContextOnly: publicFinance, status: pausedRoutes.includes(manager.route) ? "PAUSED" : "PREPARED_NOT_ACTIVATED"
     };
   });
   if (expected.size) throw new Error("INVALID_MANAGER_REGISTRY");
   if (new Set(roles.map(role => path.resolve(role.workspace))).size !== 7) throw new Error("WORKSPACE_COLLISION");
-  const native = roles.filter(role => role.runtime === "openclaw");
+  const native = roles.filter(role => role.runtime === "openclaw" && role.status !== "PAUSED");
   const agentEntries = Object.fromEntries(native.map(role => [role.agentId, {
     ...(role.agentId === "main" ? { default: true } : {}),
     workspace: role.workspace, skills: role.skills,
@@ -72,6 +73,7 @@ export function buildDispatchPlan({ route, metadata, plan }) {
   }
   const role = plan.roles.find(r => r.route === route.manager);
   if (!role) throw new Error("MANAGER_NOT_CONFIGURED");
+  if (role.status === "PAUSED") return { status:"PAUSED",manager:route.manager,reason:"MANAGER_PAUSED",executable:false };
   if (safeMetadata.requested_tasks.includes("portfolio_review")) return { status: "PRIVATE_CLAUDE_HANDOFF", manager: "finance", executable: false, private_data_forwarded: false };
   return {
     status: "DELEGATION_PROPOSED", manager: route.manager, executable: false,

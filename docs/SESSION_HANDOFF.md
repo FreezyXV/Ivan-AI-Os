@@ -1,3 +1,23 @@
+## Continuation — pauses durables et sélection des alertes (2026-10-05)
+
+Lire docs/MAC-PILOT-OPERATIONS.md. Le registre natif révèle huit tâches après
+pause complète Career : six revues Workshop sont désormais désactivées en
+mode propose (runtime incompatible prouvé dans le code installé), heartbeat
+et consolidation mémoire restent actifs. Six rôles actifs, sept définis dans
+le projet ; définition/workspace Career conservés. Secrétaire inchangée.
+Preuves privées : ~/.ivan-ai-os/pause-career-complete-20261005/result.json et
+~/.ivan-ai-os/workshop-propose-20261005/result.json. Aucun nouveau modèle.
+scripts/inspect-mac-pilot.mjs vérifie santé/budget et tâches par API native,
+sans exposer les journaux ; ne plus déduire zéro tâche d'un ancien jobs.json absent.
+Lire docs/ALERTS-RUNTIME.md : endpoint candidat /v1/alerts/select, contexte fixe,
+même bearer/budget/audit ; client loopback, délais par étape, reçus conservés.
+58 tests gateway, 22 file/client, deux diagnostic, 18 managers : 100 tests OK.
+Sources candidat, endpoint non activé. Mac verrouillé pendant lecture
+Telegram ; Sentinelle montre calibrage/liens/scores, producteur toujours inconnu.
+Claude n'a pas encore publié telegram-syntheses ; ne pas toucher à ses trois
+fichiers hooks/claude non commités. Son skill jev-decision garde des passages
+obsolètes (« classify n'existe pas ») : à corriger dans son audit K05.
+
 ## Checklists et file des alertes — Codex (2026-10-05)
 
 Lire docs/PROJECT-CHECKLISTS.md : 25 tâches Codex et 10 tâches Claude avec

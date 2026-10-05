@@ -54,3 +54,11 @@ test("pinned plugin replaces only the route source and preserves other plugins",
   assert.deepEqual(result.plugins.load.paths, ["/other/ivan-route", "/private-release/hooks/openclaw/ivan-route"]);
   assert.deepEqual(input.plugins.load.paths, ["/builder/hooks/openclaw/ivan-route", "/other/ivan-route"]);
 });
+
+test("runtime candidate keeps an explicitly paused role out of the active roster", () => {
+  const plan=createManagerPlan({ managers,skills,runtimeRoot:'/prepared/managers',mainWorkspace:'/existing-secretary',pausedRoutes:['career'] });
+  const result=propose({plan});
+  assert.equal(Object.hasOwn(result.agents.entries,'ivan-career'),false);
+  assert.equal(Object.keys(result.agents.entries).length,6);
+  assert.deepEqual(result.channels,current.channels);
+});

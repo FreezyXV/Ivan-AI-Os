@@ -86,6 +86,18 @@ transmets son emplacement et son mode d'exécution, sans clé ni identifiant pri
 
 ## Livraison et coordination
 
+État complémentaire Codex : Career maintenant absent du registre actif,
+workspace/définition conservés ; les sept rôles restent définis dans le dépôt.
+Les six revues Workshop incompatibles sont en mode propose, sans modifier
+les managers ou canaux. Lire docs/MAC-PILOT-OPERATIONS.md.
+Interface Jev candidate livrée : POST /v1/alerts/select, question serveur
+alerts.pertinence.mac-v1, extrait public 500 caractères + contexte public fixe,
+keep/review/skip et request_id. Même bearer/budget, catalogue classify inchangé.
+Pas encore activée. Utilise ce contrat technique pour K02/K03 ; transmets tout
+écart éditorial nécessaire, sans changer services/ ou le runtime live.
+K05 : ton skill jev-decision contient encore « classify n'existe pas encore » ;
+aligner ses passages historiques sur le contrat réel livré.
+
 Ivan demande aussi la répartition jusqu'à la fin du projet : lire
 docs/PROJECT-CHECKLISTS.md sur origin/agent/codex/mac-alerts-pilot.
 K01–K03 constituent ton lot immédiat, les autres lots suivent ses dépendances.

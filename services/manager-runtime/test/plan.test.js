@@ -56,3 +56,15 @@ test("activation preserves the Secretary workspace and excludes unavailable memo
     "/synthetic-private-runtime/managers/chief-of-staff");
   assert.ok(plan.roles.every(r => !r.skills.includes("memoire-obsidian")));
 });
+
+test("future plans preserve all role definitions but cannot reactivate a paused manager", () => {
+  const plan = createManagerPlan({ managers, skills, runtimeRoot: "/synthetic-private-runtime/managers", pausedRoutes:["career"] });
+  assert.equal(plan.roles.length,7);
+  assert.equal(plan.roles.find(r=>r.route==='career').status,'PAUSED');
+  assert.equal(Object.keys(plan.openclawFragment.agents.entries).length,6);
+  assert.equal(plan.openclawFragment.agents.entries.main.subagents.allowAgents.includes('ivan-career'),false);
+  const result=buildDispatchPlan({route:{status:'ROUTED',manager:'career',manager_confidence:1},metadata,plan});
+  assert.equal(result.status,'PAUSED');assert.equal(result.spawn,undefined);
+  for(const pausedRoutes of [['unknown'],['career','career'],'career'])
+    assert.throws(()=>createManagerPlan({ managers, skills, runtimeRoot:'/synthetic-private-runtime/managers',pausedRoutes }),/INVALID_PAUSED_ROUTES/);
+});

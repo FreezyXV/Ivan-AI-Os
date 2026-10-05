@@ -6,6 +6,8 @@ aucun nouvel endpoint Jev n'est activé et aucun message Telegram n'a été envo
 par ce module. Le contrat éditorial définitif est attendu de Claude ; les
 fonctions de sélection, synthèse et livraison sont injectées explicitement.
 
+Le client Jev est maintenant implémenté : voir « Sélection authentifiée ».
+
 ## Contrat technique provisoire
 
 Entrée : `producer`, URL HTTPS publique, `title`, `topic`, `scope: "public"`,
@@ -63,13 +65,45 @@ La réconciliation réelle du reçu reste à implémenter dans l'adaptateur.
 Cela évite un renvoi aveugle ; ce n'est pas une garantie distribuée d'exactement
 une livraison ni un système de digest déjà actif.
 
+Chaque étape a un délai de 30 secondes par défaut et reçoit un AbortSignal.
+Un fournisseur qui ignore ce signal ne bloque plus la file ; sa requête peut
+cependant continuer chez lui, donc l'adaptateur doit réellement l'annuler.
+Un worker qui a perdu son bail ne commence pas une nouvelle synthèse et
+ne remplace pas le résultat du propriétaire suivant. Les reçus de sélection
+Jev restent attachés au résultat, même en cas de timeout de synthèse.
+
+## Sélection authentifiée — source candidate
+
+`POST /v1/alerts/select` accepte exactement `scope: public`, `topic`, `title`
+(200 caractères), `excerpt` (20–500 caractères) et `context_version`.
+Le gateway fournit le contexte public fixe, la question et les critères ;
+les objectifs, profils et instructions proposés par l'appelant sont refusés.
+Question distincte `alerts.pertinence.mac-v1`, réponses keep/review/skip.
+Les dix questions `/v1/classify` du client Claude ne sont pas modifiées.
+
+Career, Knowledge en production de contenu et OVH sont écartés par code,
+sans appel fournisseur. Pour les autres, Jev examine une utilité concrète pour
+une priorité active ; ni des mots-clés ni une promesse promotionnelle ne suffisent.
+Ce catalogue doit encore être évalué sur le corpus indépendant Claude.
+
+Même bearer, budget durable et audit de métadonnées que les autres endpoints.
+Authentification avant parsing ; aucune entrée brute dans l'audit. Audit en
+échec ou réponse invalide : 503. Aucun pouvoir d'exécution accordé.
+
+`createJevSelector` utilise le jeton runtime existant, appelle seulement le
+gateway loopback, refuse les redirects et borne le délai réseau. Il transmet
+un extrait public de 500 caractères au maximum ; une source non lue reste en
+review localement, sans requête Jev. Source/test intégrés, runtime live inchangé.
+
 ## Preuves
 
-`node --test services/alerts-runtime/test/*.test.js` : 15 tests passent.
+`node --test services/alerts-runtime/test/*.test.js` : 22 tests passent.
 Ils incluent deux connexions SQLite, un processus tué par SIGKILL, reprise de
 bail, concurrence d'envoi, doublon entre producteurs, sources non lues,
 faits avec chiffres inventés et panne d'envoi. Sources et reçus synthétiques,
 aucun appel TypeSafe payant, aucune donnée personnelle et aucun message réel.
+Gateway : 58 tests, dont cinq pour la sélection et un appel HTTP du vrai client.
+Managers : pause et refus de réactivation vérifiés par régressions ciblées.
 
 Correctif Finance associé : le test du vrai `judge` du moteur prouvait zéro
 appel valide au lieu de deux. `alerte.importante` accepte désormais les valeurs

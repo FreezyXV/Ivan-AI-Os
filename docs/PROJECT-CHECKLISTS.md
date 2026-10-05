@@ -20,9 +20,10 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ### 1. Périmètre et état réel
 
-- [x] **C01 — activé** : pause Career dans les délégations de la Secrétaire,
-  workspace et données conservés. Preuve privée :
-  `~/.ivan-ai-os/pilot-mac-20261005/result.json`.
+- [x] **C01 — activé** : Career absent du registre actif, des délégations et des
+  tâches ; workspace/définition conservés. Préparation future sensible aux pauses.
+  Preuve : `~/.ivan-ai-os/pause-career-complete-20261005/result.json` ;
+  voir `MAC-PILOT-OPERATIONS.md` et les tests de non-réactivation.
 - [x] **C02 — consigné** : OVH reporté, Knowledge/Anakalypto finalisé en dernier ;
   mémoire System maintenue. Voir `MAC-PILOT-PRIORITIES.md`.
 - [ ] **C03** : consolider les versions réellement actives et les PR encore
@@ -41,10 +42,13 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 - [ ] **C06** : file durable commune, dédoublonnage entre bots, filtre de
   fraîcheur/périmètre, reprise après panne et réservation des tâches.
   Fin : preuves de concurrence, de redémarrage et de doublon interproducteur.
+  Source testée en #48 ; sélection/synthèse/envoi bornés, reçus Jev conservés.
+  Intégration aux producteurs réels et rétention encore ouvertes.
 - [ ] **C07** : sélection Jev sur un contexte public compact ; pas de Jev pour
   les exclusions évidentes. Corriger les contrats cassés des moteurs, dont
   les valeurs Finance « 12 % » / « ±10 % sur 7 jours ».
   Fin : requêtes du vrai client acceptées et budget commun conservé.
+  API candidate `/v1/alerts/select` et client loopback testés ; non activés.
 - [ ] **C08** : synthèse après sélection, consommant le contrat Claude K01/K02.
   Fin : faits étayés, utilité liée à une priorité active, action ou rien à faire,
   limites et lien final ; pas de génération pour les éléments écartés.
@@ -67,10 +71,13 @@ le sommeil du Mac sans en avoir mesuré le comportement.
   notamment reprise du chef (#21), redémarrage, Trousseau, timeouts et versions.
   Fin : reproduction avant correctif et vérification après panne simulée,
   sans effacer le budget, la mémoire ou la personnalité de la Secrétaire.
+  Career/maintenance Workshop corrigés et vérifiés nativement ; #21 reste ouvert.
 - [ ] **C14** : vue locale de santé et diagnostic exploitable : services,
   tâches, backlog, erreurs, dernière livraison, coût estimé.
   Fin : cause et prochaine action compréhensibles, sans inspection manuelle
   de multiples journaux ni contenu privé dans les messages d'état.
+  Premier diagnostic natif : `scripts/inspect-mac-pilot.mjs` ; backlog et reçus
+  des nouveaux producteurs encore à brancher.
 
 ### 4. Engineering et System
 

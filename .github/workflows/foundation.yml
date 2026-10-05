@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+      - run: node --test ../../scripts/inspect-mac-pilot.test.mjs
 
   jev-gateway:
     runs-on: ubuntu-latest

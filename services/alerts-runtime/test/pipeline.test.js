@@ -160,3 +160,37 @@ test('ready requires a message and confirmed delivery requires an actual receipt
   ledger.finish(id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Test synthétique'}});
   const send=ledger.beginDelivery(id);assert.equal(ledger.finishDelivery(id,send.owner,{delivered:true}).state,'delivery_unknown');
 });
+
+test('a hanging provider is cancelled and cannot block the next queued alert',async t=>{
+  const {ledger}=fixture(t);ledger.ingest(item());let signal;
+  const result=await processNext({ledger,now:at,stageTimeoutMs:15,
+    select:async(_item,_context,options)=>{signal=options.signal;return new Promise(()=>{});}});
+  assert.equal(result.reason,'SELECTION_TIMEOUT');assert.equal(result.state,'review');assert.equal(signal.aborted,true);
+  ledger.ingest(item({url:'https://example.org/next'}));
+  assert.equal((await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()})).state,'ready');
+});
+
+test('synthesis timeout preserves the Jev decision receipt instead of retrying',async t=>{
+  const {ledger}=fixture(t);ledger.ingest(item());
+  const selected={decision:'keep',confidence:0.9,provider:'jev',request_id:'00000000-0000-4000-a000-000000000000',context_version:PILOT_CONTEXT.version};
+  const result=await processNext({ledger,now:at,stageTimeoutMs:15,select:async()=>selected,synthesize:async()=>new Promise(()=>{})});
+  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual(result.brief.selection,selected);
+});
+
+test('a sender that never returns becomes uncertain and is never invoked twice',async t=>{
+  const {ledger}=fixture(t),{id}=ledger.ingest(item());
+  await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()});let signal;
+  const result=await deliverReady({ledger,id,timeoutMs:15,deliver:async options=>{signal=options.signal;return new Promise(()=>{});}});
+  assert.equal(result.state,'delivery_unknown');assert.equal(signal.aborted,true);assert.equal(ledger.beginDelivery(id),null);
+});
+
+test('a resumed old worker reports lease loss without overwriting the new owner',async t=>{
+  const {ledger,advance}=fixture(t),{id}=ledger.ingest(item());
+  let resume;const waiting=new Promise(resolve=>{resume=resolve;});
+  let syntheses=0;
+  const old=processNext({ledger,now:at,select:async()=>{await waiting;return keep();},synthesize:async()=>{syntheses++;return brief();}});
+  await new Promise(resolve=>setImmediate(resolve));advance(1001);
+  const current=ledger.claim();ledger.finish(id,current.owner,{state:'review',reason:'NEW_OWNER_RESULT'});resume();
+  assert.equal((await old).state,'lease_lost');assert.equal(ledger.get(id).reason,'NEW_OWNER_RESULT');
+  assert.equal(syntheses,0);
+});

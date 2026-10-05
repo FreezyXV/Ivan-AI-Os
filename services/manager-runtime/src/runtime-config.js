@@ -8,8 +8,11 @@ export function proposeRuntimeConfig({ current, plan, defaultMainWorkspace, gate
   const port = Number(new URL(gatewayUrl).port);
   if (port < 1024 || port > 65535) throw new Error("LOOPBACK_GATEWAY_REQUIRED");
   const fragment = plan?.openclawFragment?.agents;
-  const expectedIds = ["main", ...ROUTES.map(r => ROLE_IDS[r])];
-  if (!fragment || Object.keys(fragment.entries).length !== 7 || expectedIds.some(id => !fragment.entries[id])) throw new Error("INCOMPLETE_MANAGER_PLAN");
+  const pausedIds = plan?.roles?.filter(role=>role.status==="PAUSED").map(role=>role.agentId) ?? [];
+  if (pausedIds.some(id=>!Object.values(ROLE_IDS).includes(id)) || new Set(pausedIds).size!==pausedIds.length) throw new Error("INCOMPLETE_MANAGER_PLAN");
+  const expectedIds = ["main", ...ROUTES.map(r => ROLE_IDS[r]).filter(id=>!pausedIds.includes(id))];
+  if (!fragment || Object.keys(fragment.entries).length !== expectedIds.length || expectedIds.some(id => !fragment.entries[id])) throw new Error("INCOMPLETE_MANAGER_PLAN");
+  if (pausedIds.some(id=>current?.agents?.entries?.[id])) throw new Error("EXISTING_MANAGER_PRESERVED");
   const config = JSON.parse(JSON.stringify(current));
   const agents = config.agents ?? {}, entries = agents.entries ?? {}, previousMain = entries.main ?? {};
   const workspace = previousMain.workspace ?? agents.defaults?.workspace ?? defaultMainWorkspace;

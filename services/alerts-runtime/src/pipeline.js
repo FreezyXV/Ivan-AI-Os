@@ -1,4 +1,5 @@
 import { PILOT_CONTEXT, prefilter, fail } from './context.js';
+import { withDeadline } from './deadline.js';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
 const numbers=value=>value.match(/\d+(?:[.,]\d+)*/g)?.map(n=>n.replaceAll(',','.'))??[];
 export function renderBrief(item,brief){
@@ -14,28 +15,38 @@ export function renderBrief(item,brief){
     ...(brief.uncertainty?[`\nLimite : ${brief.uncertainty}`]:[]),`\nSource : ${item.url}`];
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
 }
-export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours=72}){
+export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours=72,stageTimeoutMs=30000}){
   const job=ledger.claim();if(!job)return {state:'idle'};
-  const complete=(state,reason,brief)=>ledger.finish(job.id,job.owner,{state,reason,brief});
+  const complete=(state,reason,brief)=>{
+    try{return ledger.finish(job.id,job.owner,{state,reason,brief});}
+    catch(error){if(error?.code==='ALERT_LEASE_LOST')return{id:job.id,state:'lease_lost'};throw error;}
+  };
   const local=prefilter(job.item,{now,maxAgeHours});
   if(local.decision!=='select')return complete(local.decision==='skip'?'skipped':'review',local.reason);
   if(typeof select!=='function')return complete('review','SELECTION_NOT_CONFIGURED');
   let selection;
-  try{selection=await select(job.item,PILOT_CONTEXT);}catch{return complete('review','SELECTION_UNAVAILABLE');}
+  try{selection=await withDeadline(signal=>select(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SELECTION_TIMEOUT');}
+  catch(error){return complete('review',error?.code==='SELECTION_TIMEOUT'?'SELECTION_TIMEOUT':'SELECTION_UNAVAILABLE');}
   if(!selection||!['keep','skip','review'].includes(selection.decision)||
      !Number.isFinite(selection.confidence)||selection.confidence<0||selection.confidence>1)return complete('review','SELECTION_INVALID');
-  if(selection.decision==='skip'&&selection.confidence>=0.75)return complete('skipped','SELECTION_REJECTED');
-  if(selection.decision!=='keep'||selection.confidence<0.75)return complete('review','SELECTION_UNCERTAIN');
-  if(typeof synthesize!=='function')return complete('review','SYNTHESIS_NOT_CONFIGURED');
+  const trace={decision:selection.decision,confidence:selection.confidence,
+    ...(['jev','deterministic-kernel'].includes(selection.provider)?{provider:selection.provider}:{}),
+    ...(/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??'')?{request_id:selection.request_id}:{}),
+    ...(selection.context_version===PILOT_CONTEXT.version?{context_version:selection.context_version}:{})};
+  if(selection.decision==='skip'&&selection.confidence>=0.75)return complete('skipped','SELECTION_REJECTED',{selection:trace});
+  if(selection.decision!=='keep'||selection.confidence<0.75)return complete('review','SELECTION_UNCERTAIN',{selection:trace});
+  if(!ledger.ownsLease(job.id,job.owner))return{id:job.id,state:'lease_lost'};
+  if(typeof synthesize!=='function')return complete('review','SYNTHESIS_NOT_CONFIGURED',{selection:trace});
   try{
-    const brief=await synthesize(job.item,PILOT_CONTEXT),message=renderBrief(job.item,brief);
-    return complete('ready','BRIEF_VERIFIED',{...brief,message,contextVersion:PILOT_CONTEXT.version});
-  }catch(e){return complete('review',e?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':'SYNTHESIS_UNAVAILABLE');}
+    const brief=await withDeadline(signal=>synthesize(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SYNTHESIS_TIMEOUT');
+    const message=renderBrief(job.item,brief);
+    return complete('ready','BRIEF_VERIFIED',{...brief,message,contextVersion:PILOT_CONTEXT.version,selection:trace});
+  }catch(e){return complete('review',['ALERT_FACT_UNSUPPORTED','SYNTHESIS_TIMEOUT'].includes(e?.code)?e.code:'SYNTHESIS_UNAVAILABLE',{selection:trace});}
 }
-export async function deliverReady({ledger,id,deliver}){
+export async function deliverReady({ledger,id,deliver,timeoutMs=30000}){
   if(typeof deliver!=='function')fail('ALERT_DELIVERY_NOT_CONFIGURED');
   const job=ledger.beginDelivery(id);if(!job)return {state:'not_ready'};
-  let receipt;try{receipt=await deliver({id:job.id,text:job.brief.message});}catch{}
+  let receipt;try{receipt=await withDeadline(signal=>deliver({id:job.id,text:job.brief.message,signal}),timeoutMs,'DELIVERY_TIMEOUT');}catch{}
   // Unknown delivery never retries automatically: Telegram may have accepted
   // a message before a timeout. Reconcile against its receipt first.
   return ledger.finishDelivery(job.id,job.owner,receipt);
