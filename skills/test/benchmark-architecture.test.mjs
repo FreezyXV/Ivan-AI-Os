@@ -41,3 +41,20 @@ test("scorer: an always-review system is not a success; errors count as abstenti
   const urgent = score(labels, [{ id: "A01", decision: "keep", delivery: "immediat" }, { id: "A24", decision: "keep", delivery: "digest" }]);
   assert.equal(urgent.falseUrgent, 1); assert.equal(urgent.urgency, "0/1");
 });
+
+test("scorer refuses partial, duplicated, unknown or invalid outputs instead of ignoring them (Codex review #60)", () => {
+  const all = labels.labels.map(l => ({ id: l.id, decision: "skip", delivery: "silence" }));
+  const ok = score(labels, all);
+  assert.equal(ok.coverage.complete, true);
+  const partial = score(labels, all.slice(1));
+  assert.equal(partial.coverage.complete, false);
+  assert.deepEqual(partial.coverage.missing, [labels.labels[0].id]);
+  assert.equal(partial.matrix[`${labels.labels[0].selection}>missing`], 1, "a missing output is counted, not dropped");
+  const dup = score(labels, [...all, all[0]]);
+  assert.deepEqual(dup.coverage.duplicates, [all[0].id]);
+  const unknown = score(labels, [...all, { id: "Z99", decision: "keep" }]);
+  assert.deepEqual(unknown.coverage.unknown, ["Z99"]);
+  const invalid = score(labels, all.map((o, i) => i === 0 ? { ...o, decision: "approve" } : i === 1 ? { ...o, delivery: "now" } : o));
+  assert.equal(invalid.coverage.invalid.length, 2);
+  assert.equal(invalid.coverage.complete, false);
+});
