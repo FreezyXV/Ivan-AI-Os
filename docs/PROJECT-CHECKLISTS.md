@@ -16,6 +16,17 @@ la dernière étape de cette livraison. La pause Career et le report OVH ne
 bloquent pas cette définition. Ne pas annoncer un service permanent pendant
 le sommeil du Mac sans en avoir mesuré le comportement.
 
+## Intégration #61 — 6 octobre
+
+Code actif 2a51fa1, CI 11/11 ; noms complets et alias corrigés, masque téléphone
+partagé, refus de contenu visibles. Les cinq commits Claude sont repris.
+Six nouvelles sources : zéro bruit mais 0/1 utile retenu ; deux premières
+complétions sur abstentions ne récupèrent pas cet utile. Recours non activé.
+Mesure détaillée : ALERT-V6-QUALIFICATION-2026-10-06.md ; ne pas rejouer ce jeu.
+Business : contrat/corpus source intégré, vérificateur non qualifié (quatre
+contre-exemples) ; aucune recommandation automatique activée. Claude corrige,
+Codex raccorde après revue. Coût natif/qualité quotidienne/veille réelle ouverts.
+
 ## Corrections activées — 6 octobre 2026
 
 Worker/gateway/plugin bf2d2e1, contexte v6, mode conservateur inchangé (.75).

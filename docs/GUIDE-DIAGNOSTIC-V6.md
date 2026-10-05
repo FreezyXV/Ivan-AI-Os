@@ -1,7 +1,7 @@
 # Guide de diagnostic — pilote d'alertes v6 (Claude, 2026-10-06)
 
-Code relu : `d1893b6` (worker actif `bf2d2e1`, contexte `mac-alerts-20261006-v6`, mode E).
-Commande unique, en lecture seule : `node scripts/inspect-mac-pilot.mjs`. Elle ne lance aucun
+Revue Claude initiale : `d1893b6`. Correctifs Codex actifs : `2a51fa1`, contexte v6, mode E.
+Commande unique, en lecture seule : `~/.openclaw/tools/node/bin/node scripts/inspect-mac-pilot.mjs`. Elle ne lance aucun
 modèle et n'envoie aucun message. Exploitation, sauvegarde et restauration :
 `docs/MAC-ALERTS-RECOVERY.md`.
 
@@ -9,6 +9,7 @@ modèle et n'envoie aucun message. Exploitation, sauvegarde et restauration :
 | Code | Signification | Quoi faire |
 |---|---|---|
 | `CHECK_DELIVERY_RECEIPT` | envoi incertain | regarder Telegram ; **ne rien relancer** |
+| `CHECK_EDITORIAL_REJECTIONS` | contenu refusé | vérifier citations/phase ; `alerts.contentRefusals` conserve compte et raisons même en backlog |
 | `WAIT_DIGEST` | synthèses prêtes | rien : digest du soir |
 | `PROCESS_PENDING` | preuves en attente du prochain passage | vérifier que `com.ivan-ai-os.alerts` tourne (`launchctl list \| grep ivan`) |
 | `CHECK_NATIVE_GENERATION` | complétion native indisponible ou trop lente | un seul nouvel essai automatique ; si ça se répète, vérifier OpenClaw (`openclaw_healthy`) |
@@ -27,16 +28,16 @@ appel), `SOURCE_NOT_READ`, `SELECTION_UNCERTAIN`, `SELECTION_UNAVAILABLE` (Jev e
 nouvel essai), `SYNTHESIS_INVALID`, `NATIVE_ASSESSMENT_INVALID`.
 
 ## Limites concrètes au 2026-10-06
-1. **Aucun message v6 livré** : la qualité v6 n'est pas mesurée (3 messages au total, v5).
-2. **Les refus de contenu sont invisibles dans `diagnosis`** : `ALERT_FACT_UNSUPPORTED` et
-   `NATIVE_ASSESSMENT_INVALID` ne sont jamais rejoués, mais aucun code ne les signale. Avec le
-   faux rejet « GPT-6 » (`REVIEW-CLAUDE-V6-bf2d2e1.md`), un article utile peut disparaître en
-   silence. Demande à Codex : un code `CHECK_EDITORIAL_REJECTIONS` dès qu'un tel refus apparaît
-   dans la journée.
+1. **Aucun message v6 livré** (3 messages au total, v5). Six nouvelles sources mesurées :
+   zéro bruit retenu mais 0/1 utile retrouvé ; essai natif sur deux abstentions non concluant.
+2. Refus désormais visibles (`CHECK_EDITORIAL_REJECTIONS`, compte et raisons), sans
+   reprise automatique d'un contenu invalide. Une preuve refusée reste dans SQLite,
+   elle n'est pas perdue. Noms complets et alias économiques corrigés et testés.
 3. Coût des complétions natives non mesuré ; seul Jev l'est (≈ 0,00006 € par appel).
 4. Le comportement pendant une vraie veille du Mac n'est pas mesuré ; aucun service ne tourne
    Mac éteint.
 5. Urgence immédiate inactive (pas d'inventaire) : digest seulement.
-6. `node` du Mac en v23.9.0 (fin de vie) : décision d'Ivan ou de Codex toujours ouverte.
+6. Services Jev/alertes/OpenClaw sur Node 24.19.0 (plists et PID vérifiés). Le terminal
+   peut encore résoudre 23.9.0 : utiliser le binaire géré ci-dessus pour le pilote.
 7. Career en pause, OVH reporté, Knowledge/Anakalypto en dernière étape commune : rien n'est
    activé dans ce périmètre.

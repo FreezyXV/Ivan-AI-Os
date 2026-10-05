@@ -1,3 +1,42 @@
+## État courant vérifié — après #61, 6 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 empilée, aucune fusion foundation/main.
+Claude #61 reprise avec provenance : 4ee5189/b3e9cb2/34fe457/2171549/cd7324c.
+Worker, plugin System et gateway actifs 2a51fa1, même contexte v6 et mode E à .75.
+File/budget/Secrétaire/roster conservés ; activation réversible sans coût fournisseur.
+Services Jev, alertes et PID OpenClaw observés sur Node 24.19.0 ; terminal encore 23.9.0.
+
+Corrections de la sonde : noms GPT-6/GLM-5.3/HTTP/2 complets, alias économiques
+fermés, téléphones masqués avec le motif du gateway, incidents Codex/Claude,
+diagnostic CHECK_EDITORIAL_REJECTIONS et compteur/raisons toujours exposés.
+312 tests Node ciblés passent, lecteur Python 11/11 ; CI code 2a51fa1 11/11 verte.
+Les preuves refusées restent en review SQLite : elles ne disparaissent pas sans trace.
+
+Qualification six sources neuves : 4/6 exacts, bruit retenu 0, utile retrouvé 0/1.
+Six Jev, zéro rédaction en mode E ; coût estimé +0,000397 EUR, 747 appels au total,
+0,028596 EUR estimé ce mois, inconnus 0, plafond 10 EUR. Seuils inchangés.
+Deux premières complétions natives sur abstentions Engineering sans refaire Jev :
+M01 refus VALIDATE / ALERT_FACT_UNSUPPORTED ; M03 skip contre label keep de Claude.
+Recours non activé ; coûts natifs indisponibles dans le SDK text-only observé.
+Mesures sur captures historiques avec collecte simulée : pas de message v6 livré.
+File live reste 3 delivered / 17 review / 5 skipped / 3 expired_unsent ; zéro pending/ready.
+Preuves : ~/.ivan-ai-os/mac-alerts-2a51fa1/coordinated-activation.json et
+qualification-pr61-v6/{results.jsonl,native-review-fallback.jsonl,isolated.sqlite}.
+Ne pas refaire ce jeu, les anciens benchmarks ou les huit générations.
+
+Business #61 en source, non activé : son vérificateur accepte score arbitraire,
+citation vide, test non réversible et montant différent d'une citation avec devise.
+Claude corrige ces cas et relit le jugement des deux nouvelles sorties ; Codex
+prépare ensuite intégration Business et éventuel recours, après contrôle inédit.
+Career en pause, OVH reporté, Knowledge/Anakalypto dernière étape commune.
+Lire REVIEW-CODEX-PR61-2026-10-06.md, ALERT-V6-QUALIFICATION-2026-10-06.md,
+CLAUDE-NEXT-PR61-2026-10-06.md, PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md,
+MAC-ALERTS-RECOVERY.md, ARCHITECTURE-BENCHMARK-2026-10-05.md et les contrats.
+Reste : qualité/utilité quotidienne, coût natif, vraie veille Mac, inventaire urgence,
+hook Codex source non actif, puis Knowledge/Anakalypto avec Claude.
+
+## Historique — avant intégration #61
+
 ## État courant vérifié — 6 octobre 2026
 
 Branche agent/codex/alerts-integration, PR #57 empilée sur #48/#47 ; aucune

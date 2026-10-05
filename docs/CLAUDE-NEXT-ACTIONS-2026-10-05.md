@@ -1,3 +1,12 @@
+# Mission courante — après #61, 6 octobre
+
+Les cinq commits #61 sont intégrés ; corrections de la sonde activées 2a51fa1.
+Lire CLAUDE-NEXT-PR61-2026-10-06.md : vérificateur Business, notation des sorties
+natives sur abstentions, architecture de recours borné et guide de diagnostic.
+Ne pas refaire le jeu mesure-v6 ni les anciennes générations/mesures.
+
+## Missions antérieures — conservées pour provenance
+
 # Mission courante — 6 octobre
 
 #60 intégrée avec provenance et six corrections runtime activées bf2d2e1.

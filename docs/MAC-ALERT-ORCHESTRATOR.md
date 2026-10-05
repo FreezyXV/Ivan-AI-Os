@@ -4,7 +4,7 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État actif vérifié le 6 octobre : worker/plugin/gateway bf2d2e1, contexte v6.
+État actif vérifié le 6 octobre : worker/plugin/gateway 2a51fa1, contexte v6.
 Mode jev-native-editorial : confiance 0,75 puis jugement/rédaction native.
 Politique basse non active ; benchmark v5 historique, pas qualification du contexte v6.
 Six corrections et limites : REVIEW-CODEX-EDITORIAL-FIXES-2026-10-06.md.
@@ -13,6 +13,13 @@ rapport-telegram 2.1.0 installé chez les quatre rôles déjà équipés, avec s
 Les trois messages historiques sont livrés ; revue indépendante constate des erreurs
 éditoriales. Le contrôle actuel refuse le sigle mal cité de l'ancien message Next.js.
 La qualité et l'utilité des prochains messages doivent encore être évaluées.
+
+Qualification #61 : six Jev, zéro génération en mode E, 4/6 exacts mais 0/1
+utile retenu ; aucun bruit retenu. Recours natif sur deux abstentions mesuré,
+non activé. Voir ALERT-V6-QUALIFICATION-2026-10-06.md. Aucune livraison v6.
+Noms complets et sigles économiques traduits acceptés dans leur propre citation.
+Contacts email/téléphone : même motif que le gateway, seulement dans la projection.
+Le diagnostic expose les refus de contenu et compte leurs raisons sans lire les articles.
 
 ## Chemin technique
 
