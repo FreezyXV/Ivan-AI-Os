@@ -268,7 +268,10 @@
      "readAt": "2026-10-05T12:09:36Z",
      "lecture": {
       "capture": "synthétique (rédigé pour le test)",
-      "consulteLe": null
+      "consulteLe": null,
+      "textChars": 143,
+      "excerptMode": "head",
+      "excerptTruncated": false
      }
     }
    },
@@ -460,7 +463,10 @@
      "readAt": "2026-10-05T12:09:36Z",
      "lecture": {
       "capture": "synthétique (rédigé pour le test)",
-      "consulteLe": null
+      "consulteLe": null,
+      "textChars": 267,
+      "excerptMode": "head",
+      "excerptTruncated": false
      }
     }
    },
@@ -499,7 +505,10 @@
      "readAt": "2026-10-05T12:09:36Z",
      "lecture": {
       "capture": "synthétique (rédigé pour le test)",
-      "consulteLe": null
+      "consulteLe": null,
+      "textChars": 246,
+      "excerptMode": "head",
+      "excerptTruncated": false
      }
     },
     "inventaire_local": "version OpenClaw installée concernée (fait déterministe, vérifié par code, hors contexte du modèle)"
