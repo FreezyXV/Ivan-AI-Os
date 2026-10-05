@@ -41,13 +41,13 @@ export function observationUrl(indicator){
  else {u.searchParams.set('cosd',indicator.date_obs);u.searchParams.set('coed',indicator.date_obs);}
  return u.href;
 }
-export async function financeCycle({ledger,now=new Date(),directory=financeDir(),collectImpl=collectFinance,judgeImpl=judge}={}){
+export async function financeCycle({ledger,now=new Date(),directory=financeDir(),collectImpl=collectFinance,judgeImpl=judge,useJev=true}={}){
  const prior=snapshots(directory).filter(s=>s.date<now.toISOString().slice(0,10)).at(-1);
  const current=await collectImpl(fetch,now);saveSnapshot(directory,current);
  const observations=alerts(current,prior),important=observations.filter(a=>a.niveau==='important');
- let changes;try{changes=await judgeImpl(observations.map(a=>({...a})));}catch{changes=observations;}
+ let changes=observations;if(useJev)try{changes=await judgeImpl(observations.map(a=>({...a})));}catch{changes=observations;}
  const decisions=new Map(changes.map(a=>[a.id,a]));
- const pendingDecisions=important.filter(a=>!Number.isFinite(decisions.get(a.id)?.jev)).length;
+ const pendingDecisions=useJev?important.filter(a=>!Number.isFinite(decisions.get(a.id)?.jev)).length:0;
  const before=new Map((prior?.indicateurs??[]).map(i=>[i.id,i]));
  const staleIds=new Set(observations.filter(a=>a.texte.includes('dernière donnée')).map(a=>a.id));
  const macroIds=new Set(['inflation_zone_euro','inflation_sous_jacente','us_10_ans']);
@@ -67,7 +67,7 @@ export async function financeCycle({ledger,now=new Date(),directory=financeDir()
  }
  return {indicators:current.indicateurs.length,sourceErrors:current.erreurs,stale:staleIds.size,
   thresholdChanges:important.length,macroCandidates:candidates.filter(a=>macroIds.has(a.id)).length,
-  pendingDecisions,decisionErrors:pendingDecisions,ingested,personal_data:false};
+  pendingDecisions,decisionErrors:pendingDecisions,classificationMode:useJev?'jev-advisory':'deterministic-observations',ingested,personal_data:false};
 }
 const jsonLines=file=>existsSync(file)?readFileSync(file,'utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l)):[];
 function pendingBusinessCandidates(ledger,directory){
@@ -79,7 +79,7 @@ function pendingBusinessCandidates(ledger,directory){
 // The coordinator may reserve one additional current-week evidence slot after
 // the base slot. Never use a changing candidate hash as an unlimited schedule.
 export const businessHasPendingEvidence=(ledger,directory=businessDir())=>pendingBusinessCandidates(ledger,directory).length>0;
-export async function businessCycle({ledger,directory=businessDir(),triageImpl=triage,now=new Date()}={}){
+export async function businessCycle({ledger,directory=businessDir(),triageImpl=triage,now=new Date(),useJev=true}={}){
  const candidates=pendingBusinessCandidates(ledger,directory);
  const signals=candidates.map(({item})=>({source:'hacker-news-public',url:item.url,titre:item.title,
   sujet:'demande-'+createHash('sha256').update(item.title).digest('hex').slice(0,20),type:'demande',date:item.publishedAt.slice(0,10),extrait:item.excerpt.slice(0,500),preuve_paiement:false}));
@@ -89,7 +89,7 @@ export async function businessCycle({ledger,directory=businessDir(),triageImpl=t
  const all=existsSync(file)?readFileSync(file,'utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l)):[];
  const todo=all.filter(s=>!existing.has(s.id)&&signals.some(c=>c.url===s.url)).slice(0,4);
  let triaged=0,pendingDecisions=0;
- if(todo.length){
+ if(todo.length&&useJev){
   const staging=mkdtempSync(path.join(directory,'triage-'));
   try{writeFileSync(path.join(staging,'signals.jsonl'),todo.map(s=>JSON.stringify(s)).join('\n')+'\n',{mode:0o600});
    const result=await triageImpl(staging);triaged=result.tries;
@@ -97,5 +97,6 @@ export async function businessCycle({ledger,directory=businessDir(),triageImpl=t
    if(triaged)appendFileSync(path.join(directory,'jev.jsonl'),readFileSync(path.join(staging,'jev.jsonl')),{mode:0o600});
   }finally{rmSync(staging,{recursive:true,force:true});}
  }
- return {...added,triaged,pendingDecisions,decisionErrors:pendingDecisions,readCandidates:candidates.length,opportunity_scores_created:0,payment_evidence_invented:false};
+ return {...added,triaged,pendingDecisions,decisionErrors:pendingDecisions,classificationMode:useJev?'jev-advisory':'native-editorial-queue',
+  pendingEditorial:useJev?0:todo.length,readCandidates:candidates.length,opportunity_scores_created:0,payment_evidence_invented:false};
 }

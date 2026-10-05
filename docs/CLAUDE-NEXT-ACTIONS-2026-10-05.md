@@ -1,3 +1,24 @@
+# Lot Claude courant — architecture et benchmark
+
+Les anciens lots K01–K07 ci-dessous ont été livrés et intégrés sur la branche
+Codex ; ne pas refaire les huit générations ni les mesures de pertinence.
+La mission courante est [CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md](CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md).
+Dans Cursor / Claude Code : worktree `~/Ivan-AI-Os-claude`, branche
+`agent/claude/architecture-benchmark` depuis `origin/agent/codex/alerts-integration`.
+Noter le SHA examiné. Runtime : worker 9f7f653, plugin/gateway 1c769a3, contexte v5, mode jev-native-editorial.
+Trois synthèses automatiques livrées (reçus 59/60). Codex maintient le runtime.
+PR #60 est livrée : ne pas recréer le benchmark ni refaire les anciennes passes.
+Lire REVIEW-CODEX-ARCHITECTURE-BENCHMARK-2026-10-05.md ; corriger le calcul
+des seuils contradictoires, puis relire les mesures et les vrais messages.
+
+Priorité Ivan : fiabilité, puis Business et Finance. Jev est facultatif et doit
+être qualifié par tâche. Comparer règles, Jev et complétion native regroupant
+jugement éditorial et prose. Livrer benchmark indépendant, recommandations,
+contrats métier et relecture de la vraie synthèse ; Codex intègre le runtime.
+Career reste en pause, OVH différé, Knowledge/Anakalypto en dernière étape.
+
+## Ancienne mission — conservée pour provenance
+
 # Lot Claude restant — après intégration Codex
 
 À donner dans le terminal Claude Code de Cursor, worktree `~/Ivan-AI-Os-claude`.

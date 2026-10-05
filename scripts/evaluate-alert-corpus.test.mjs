@@ -28,3 +28,14 @@ test('low confidence counts as a wrong abstention; labels never enter the provid
  const r=await evaluateCorpus(corpus,{select:async item=>{assert.equal(item.attendu,undefined);return {provider:'jev',decision:'keep',confidence:0.4};}});
  assert.equal(r.measured,1);assert.equal(r.correct,0);assert.equal(r.strictAccuracy,0);assert.equal(r.results[0].actual,'review');assert.equal(r.results[1].status,'NOT_MEASURED');
 });
+test('measurement uses the configured production policy, including probabilities',async()=>{
+ const select=async()=>({provider:'jev',decision:'review',confidence:0.3,probabilities:{keep:0.6,review:0.3,skip:0.1}});
+ const selectionPolicy={keepMinConfidence:1,skipMinConfidence:1,keepMinProbability:0.5,skipMinProbability:0.4};
+ const old=await evaluateCorpus(corpus,{select});assert.equal(old.results[0].actual,'review');
+ const current=await evaluateCorpus(corpus,{select,selectionPolicy});assert.equal(current.results[0].actual,'keep');
+ assert.deepEqual(current.selectionPolicy,selectionPolicy);assert.equal(current.results[0].probabilities.keep,0.6);
+});
+test('invalid production policy is rejected before spending',async()=>{
+ let calls=0;await assert.rejects(evaluateCorpus(corpus,{selectionPolicy:{keepMinConfidence:-1,skipMinConfidence:0.25},select:async()=>{calls++;}}));
+ assert.equal(calls,0);
+});

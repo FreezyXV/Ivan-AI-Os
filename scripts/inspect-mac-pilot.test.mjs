@@ -37,3 +37,11 @@ test('healthy services still expose why no alert is delivered; uncertainty and u
  const sending=summarizeAlertCycles({counts:[{state:'delivery_unknown',n:1},{state:'ready',n:2}]});
  assert.equal(sending.diagnosis.code,'CHECK_DELIVERY_RECEIPT');
 });
+test('a native editorial backlog cannot be misreported as a stalled Jev calibration',()=>{
+ const result=summarizeAlertCycles({selectionMode:'native-editorial',counts:[{state:'pending',n:4},{state:'delivered',n:2}],
+  reviewReasons:[{reason:'SELECTION_UNCERTAIN',n:3}],delivery:{updated:123,messageId:'59'}});
+ assert.equal(result.selectionMode,'native-editorial');assert.equal(result.diagnosis.code,'PROCESS_PENDING');
+ assert.equal(result.lastDelivery.messageId,'59');
+ const unread=summarizeAlertCycles({selectionMode:'native-editorial',reviewReasons:[{reason:'SELECTION_UNCERTAIN',n:3},{reason:'SOURCE_NOT_READ',n:7}]});
+ assert.equal(unread.diagnosis.code,'EXPAND_READERS');
+});

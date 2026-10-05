@@ -168,7 +168,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     });},
     cycleStatus(){return db.prepare('SELECT name,key,status,attempts,updated,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all().map(r=>({...r,metrics:r.metrics?JSON.parse(r.metrics):null}));},
     retryTransient({minDelayMs=900000}={}){if(!Number.isSafeInteger(minDelayMs)||minDelayMs<0)fail('ALERT_RETRY_INVALID');return tx(()=>
-      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT') AND retries<1 AND updated<=?")
+      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT','NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT') AND retries<1 AND updated<=?")
         .run(now(),now()-minDelayMs).changes);},
     get,
     reviewCandidates({revision,limit=100}={}){
@@ -189,6 +189,26 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         db.prepare('UPDATE alerts SET state=?,reason=?,brief=?,updated=? WHERE id=?')
           .run(outcome==='keep'?'pending':'skipped',outcome==='keep'?'SELECTION_POLICY_REPLAY':'SELECTION_REJECTED',JSON.stringify(brief),now(),id);
         return {revised:true,id,outcome};
+      });
+    },
+    reselectReviewedContext({limit=8}={}){
+      // Explicit operator migration after a versioned question/context change.
+      // This schedules a NEW assessment, never treats an obsolete receipt as current.
+      if(!Number.isInteger(limit)||limit<1||limit>8)fail('ALERT_REVISION_INVALID');
+      const revision='context-'+createHash('sha256').update(JSON.stringify(PILOT_CONTEXT)).digest('hex').slice(0,16);
+      return tx(()=>{
+        const rows=db.prepare("SELECT id FROM alerts WHERE state='review' AND reason='SELECTION_UNCERTAIN' AND json_extract(brief,'$.selection.context_version')<>? AND NOT EXISTS (SELECT 1 FROM evidence_revisions WHERE evidence_revisions.id=alerts.id AND revision=?) ORDER BY created,id LIMIT 100")
+          .all(PILOT_CONTEXT.version,revision);
+        let checked=0;const ids=[];
+        for(const row of rows){
+          const old=get(row.id),selection=old.brief?.selection;
+          db.prepare('INSERT INTO evidence_revisions VALUES(?,?,?,?,?,?)').run(old.id,revision,JSON.stringify(old.item),JSON.stringify(old.brief),old.reason,now());checked++;
+          if(prefilter(old.item,{now:now()}).decision!=='select'||selection?.provider!=='jev'||
+             !/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??''))continue;
+          db.prepare("UPDATE alerts SET state='pending',reason='SELECTION_CONTEXT_CHANGED',brief=NULL,updated=? WHERE id=?").run(now(),old.id);
+          ids.push(old.id);if(ids.length===limit)break;
+        }
+        return{revision,checked,requeued:ids.length,ids};
       });
     },
     reviseReviewedEvidence(raw,{revision}={}){

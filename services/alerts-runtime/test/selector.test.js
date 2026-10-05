@@ -6,7 +6,7 @@ const token='synthetic-alert-selector-token-only-1234';
 const item={producer:'secretaire',scope:'public',topic:'system',url:'https://example.org/news',title:'Un changement technique',
   excerpt:'Un changement public améliore la reprise des tâches.',sourceStatus:'read',publishedAt:'2026-10-05T08:00:00Z',
   observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z'};
-const answer={question:'alerts.pertinence.mac-v1',context_version:PILOT_CONTEXT.version,decision:'keep',confidence:0.9,
+const answer={question:'alerts.pertinence.mac-v3',context_version:PILOT_CONTEXT.version,decision:'keep',confidence:0.9,
   provider:'jev',request_id:'00000000-0000-4000-a000-000000000000'};
 
 test('selector posts only bounded public fields to loopback and forbids redirects',async()=>{

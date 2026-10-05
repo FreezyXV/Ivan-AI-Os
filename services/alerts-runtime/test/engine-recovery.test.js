@@ -12,12 +12,12 @@ function indicator(id,valeur,date_obs='2026-10-05'){
  return {id,valeur,date_obs,libelle:id,unite:'%',cadence:id==='bce_taux_depot'?'evenement':'mois',
   source:'https://data-api.ecb.europa.eu/service/data/HICP/M.U2.N.000000.4D0.ANR?lastNObservations=1'};
 }
-async function financeFixture(t,{prior,current,judgeImpl}){
+async function financeFixture(t,{prior,current,judgeImpl,useJev=true}){
  const dir=folder(t);mkdirSync(path.join(dir,'snapshots'),{mode:0o700});
  writeFileSync(path.join(dir,'snapshots','2026-10-04.json'),JSON.stringify({date:'2026-10-04',indicateurs:prior}),{mode:0o600});
  const ingested=[];
  const result=await financeCycle({directory:dir,now,ledger:{ingest:item=>{ingested.push(item);return {duplicate:false};}},
-  collectImpl:async()=>({version:1,date:'2026-10-05',collecte_le:now.toISOString(),indicateurs:current,erreurs:[]}),judgeImpl});
+  collectImpl:async()=>({version:1,date:'2026-10-05',collecte_le:now.toISOString(),indicateurs:current,erreurs:[]}),judgeImpl,useJev});
  return {result,ingested};
 }
 test('a missing importance opinion preserves the changed public fact for common selection and exposes retry work',async t=>{
@@ -29,6 +29,12 @@ test('a missing importance opinion preserves the changed public fact for common 
 test('importance service exceptions remain visible without discarding factual threshold changes',async t=>{
  const {result,ingested}=await financeFixture(t,{prior:[indicator('bce_taux_depot',2)],current:[indicator('bce_taux_depot',2.25)],judgeImpl:async()=>{throw Error('unavailable');}});
  assert.equal(result.pendingDecisions,1);assert.equal(ingested.length,1);
+});
+test('native mode collects changed public Finance facts without an unqualified Jev opinion',async t=>{
+ const {result,ingested}=await financeFixture(t,{useJev:false,prior:[indicator('bce_taux_depot',2)],current:[indicator('bce_taux_depot',2.25)],
+  judgeImpl:async()=>assert.fail('no obligatory Jev importance call')});
+ assert.equal(ingested.length,1);assert.equal(result.pendingDecisions,0);
+ assert.equal(result.classificationMode,'deterministic-observations');
 });
 test('changed inflation and treasury observations enter selection while unchanged or initial values stay silent',async t=>{
  const {result,ingested}=await financeFixture(t,{prior:[indicator('inflation_zone_euro',2.2,'2026-08'),indicator('us_10_ans',4.1,'2026-10-02')],
@@ -62,6 +68,12 @@ test('failed business decisions remain pending and never appear as successful tr
  const r=await businessCycle({directory:dir,ledger,now,triageImpl:async()=>({tries:0,en_attente_jev:2})});
  assert.equal(r.triaged,0);assert.equal(r.decisionErrors,2);assert.equal(r.pendingDecisions,2);
  assert.equal(businessHasPendingEvidence(ledger,dir),true);assert.equal(r.payment_evidence_invented,false);
+});
+test('native mode retains Business evidence without paying a separate unqualified triage',async t=>{
+ const dir=folder(t),ledger={list:state=>state==='pending'?[{item:businessItem(1)}]:[]};
+ const r=await businessCycle({directory:dir,ledger,now,useJev:false,triageImpl:async()=>assert.fail('no duplicated Jev triage')});
+ assert.equal(r.triaged,0);assert.equal(r.pendingEditorial,1);assert.equal(r.pendingDecisions,0);
+ assert.equal(r.classificationMode,'native-editorial-queue');assert.equal(r.payment_evidence_invented,false);
 });
 test('a missed Monday is caught up once in the current ISO week and never expands past weeks',()=>{
  assert.equal(scheduleSlots(new Date('2026-10-05T06:59:00Z')).business,undefined);
