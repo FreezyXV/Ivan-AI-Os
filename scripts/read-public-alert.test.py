@@ -13,6 +13,21 @@ HTML = b'''<meta property="og:title" content="Un article public"><div class="ent
 
 
 class ReaderTests(unittest.TestCase):
+    def test_passage_selection_does_not_drop_a_fact_crossing_the_head_boundary(self):
+        prefix = 'An introduction describes the technical context. ' * 3
+        important = 'Updates are available in v16.3.8 and v15.5.27 to fix the vulnerability.'
+        text = prefix + important + ' Additional explanatory context without figures.' * 35
+        value = reader.excerpt_evidence(text)
+        self.assertIn(important, value['excerpt'][:500])
+        self.assertLessEqual(len(value['excerpt']), 1200)
+
+    def test_nextjs_next_prose_content_is_read_without_navigation_or_install_commands(self):
+        page=b'<meta property="article:published_time" content="2026-09-30"><article><div class="blogHeader">Navigation</div><div class="next-prose"><p>Updates are available in v16.3.8 and v15.5.27 to address two vulnerabilities.</p><div class="not-prose">npm install next@16.3.8</div></div></article>'
+        value=reader.read_article('https://nextjs.org/blog/september-2026-security-release',published_at='2026-09-30T18:00:00Z',title='Official security release',topic='engineering',producer='sentinelle',fetcher=lambda _:page)
+        self.assertIn('v16.3.8',value['item']['excerpt'])
+        self.assertNotIn('Navigation',value['item']['excerpt'])
+        self.assertNotIn('npm install',value['item']['excerpt'])
+
     def test_long_articles_retain_late_decisive_evidence_and_disclose_coverage(self):
         introduction = 'This speech introduces the current outlook and its context. ' * 25
         decision = 'The deposit facility rate was increased to 2.5% on 30 September.'

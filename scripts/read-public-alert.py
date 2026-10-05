@@ -32,11 +32,14 @@ def excerpt_evidence(text):
         return {"excerpt": text, **coverage}
     cut = text.rfind(" ", 0, 200)
     cut = cut if cut > 0 else 200
+    boundaries = list(re.finditer(r'[.!?](?=\s|$)', text[:cut]))
+    if boundaries and boundaries[-1].end() >= 40:
+        cut = boundaries[-1].end()
     head = text[:cut]
     candidates = []
     for match in re.finditer(r'.+?(?:[.!?](?=\s|$)|$)', text):
         sentence = match.group().strip()
-        if match.start() < cut or not sentence:
+        if match.end() <= cut or not sentence:
             continue
         score = 3 * bool(re.search(r'\d', sentence)) + 3 * bool(re.search(
             r'\b(rate|deposit|inflation|decision|increased|reduced|fix|fixed|release|version|budget|cost|vulnerability|security|taux|décision|correctif)\b', sentence, re.I))
@@ -179,7 +182,7 @@ class ArticleParser(HTMLParser):
         classes = set(attrs.get("class", "").split())
         starts = ((self.host == "www.ecb.europa.eu" and tag == "main") or
                   (self.host == "huggingface.co" and "blog-content" in classes) or
-                  (self.host == "nextjs.org" and "prose" in classes) or
+                  (self.host == "nextjs.org" and bool({"prose", "next-prose"}.intersection(classes))) or
                   (self.host == "news.ycombinator.com" and "toptext" in classes))
         self.active = self.active or starts
         self.ignored = self.ignored or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes

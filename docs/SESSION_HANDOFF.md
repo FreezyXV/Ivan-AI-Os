@@ -1,3 +1,47 @@
+## État courant — alertes corrigées et mesure indépendante (2026-10-05)
+
+Cette section remplace les états historiques ci-dessous. Branche
+agent/codex/alerts-integration. Lire MAC-ALERT-ORCHESTRATOR.md,
+PROJECT-CHECKLISTS.md, HANDOFF-CLAUDE-ALERTS-2026-10-05.md et
+REVIEW-CODEX-ALERT-EDITORIAL-2026-10-05.md ; conserver leur périmètre global.
+
+Actifs : Jev 4311, plugin de synthèse System et planning local @2ab2042,
+contexte public mac-alerts-20261005-v2 ; jeton/Trousseau/budget/file préservés.
+Ancien workflow Sentinelle désactivé, aucun deuxième planning de collecte.
+Digest paginé (trois pages bornées), expiration non envoyée comptée, lecture
+par passages, couverture partielle visible, fraîcheur par source et chiffres
+français. Race launchd EIO reproduite : restauration saine, retry borné ajouté,
+puis activation réussie. Le lecteur Next.js next-prose et sa frontière de
+passage sont corrigés dans le lot source suivant ; vérifier le commit du
+worker réellement chargé avec scripts/inspect-mac-pilot.mjs.
+
+Tests du lot : 63 Node alertes/diagnostic/rechargement/évaluation, 58 gateway,
+9 lecteur Python, 6 export = 136. PR Claude #50 @46c8756 : 49/49 tests,
+23 skills et 7 managers cohérents, corpus 14 cas conforme. #51 @f2a7f33
+avis source favorable, reste brouillon ; #49 garde la demande de correction
+sur la validation des fichiers partagés. Aucune fusion ni activation Claude.
+
+Mesure indépendante réellement exécutée une fois : 14 cas, 12 sélections
+évaluables, 8 correctes ; 3/7 cas Jev corrects, cinq exclusions locales correctes.
+Les doublons et demandes mêlées ne sont pas des mesures Jev. Aucun label envoyé
+au fournisseur, aucune génération ni livraison du corpus. Ce jeu est désormais
+une mesure de référence ; ne pas régler puis prétendre valider sur le même jeu.
+
+Source Next.js réellement téléchargée : review 0,27. Source Simon relue et
+preuve changée archivée une fois : toujours revue. Aucun seuil abaissé pour
+forcer un message, aucun KEEP de production assez confiant, parcours complet
+encore ouvert. Les 14 entrées review et 3 skipped ne sont pas des alertes livrées.
+Finance réellement vérifiée : 7 indicateurs, zéro erreur, zéro seuil franchi,
+1899 ms ; Business : un candidat lu déjà connu, zéro nouveau signal, 5 ms.
+Historique des collectes dégradées conservé. Coût prose natif non exposé.
+Preuves privées : ~/.ivan-ai-os/mac-alerts-2ab2042/.
+
+Suite Codex : améliorer la sélection sur preuves suffisantes, valider sur un
+nouveau jeu indépendant avec Claude K06, tester le parcours réellement retenu,
+urgence contre inventaire, rétention de la file, usages Engineering/System,
+puis Knowledge/Anakalypto à la fin ensemble. Claude continue K05/K04/K06/K07.
+Career en pause, OVH différé ; mémoire System et personnalité Secrétaire conservées.
+
 ## État courant — sélection active et Sentinelle retrouvé (2026-10-05)
 
 Cette section remplace les états historiques ci-dessous « endpoint non activé »

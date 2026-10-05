@@ -121,6 +121,39 @@ pour déclarer la qualité ou la fiabilité en usage quotidien.
 
 ## Vérifications du 5 octobre — planning actif
 
+Actualisation après relecture Claude : Jev et générateur épinglés à `2ab2042`,
+contexte v2 actif, planning migré sur cette release avec la même file. Bascule
+sans appel fournisseur : 252 appels / 0,004726 EUR avant et après.
+Un bootstrap immédiat a échoué EIO ; ancienne configuration restaurée et santé
+200 vérifiée, puis bascule réussie avec le correctif de retry borné conservé en CI.
+Deux passages launchd : sortie 0, aucun doublon ni génération.
+
+Mesure indépendante PR #50 : 14 cas, 12 sélections évaluables, 8 correctes
+(66,7 %), dont 3/7 décisions soumises au vrai Jev. Les cinq exclusions locales
+sont séparées ; un cas doublon et une demande multi-tâche ne sont pas des
+mesures de sélection. Une alternative tolérée est comptée à part. Sept appels,
+zéro génération/livraison ; ne pas régler puis prétendre revalider sur ce jeu.
+Le programme `evaluate-alert-corpus.mjs` conserve les abstentions, erreurs,
+décisions brutes et cas non mesurés. La confiance Choice n'est pas la probabilité
+du choix : [documentation officielle](https://docs.typesafe.ai/confidence).
+
+Essai réel Next.js : son conteneur `next-prose` manquait ; erreur reproduite,
+test ajouté, correction du lecteur et lecture réelle 4315 caractères / extrait
+1198. Le passage de versions n'est plus perdu à la frontière de l'introduction.
+Jev réel : review, confiance 0,27 ; zéro génération et zéro livraison forcée.
+Une preuve Simon relue par passages est archivée puis réévaluée une fois ;
+elle reste en revue. Ces résultats ne prouvent pas un parcours KEEP complet.
+Ces corrections supplémentaires du lecteur suivent la release active `2ab2042`.
+
+Cycles publics réels vérifiés séparément : Finance 7 indicateurs, zéro erreur,
+zéro changement de seuil, 1899 ms ; Business un candidat lu, doublon déjà connu,
+zéro nouveau signal/score inventé, 5 ms. Historique des échecs conservé.
+Après calibration et deux essais de preuve changée : compteur 252 → 261 ;
+le coût final est à lire dans la preuve santé, jamais estimé depuis le nombre
+d'appels seul. Coût/tokens de prose isolée toujours non disponibles.
+Preuves : `~/.ivan-ai-os/mac-alerts-2ab2042/` (activation, mesure indépendante,
+Next.js réel, révision, cycles publics et inspections de santé).
+
 - 47 tests Node file/cycles/prose/envoi/installation, 3 diagnostic, 6 lecteur Python et 5
   collecteur : 57 passent. Gateway 58, managers 18 et diagnostic 2 passent dans
   le lot précédent ; ils ne mesurent pas la qualité éditoriale.

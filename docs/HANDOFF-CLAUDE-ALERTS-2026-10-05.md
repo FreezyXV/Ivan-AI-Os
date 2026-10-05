@@ -5,6 +5,17 @@
 Claude a proposé K01–K03 dans la PR #50, une première partie K05 dans #51
 et le changement du hook gate dans #49. Rien n'est fusionné ni activé.
 Cette actualisation remplace les états anciens ci-dessous.
+Codex a relu #50 : 49 tests passent, corpus de 14 cas conforme. #51 @f2a7f33
+reste brouillon à juste titre tant que les managers n'ont pas de client adapté.
+Source runtime corrigée et contexte v2 activé dans Jev/générateur/planning @2ab2042.
+Lire REVIEW-CODEX-ALERT-EDITORIAL-2026-10-05.md et MAC-ALERT-ORCHESTRATOR.md.
+Calibration indépendante déjà exécutée une fois : 8/12 décisions correctes,
+3/7 parmi les cas soumis à Jev ; 2 cas de dédoublonnage/demande mêlée hors mesure
+de sélection. Ne pas refaire ces sept appels ni régler les seuils sur ce jeu.
+K06 : analyser les abstentions avec les décisions brutes/audit, préparer un second
+jeu inédit pour une validation après évolution du classifieur. Source Next.js
+réelle correctement lue reste review 0,27 ; aucun message forcé. A8 urgence,
+fidélité sémantique et appréciation d'Ivan restent à mesurer.
 Codex a construit les collecteurs locaux, lecteurs BCE/HF/Next/Ask HN, file
 durable, cycles, génération native et digest sur `agent/codex/alerts-integration`.
 Lire `docs/MAC-ALERT-ORCHESTRATOR.md` sur cette branche lorsqu'elle est publiée.

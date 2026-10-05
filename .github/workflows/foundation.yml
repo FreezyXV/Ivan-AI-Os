@@ -22,6 +22,7 @@ jobs:
       - run: npm test
       - run: node --test ../../scripts/inspect-mac-pilot.test.mjs
       - run: node --test ../../scripts/reload-launch-agent.test.mjs
+      - run: node --test ../../scripts/evaluate-alert-corpus.test.mjs
       - run: python3 ../../scripts/read-public-alert.test.py
       - run: python3 ../../scripts/test_collector_export.py
 
