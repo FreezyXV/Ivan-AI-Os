@@ -174,7 +174,7 @@ test('synthesis timeout preserves the Jev decision receipt instead of retrying',
   const {ledger}=fixture(t);ledger.ingest(item());
   const selected={decision:'keep',confidence:0.9,provider:'jev',request_id:'00000000-0000-4000-a000-000000000000',context_version:PILOT_CONTEXT.version};
   const result=await processNext({ledger,now:at,stageTimeoutMs:15,select:async()=>selected,synthesize:async()=>new Promise(()=>{})});
-  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual(result.brief.selection,{...selected,policy:{keepMinConfidence:0.75,skipMinConfidence:0.75}});
+  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual({...result.brief.selection,itemSha256:undefined},{...selected,policy:{keepMinConfidence:0.75,skipMinConfidence:0.75},itemSha256:undefined});assert.match(result.brief.selection.itemSha256,/^[a-f0-9]{64}$/);
 });
 
 test('a sender that never returns becomes uncertain and is never invoked twice',async t=>{
@@ -231,4 +231,11 @@ test('operator reader repair permits one changed evidence revision but never reo
  await deliverReady({ledger,id:other,deliver:async()=>{throw Error();}});
  assert.equal(ledger.reviseReviewedEvidence({...updated,url:'https://example.org/sent'},{revision:'reader-clean-v2'}).revised,false);
  assert.equal(ledger.get(other).state,'delivery_unknown');
+});
+
+test('a native synthesis retry reuses the bound Jev receipt instead of paying selection again',async t=>{
+ const {ledger,advance}=fixture(t);ledger.ingest(item());let selected=0;
+ const options={ledger,now:at,select:async()=>{selected++;return{decision:'keep',confidence:0.9,provider:'jev',context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000000'};},synthesize:async()=>{throw Error('temporary native outage');}};
+ await processNext(options);advance(900001);assert.equal(ledger.retryTransient(),1);
+ await processNext({...options,now:at+900001,synthesize:async()=>brief()});assert.equal(selected,1);assert.equal(ledger.counts().ready,1);
 });

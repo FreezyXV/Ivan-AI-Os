@@ -72,3 +72,15 @@ test('invalid worker policy stops before collecting or spending',async t=>{
  const {dir,ledger}=fixture(t);
  await assert.rejects(runCycle({ledger,settings:{stateDir:dir,selectionPolicy:{keepMinConfidence:-1,skipMinConfidence:0.25}},now,feeds:async()=>assert.fail(),select:async()=>assert.fail(),synthesize:async()=>assert.fail(),deliver:async()=>assert.fail()}),{code:'ALERT_SELECTION_POLICY_INVALID'});
 });
+
+test('new Business evidence gets only one bounded current-week follow-up',async t=>{
+ const {dir,ledger}=fixture(t);let calls=0;
+ const options={ledger,settings:{stateDir:dir},now,feeds:async()=>({}),finance:async()=>({}),business:async()=>{calls++;return{};},hasBusinessEvidence:()=>true,select:async()=>assert.fail(),synthesize:async()=>assert.fail(),deliver:async()=>assert.fail()};
+ await runCycle(options);assert.equal(calls,2);await runCycle({...options,now:new Date('2026-10-06T10:00:00Z')});assert.equal(calls,2);
+});
+
+test('missing engine decisions reserve a degraded retry instead of a successful silent cycle',async t=>{
+ const {dir,ledger}=fixture(t);
+ const r=await runCycle({ledger,settings:{stateDir:dir},now,feeds:async()=>({}),finance:async()=>({pendingDecisions:1,decisionErrors:1}),business:async()=>({}),hasBusinessEvidence:()=>false,select:async()=>assert.fail(),synthesize:async()=>assert.fail(),deliver:async()=>assert.fail()});
+ assert.equal(r.results.finance.degraded,true);assert.equal(ledger.cycleStatus().find(r=>r.name==='finance').status,'failed');
+});

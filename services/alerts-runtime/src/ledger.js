@@ -171,16 +171,21 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
       db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT') AND retries<1 AND updated<=?")
         .run(now(),now()-minDelayMs).changes);},
     get,
-    reconsiderReviewedSelection(id,{revision,outcome}={}){
-      if(!/^policy-[a-f\d]{16}$/.test(revision??'')||!['keep','skip'].includes(outcome))fail('ALERT_REVISION_INVALID');
+    reviewCandidates({revision,limit=100}={}){
+      if(!/^policy-[a-f\d]{16}$/.test(revision??'')||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_REVISION_INVALID');
+      return db.prepare("SELECT id FROM alerts WHERE state='review' AND reason='SELECTION_UNCERTAIN' AND NOT EXISTS (SELECT 1 FROM evidence_revisions WHERE evidence_revisions.id=alerts.id AND revision=?) ORDER BY created,id LIMIT ?")
+        .all(revision,limit).map(r=>get(r.id));
+    },
+    reconsiderReviewedSelection(id,{revision,outcome,policy}={}){
+      if(!/^policy-[a-f\d]{16}$/.test(revision??'')||!['keep','skip','review'].includes(outcome))fail('ALERT_REVISION_INVALID');
       return tx(()=>{
         const old=get(id),selection=old?.brief?.selection;
-        if(!old||old.state!=='review'||old.reason!=='SELECTION_UNCERTAIN'||prefilter(old.item,{now:now()}).decision!=='select'||
-          selection?.provider!=='jev'||selection.context_version!==PILOT_CONTEXT.version||
-          !/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??'')||
+        if(!old||old.state!=='review'||old.reason!=='SELECTION_UNCERTAIN'||
           db.prepare('SELECT id FROM evidence_revisions WHERE id=? AND revision=?').get(id,revision))return {revised:false};
         db.prepare('INSERT INTO evidence_revisions VALUES(?,?,?,?,?,?)').run(id,revision,JSON.stringify(old.item),JSON.stringify(old.brief),old.reason,now());
-        const brief={...old.brief,selectionReplay:{revision,itemSha256:createHash('sha256').update(JSON.stringify(old.item)).digest('hex')}};
+        if(outcome==='review'||prefilter(old.item,{now:now()}).decision!=='select'||selection?.provider!=='jev'||selection.context_version!==PILOT_CONTEXT.version||
+          !/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??''))return{revised:false,checked:true};
+        const brief={...old.brief,selectionReplay:{revision,...(policy?{policy}:{}),itemSha256:createHash('sha256').update(JSON.stringify(old.item)).digest('hex')}};
         db.prepare('UPDATE alerts SET state=?,reason=?,brief=?,updated=? WHERE id=?')
           .run(outcome==='keep'?'pending':'skipped',outcome==='keep'?'SELECTION_POLICY_REPLAY':'SELECTION_REJECTED',JSON.stringify(brief),now(),id);
         return {revised:true,id,outcome};

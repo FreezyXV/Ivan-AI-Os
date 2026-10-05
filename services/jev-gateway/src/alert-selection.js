@@ -65,6 +65,7 @@ export async function selectAlert(payload, { budget, fetchImpl } = {}) {
   const result = { question: ALERT_SELECTION_QUESTION, decision: answer?.choice,
     confidence: answer?.confidence, provider: 'jev', context_version: PILOT_CONTEXT.version };
   const probabilities = alertProbabilities(answer?.probabilities);
+  if(answer?.probabilities!==undefined&&!probabilities)throw new ProviderError('TYPESAFE_ALERT_SELECTION_RESPONSE_INVALID');
   if (probabilities) result.probabilities = probabilities;
   if (answer?.type !== 'choice' || !validAlertSelection(result))
     throw new ProviderError('TYPESAFE_ALERT_SELECTION_RESPONSE_INVALID');

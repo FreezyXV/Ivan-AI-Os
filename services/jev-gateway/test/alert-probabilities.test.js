@@ -22,8 +22,8 @@ test('valid per-option probabilities are exposed with the decision',async t=>{
   assert.deepEqual(r.probabilities,{keep:0.27,review:0.68,skip:0.05});
   assert.equal(r.decision,'review');
 });
-test('missing or malformed probabilities are omitted, never invented',async t=>{
+test('absent probabilities remain compatible but malformed distributions are refused',async t=>{
   assert.equal((await select(t,{})).probabilities,undefined);
-  assert.equal((await select(t,{probabilities:{keep:0.9,review:0.9,skip:0.9}})).probabilities,undefined);
-  assert.equal((await select(t,{probabilities:{keep:0.5,review:0.5}})).probabilities,undefined);
+  await assert.rejects(select(t,{probabilities:{keep:0.9,review:0.9,skip:0.9}}),{code:'TYPESAFE_ALERT_SELECTION_RESPONSE_INVALID'});
+  await assert.rejects(select(t,{probabilities:{keep:0.5,review:0.5}}),{code:'TYPESAFE_ALERT_SELECTION_RESPONSE_INVALID'});
 });

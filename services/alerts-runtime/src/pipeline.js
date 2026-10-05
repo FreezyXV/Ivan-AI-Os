@@ -51,7 +51,8 @@ export async function processNext({ledger,select,synthesize,now=Date.now(),maxAg
   };
   const local=prefilter(job.item,{now,maxAgeHours});
   if(local.decision!=='select')return complete(local.decision==='skip'?'skipped':'review',local.reason);
-  const recorded=job.brief?.selectionReplay?.itemSha256===createHash('sha256').update(JSON.stringify(job.item)).digest('hex')&&
+  const itemSha256=createHash('sha256').update(JSON.stringify(job.item)).digest('hex');
+  const recorded=(job.brief?.selectionReplay?.itemSha256===itemSha256||job.brief?.selection?.itemSha256===itemSha256)&&
     job.brief?.selection?.provider==='jev'&&job.brief.selection.context_version===PILOT_CONTEXT.version;
   if(!recorded&&typeof select!=='function')return complete('review','SELECTION_NOT_CONFIGURED');
   let selection;
@@ -63,7 +64,7 @@ export async function processNext({ledger,select,synthesize,now=Date.now(),maxAg
     ...(['jev','deterministic-kernel'].includes(selection.provider)?{provider:selection.provider}:{}),
     ...(/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??'')?{request_id:selection.request_id}:{}),
     ...(selection.context_version===PILOT_CONTEXT.version?{context_version:selection.context_version}:{}),
-    ...(selection.probabilities?{probabilities:selection.probabilities}:{}),policy:{...selectionPolicy},
+    ...(selection.probabilities?{probabilities:selection.probabilities}:{}),policy:{...selectionPolicy},itemSha256,
     ...(recorded?{replayed:true}: {})};
   const outcome=selectionOutcome(selection,selectionPolicy);
   if(outcome==='skip')return complete('skipped','SELECTION_REJECTED',{selection:trace});

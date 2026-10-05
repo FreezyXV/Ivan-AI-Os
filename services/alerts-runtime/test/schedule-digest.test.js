@@ -13,7 +13,7 @@ function ready(ledger,suffix){const {id}=ledger.ingest({producer:'sentinelle',sc
  const job=ledger.claim();ledger.finish(id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Fait vérifié, utilité et action. Source : https://example.org/'+suffix}});return id;}
 test('Paris schedules survive DST and wake up in one current slot, no backlog replay',()=>{
  assert.deepEqual(scheduleSlots(new Date('2026-10-05T05:00:00Z')),{feeds:'feeds:2026-10-05:1'});
- const a=scheduleSlots(new Date(at));assert.equal(a.finance,'finance:2026-10-05');assert.equal(a.business,'business:2026-10-05');assert.equal(a.digest,'digest:2026-10-05');
+ const a=scheduleSlots(new Date(at));assert.equal(a.finance,'finance:2026-10-05');assert.equal(a.business,'business:2026-W41');assert.equal(a.digest,'digest:2026-10-05');
  assert.equal(scheduleSlots(new Date('2026-10-26T06:30:00Z')).finance,'finance:2026-10-26');
 });
 test('cycle reservation excludes overlapping processes and successful repeats',t=>{

@@ -1,5 +1,5 @@
 import {collect,privateDir as financeDir,saveSnapshot,snapshots,alerts,judge} from '../../../skills/finance-engine/scripts/veille.mjs';
-import {addSignals,privateDir as businessDir,triage} from '../../../skills/business-engine/scripts/signals.mjs';
+import {addSignals,privateDir as businessDir,triage,signalId} from '../../../skills/business-engine/scripts/signals.mjs';
 import {readFileSync,writeFileSync,mkdtempSync,rmSync,appendFileSync,existsSync} from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
@@ -21,12 +21,8 @@ export async function collectFinance(fetchImpl=fetch,now=new Date()){
     const response=await fetchImpl(modernFinanceUrl(url),{...opts,signal:AbortSignal.timeout(15000)});
     if(!response.ok){if(attempt===0&&[502,503,504].includes(response.status))continue;return response;}
     const raw=await response.text();if(raw.length>1000000)throw Error('FINANCE_RESPONSE_TOO_LARGE');
-    if(url.includes('api.kraken.com')){
-     const value=JSON.parse(raw);
-     // Kraken's final OHLC row is still forming: do not call it a close.
-     for(const [key,rows] of Object.entries(value.result??{}))if(key!=='last'&&Array.isArray(rows))rows.pop();
-     return {ok:true,text:async()=>JSON.stringify(value)};
-    }
+    // The integrated Finance parser owns committed-candle selection. Dropping
+    // a row here too would lose the last real close when `last` is absent/zero.
     return {ok:true,text:async()=>raw};
    }catch(error){
     const transient=error.name==='TimeoutError'||['ETIMEDOUT','ECONNRESET','EAI_AGAIN'].includes(error.cause?.code);
@@ -48,34 +44,58 @@ export function observationUrl(indicator){
 export async function financeCycle({ledger,now=new Date(),directory=financeDir(),collectImpl=collectFinance,judgeImpl=judge}={}){
  const prior=snapshots(directory).filter(s=>s.date<now.toISOString().slice(0,10)).at(-1);
  const current=await collectImpl(fetch,now);saveSnapshot(directory,current);
- const changes=await judgeImpl(alerts(current,prior));let ingested=0;
- for(const alert of changes.filter(a=>a.niveau==='important'&&Number.isFinite(a.jev)&&a.jev>=0.5)){
+ const observations=alerts(current,prior),important=observations.filter(a=>a.niveau==='important');
+ let changes;try{changes=await judgeImpl(observations.map(a=>({...a})));}catch{changes=observations;}
+ const decisions=new Map(changes.map(a=>[a.id,a]));
+ const pendingDecisions=important.filter(a=>!Number.isFinite(decisions.get(a.id)?.jev)).length;
+ const before=new Map((prior?.indicateurs??[]).map(i=>[i.id,i]));
+ const staleIds=new Set(observations.filter(a=>a.texte.includes('dernière donnée')).map(a=>a.id));
+ const macroIds=new Set(['inflation_zone_euro','inflation_sous_jacente','us_10_ans']);
+ const candidates=observations.filter(a=>{
+  if(staleIds.has(a.id))return false;
+  if(a.niveau==='important')return !Number.isFinite(decisions.get(a.id)?.jev)||decisions.get(a.id).jev>=0.5;
+  const i=current.indicateurs.find(i=>i.id===a.id),old=before.get(a.id);
+  return macroIds.has(a.id)&&old&&i&&old.valeur!==i.valeur&&old.date_obs!==i.date_obs;
+ });
+ let ingested=0;
+ for(const alert of candidates){
   const indicator=current.indicateurs.find(i=>i.id===alert.id);if(!indicator)continue;
   const excerpt=`Relevé public du ${current.date}. ${alert.texte} Période observée : ${indicator.date_obs}. Valeur : ${indicator.valeur} ${indicator.unite}.`;
   const r=ledger.ingest({producer:'finance-watch',scope:'public',topic:'finance',url:observationUrl(indicator),
    title:indicator.libelle,publishedAt:current.collecte_le,observedAt:current.collecte_le,readAt:current.collecte_le,sourceStatus:'read',excerpt});
   if(!r.duplicate)ingested++;
  }
- return {indicators:current.indicateurs.length,sourceErrors:current.erreurs,stale:changes.filter(a=>a.texte.includes('dernière donnée')).length,
-  thresholdChanges:changes.filter(a=>a.niveau==='important').length,ingested,personal_data:false};
+ return {indicators:current.indicateurs.length,sourceErrors:current.erreurs,stale:staleIds.size,
+  thresholdChanges:important.length,macroCandidates:candidates.filter(a=>macroIds.has(a.id)).length,
+  pendingDecisions,decisionErrors:pendingDecisions,ingested,personal_data:false};
 }
+const jsonLines=file=>existsSync(file)?readFileSync(file,'utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l)):[];
+function pendingBusinessCandidates(ledger,directory){
+ const existing=new Set(jsonLines(path.join(directory,'jev.jsonl')).map(l=>l.id));
+ return [...ledger.list('pending',100),...ledger.list('review',100),...ledger.list('ready',100)]
+  .filter(r=>r.item.topic==='business'&&r.item.sourceStatus==='read'&&/^Ask HN:/i.test(r.item.title)&&
+   !existing.has(signalId(r.item))).slice(0,4);
+}
+// The coordinator may reserve one additional current-week evidence slot after
+// the base slot. Never use a changing candidate hash as an unlimited schedule.
+export const businessHasPendingEvidence=(ledger,directory=businessDir())=>pendingBusinessCandidates(ledger,directory).length>0;
 export async function businessCycle({ledger,directory=businessDir(),triageImpl=triage,now=new Date()}={}){
- const candidates=[...ledger.list('pending',100),...ledger.list('review',100),...ledger.list('ready',100)]
-  .filter(r=>r.item.topic==='business'&&r.item.sourceStatus==='read'&&/^Ask HN:/i.test(r.item.title)).slice(0,4);
+ const candidates=pendingBusinessCandidates(ledger,directory);
  const signals=candidates.map(({item})=>({source:'hacker-news-public',url:item.url,titre:item.title,
   sujet:'demande-'+createHash('sha256').update(item.title).digest('hex').slice(0,20),type:'demande',date:item.publishedAt.slice(0,10),extrait:item.excerpt.slice(0,500),preuve_paiement:false}));
  const added=addSignals(directory,signals,now);
- const existing=new Set((()=>{try{return readFileSync(path.join(directory,'jev.jsonl'),'utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l).id);}catch{return [];}})());
+ const existing=new Set(jsonLines(path.join(directory,'jev.jsonl')).map(l=>l.id));
  const file=path.join(directory,'signals.jsonl');
  const all=existsSync(file)?readFileSync(file,'utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l)):[];
  const todo=all.filter(s=>!existing.has(s.id)&&signals.some(c=>c.url===s.url)).slice(0,4);
- let triaged=0;
+ let triaged=0,pendingDecisions=0;
  if(todo.length){
   const staging=mkdtempSync(path.join(directory,'triage-'));
   try{writeFileSync(path.join(staging,'signals.jsonl'),todo.map(s=>JSON.stringify(s)).join('\n')+'\n',{mode:0o600});
    const result=await triageImpl(staging);triaged=result.tries;
+   pendingDecisions=Number.isInteger(result.en_attente_jev)?result.en_attente_jev:Math.max(0,todo.length-triaged);
    if(triaged)appendFileSync(path.join(directory,'jev.jsonl'),readFileSync(path.join(staging,'jev.jsonl')),{mode:0o600});
   }finally{rmSync(staging,{recursive:true,force:true});}
  }
- return {...added,triaged,readCandidates:candidates.length,opportunity_scores_created:0,payment_evidence_invented:false};
+ return {...added,triaged,pendingDecisions,decisionErrors:pendingDecisions,readCandidates:candidates.length,opportunity_scores_created:0,payment_evidence_invented:false};
 }

@@ -3,7 +3,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { openLedger } from '../services/alerts-runtime/src/ledger.js';
-import { validateItem, prefilter, fail } from '../services/alerts-runtime/src/context.js';
+import { validateItem, prefilter, fail, PILOT_CONTEXT } from '../services/alerts-runtime/src/context.js';
 import { withDeadline } from '../services/alerts-runtime/src/deadline.js';
 import { createJevSelector } from '../services/alerts-runtime/src/jev-selector.js';
 import { processNext } from '../services/alerts-runtime/src/pipeline.js';
@@ -31,9 +31,10 @@ export function supportsPublicSource(url){
 }
 export async function ingestCandidates({ledger,envelope,readSource=readPublicSource,readLimit=3,now=Date.now()}){
   if(envelope?.version!==1||envelope.producer!=='sentinelle'||!Array.isArray(envelope.items)||envelope.items.length>100||
-     !Number.isInteger(readLimit)||readLimit<0||readLimit>10||!Number.isFinite(now))fail('ALERT_EXPORT_INVALID');
-  const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[]};
-  let attempts=0;
+     !Number.isInteger(readLimit)||readLimit<0||readLimit>8||!Number.isFinite(now))fail('ALERT_EXPORT_INVALID');
+  const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[],
+    readAttempts:0,readLimitExhausted:0,unsupportedSources:0,sourceFiltered:0,readSkips:[]};
+  const eligible=[],seen=new Set();
   for(const raw of envelope.items){
     const item=validateItem(raw);
     // Feed evidence never promotes itself to a read article at this boundary.
@@ -41,11 +42,30 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
     const row=ledger.ingest(item),prior=ledger.get(row.id);
     summary[row.duplicate?'duplicates':'ingested']++;
     if(prior.item.sourceStatus==='read'||!['pending','review'].includes(prior.state))continue;
-    const supported=supportsPublicSource(item.url);
-    if(!supported||attempts>=readLimit||prefilter({...item,sourceStatus:'read',readAt:item.observedAt},{now}).decision!=='select'){
-      summary.unread++;continue;
+    if(seen.has(row.id))continue;
+    seen.add(row.id);
+    const filtered=prefilter({...item,sourceStatus:'read',readAt:item.observedAt},{now});
+    if(filtered.decision!=='select'){
+      summary.unread++;summary.sourceFiltered++;summary.readSkips.push({id:row.id,reason:filtered.reason});continue;
     }
-    attempts++;
+    if(!supportsPublicSource(item.url)){
+      summary.unread++;summary.unsupportedSources++;summary.readSkips.push({id:row.id,reason:'PUBLIC_SOURCE_UNSUPPORTED'});continue;
+    }
+    eligible.push({item,row,index:eligible.length});
+  }
+  // Reserve one source per active category present, then spend the remaining budget
+  // on the freshest sources. Feed ordering cannot let a busy technical feed starve Finance/Business.
+  const freshest=(a,b)=>Date.parse(b.item.publishedAt)-Date.parse(a.item.publishedAt)||
+    Date.parse(b.item.observedAt)-Date.parse(a.item.observedAt)||a.index-b.index;
+  eligible.sort(freshest);
+  const representatives=PILOT_CONTEXT.active.map(topic=>eligible.find(c=>c.item.topic===topic)).filter(Boolean).sort(freshest);
+  const reserved=new Set(representatives.map(c=>c.row.id));
+  const schedule=[...representatives,...eligible.filter(c=>!reserved.has(c.row.id))];
+  for(const {item,row} of schedule){
+    if(summary.readAttempts>=readLimit){
+      summary.unread++;summary.readLimitExhausted++;summary.readSkips.push({id:row.id,reason:'SOURCE_READ_LIMIT'});continue;
+    }
+    summary.readAttempts++;
     try{
       const evidence=await withDeadline(signal=>readSource(item,{signal}),18000,'SOURCE_READ_TIMEOUT');
       const read=validateItem(evidence.item),receipt=evidence.sourceReceipt;

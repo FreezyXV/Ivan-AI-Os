@@ -35,6 +35,7 @@ export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
       const p = result.probabilities, keys = ['keep', 'review', 'skip'];
       const probabilities = p && typeof p === 'object' && Object.keys(p).length === 3 && keys.every(k => Number.isFinite(p[k]) && p[k] >= 0 && p[k] <= 1) &&
         Math.abs(keys.reduce((sum, k) => sum + p[k], 0) - 1) <= 0.03 ? Object.fromEntries(keys.map(k => [k, p[k]])) : undefined;
+      if(p!==undefined&&!probabilities)fail('ALERT_SELECTION_UNAVAILABLE');
       return { decision: result.decision, confidence: result.confidence,
         provider: result.provider, context_version: result.context_version, request_id: result.request_id,
         ...(probabilities ? { probabilities } : {}) };

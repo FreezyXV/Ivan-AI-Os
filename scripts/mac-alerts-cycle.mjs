@@ -5,7 +5,7 @@ import path from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {openLedger} from '../services/alerts-runtime/src/ledger.js';
 import {scheduleSlots} from '../services/alerts-runtime/src/schedule.js';
-import {financeCycle,businessCycle} from '../services/alerts-runtime/src/engines.js';
+import {financeCycle,businessCycle,businessHasPendingEvidence} from '../services/alerts-runtime/src/engines.js';
 import {createNativeSynthesis} from '../services/alerts-runtime/src/synthesis.js';
 import {createTelegramDelivery} from '../services/alerts-runtime/src/telegram-delivery.js';
 import {createJevSelector} from '../services/alerts-runtime/src/jev-selector.js';
@@ -30,6 +30,7 @@ export async function collectFeeds({directory,ledger}){
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
  feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger}),business=()=>businessCycle({ledger}),
+ hasBusinessEvidence=()=>businessHasPendingEvidence(ledger),
  select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
  const selectionPolicy=settings.selectionPolicy??DEFAULT_SELECTION_POLICY;
@@ -38,10 +39,9 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  let policyRevisions=0;
  if(settings.selectionPolicy){
   const revision='policy-'+createHash('sha256').update(JSON.stringify(selectionPolicy)).digest('hex').slice(0,16);
-  for(const row of ledger.list('review',100)){
-    if(row.reason!=='SELECTION_UNCERTAIN')continue;
+  for(const row of ledger.reviewCandidates({revision})){
     const outcome=selectionOutcome(row.brief?.selection,selectionPolicy);
-    if(outcome!=='review'&&ledger.reconsiderReviewedSelection(row.id,{revision,outcome}).revised)policyRevisions++;
+    if(ledger.reconsiderReviewedSelection(row.id,{revision,outcome,policy:selectionPolicy}).revised)policyRevisions++;
   }
  }
  const staleReviews=ledger.settleStaleReviews(now.getTime());let retention;
@@ -51,7 +51,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
   try{const result=await fn();
-   const degraded=(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0;
+   const degraded=(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.decisionErrors>0||result?.pendingDecisions>0;
    results[name]={...result,...(degraded?{degraded:true}:{})};
    ledger.finishCycle(lease,{ok:!degraded,metrics:{durationMs:Date.now()-at,result:results[name]}});}
   catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
@@ -59,6 +59,8 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  await perform('feeds',slots.feeds,feeds);
  if(slots.finance)await perform('finance',slots.finance,finance);
  if(slots.business)await perform('business',slots.business,business);
+ if(slots.business&&ledger.cycleStatus().some(r=>r.key===slots.business&&r.status==='done')&&
+   hasBusinessEvidence())await perform('business',slots.business+':evidence',business);
  const processKey=processNow?'process:verify:'+now.toISOString().slice(0,16).replace(/[T:]/g,'-'):
   slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours();
  await perform('process',processKey,async()=>{
