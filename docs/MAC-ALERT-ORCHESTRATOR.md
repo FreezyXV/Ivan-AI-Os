@@ -31,9 +31,11 @@ concordant avec le flux, empreinte de réponse, HTTPS sans redirect, limites
 d'octets/délai. Un site hors périmètre ou incomplet reste non lu. Le lecteur
 n'est pas un navigateur universel et ne prétend pas lire les liens externes.
 
-La dernière release stable officielle OpenClaw est aussi collectée par son API
+Les trois dernières releases officielles OpenClaw sont examinées par leur API
 publique : date réelle, changelog épinglé au tag, empreinte, aucun redirect vers
 main. Seules les nouveautés publiées depuis moins de 72 heures entrent en file.
+Une release déjà lue ne masque pas les backports récents ; une page indisponible
+reste non lue et comptée, sans interrompre la lecture des autres releases.
 Le lecteur HF exclut maintenant l'interface `not-prose`, les auteurs et boutons.
 Une réparation opérateur de preuve déjà évaluée archive l'ancien extrait et son
 reçu Jev dans SQLite, ne modifie pas le sujet/date, ne rouvre jamais un envoi,
@@ -50,7 +52,7 @@ copiée et aucun override de modèle. Citations et chiffres contrôlés avant RE
 Le modèle référence des passages numérotés ; le code insère leurs citations
 exactes. L'extrait n'est pas injecté une seconde fois avec les métadonnées.
 Le service l'appelle après sélection ; le plugin seul n'est pas un juge de
-pertinence. Schéma `coded-brief-v1-provisional`, à relire avec Claude K01/K02,
+pertinence. Contrat `alert-editorial-v1`, repris de la proposition Claude K01/K02,
 sans écrire à sa place dans ses skills/contrats.
 
 Le digest réserve au plus trois pages par soir, chacune de 2500 caractères
@@ -66,13 +68,32 @@ introduction courte et phrases chiffrées/décisions ; longueur totale et couver
 conservées. Le code ajoute la limite d'extrait partiel, y compris aux anciens
 enregistrements sans couverture. Les nombres de l'utilité/action sont aussi vérifiés ;
 les milliers français/anglais correspondent, les signes restent distincts.
-Le contexte `mac-alerts-20261005-v2` est commun au gateway et au générateur ;
+Le contexte source `mac-alerts-20261005-v3` est commun au gateway et au générateur ;
 il ajoute cinq faits publics, aucun profil. Fraîcheur 7 jours pour les discours/
 communiqués BCE et avis officiels de sécurité Next.js, 72 heures ailleurs,
 y compris dans l'export avant lecture. Les instructions manifestes sont mises
 en revue avant Jev. Ce filtre ne garantit pas la détection de toute injection.
 Seuls les aliases de permaliens Next.js perdent leur barre finale ; les chemins
 des autres sites restent distincts (Simon exige notamment cette barre).
+
+Correctif v3 : l'extrait déjà lu de 1200 caractères atteint désormais Jev entier.
+Le catalogue générique garde 500 caractères ; les rejets de contacts/identifiants
+portent sur tout l'extrait. La confiance de livraison reste 0,75. La mesure v2
+reste une référence historique, jamais une validation de v3.
+`generate-alert-editorial-samples.mjs` mesure quatre fixtures avec le générateur
+isolé, sans sélection ni Telegram. Le prompt annonce ce mode ; son reçu ne peut
+pas être accepté comme une génération de production. Aucun coût natif inventé.
+
+Mises à jour : répétition idempotente si le service est chargé, sauvegardes uniques,
+remplacement atomique et contrôle après démarrage. Panne : arrêter le nouveau job
+avant restauration ; signaler distinctement une restauration ratée. Les fichiers
+temporaires laissés par une tentative antérieure ne sont ni écrasés ni supprimés.
+
+Compétences : `compatibility` et `manager.runtimes` sont respectés dans le plan source.
+Sept rôles conservés ; Engineering sur Codex/Claude reçoit une passation explicite,
+pas une exécution shell fictive OpenClaw. La configuration live existante n'est
+pas modifiée par cette préparation ; sa migration reste séparée de la mise à jour
+du collecteur/générateur. Voir REVIEW-CODEX-K04-K07-2026-10-05.md.
 
 Validation du lot : 59 tests alertes/diagnostic, 58 gateway, 7 lecteur et 6 export,
 soit 130 tests. Huit tests Node de régression et le cas Python de décision après

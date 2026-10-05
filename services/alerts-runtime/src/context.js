@@ -1,7 +1,7 @@
 import { PILOT_STATE } from '../../../shared/pilot-state.mjs';
 // Public, compact operator context. No profile, portfolio or caller policy.
 export const PILOT_CONTEXT = Object.freeze({
-  version: 'mac-alerts-20261005-v2',
+  version: 'mac-alerts-20261005-v3',
   active: Object.freeze(['business', 'finance', 'engineering', 'system']),
   deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.deferredProjects]),
   facts: Object.freeze([

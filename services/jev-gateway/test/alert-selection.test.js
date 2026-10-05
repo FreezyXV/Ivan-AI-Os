@@ -8,6 +8,7 @@ import { PRICED_MODEL } from '../src/budget.js';
 import { testBudget } from './helpers.js';
 import { createJevSelector } from '../../alerts-runtime/src/jev-selector.js';
 import { PILOT_CONTEXT } from '../../alerts-runtime/src/context.js';
+import {validateClassification} from '../src/classification.js';
 
 const token='synthetic-alert-selection-test-token-only';
 const payload={scope:'public',topic:'system',title:'Reprise du pilote Mac',
@@ -27,10 +28,16 @@ async function gateway(t,options){
 test('selection only accepts bounded public evidence and the fixed current context',()=>{
   assert.deepEqual(validateAlertSelection(payload),payload);
   for(const patch of [{scope:'private'},{profile:'synthetic private context'},{context_version:'old'},
-    {goals:['caller policy']},{excerpt:'x'.repeat(501)},{title:'x'.repeat(201)},
+    {goals:['caller policy']},{excerpt:'x'.repeat(1201)},{title:'x'.repeat(201)},
     {excerpt:'contact@example.org with a long source excerpt'},
     {excerpt:`apikey_${'x'.repeat(30)} and further text`},{topic:'unknown'}])
     assert.throws(()=>validateAlertSelection({...payload,...patch}),{code:'INVALID_ALERT_SELECTION_INPUT'});
+});
+test('alert evidence can use the entire read excerpt; legacy classifier limits and trailing private-text checks remain intact',()=>{
+ const excerpt='Une preuve publique issue du passage effectivement lu. '.repeat(18);
+ assert.equal(validateAlertSelection({...payload,excerpt}).excerpt,excerpt);
+ assert.throws(()=>validateClassification({question:'source.fiable',input:{titre:payload.title,extrait:excerpt,type_affirmation:'system'}}),{code:'INVALID_CLASSIFICATION_INPUT'});
+ assert.throws(()=>validateAlertSelection({...payload,excerpt:excerpt+' contact@example.org'}),{code:'INVALID_ALERT_SELECTION_INPUT'});
 });
 
 test('Jev selects against server-owned goals and reserves the existing shared budget',async t=>{

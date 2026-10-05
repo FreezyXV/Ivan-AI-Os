@@ -99,6 +99,12 @@ const NUMERIC_FIELDS = new Set(["vues", "jours", "mots", "ancien", "nouveau", "s
 export class ClassificationInputError extends Error {
   constructor(code, status = 400) { super(code); this.code = code; this.status = status; }
 }
+// Server-owned text bounds. The generic catalogue retains its 500-character
+// limit; the dedicated alerts endpoint can transmit its whole read envelope.
+export function isPublicClassificationText(value,maxLength=500){
+  return Number.isInteger(maxLength)&&maxLength>0&&maxLength<=1200&&typeof value==='string'&&value.length>0&&value.length<=maxLength&&
+    !CREDENTIALS.test(value)&&!CONTACT.test(value);
+}
 
 export function validateClassification(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload) ||
@@ -111,8 +117,7 @@ export function validateClassification(payload) {
       spec.required.some(key => !Object.hasOwn(input, key))) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
   for (const [key, value] of Object.entries(input)) {
     const validNumber = typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1_000_000;
-    const validText = typeof value === "string" && value.length > 0 && value.length <= 500 &&
-      !CREDENTIALS.test(value) && !CONTACT.test(value);
+    const validText = isPublicClassificationText(value);
     const valid = spec.formattedFields?.includes(key) ? validNumber || validText : NUMERIC_FIELDS.has(key) ? validNumber : validText;
     if (!valid) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
     if (key === "domaines" && value !== domains.join(",")) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");

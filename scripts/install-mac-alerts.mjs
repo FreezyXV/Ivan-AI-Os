@@ -1,5 +1,6 @@
 // One reversible local schedule. Secrets stay in private settings/native auth.
-import {readFileSync,writeFileSync,lstatSync,mkdirSync,existsSync,renameSync} from 'node:fs';
+import {readFileSync,writeFileSync,lstatSync,mkdirSync,existsSync,renameSync,unlinkSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
 import {homedir} from 'node:os';
 import path from 'node:path';
 import {execFile} from 'node:child_process';
@@ -21,6 +22,44 @@ export function launchAgent({node,releaseRoot,settingsPath,stateDir}){
 <key>StandardErrorPath</key><string>${xml(path.join(stateDir,'cycles.err.log'))}</string>
 </dict></plist>\n`;
 }
+function replacePlist(plist,body){
+ const temp=plist+'.update-'+randomUUID();let created=false;
+ try{writeFileSync(temp,body,{mode:0o600,flag:'wx'});created=true;renameSync(temp,plist);created=false;}
+ finally{if(created)unlinkSync(temp);}
+}
+export async function applySchedule({plist,body,previousBody,backupDir,domain,run,serviceLabel=label,verify=async()=>{}}){
+ if(!path.isAbsolute(plist)||!path.isAbsolute(backupDir)||!/^gui\/\d+$/.test(domain)||typeof body!=='string'||typeof run!=='function'||
+    !['com.ivan-ai-os.alerts','com.ivan-ai-os.jev'].includes(serviceLabel)||typeof verify!=='function')throw Error('ALERT_INSTALL_INVALID');
+ const current=readFileSync(plist,'utf8');
+ if(current!==body&&current!==previousBody)throw Error('ALERT_EXISTING_SCHEDULE_DIFFERS');
+ let loaded=true;
+ try{await run('/bin/launchctl',['print',domain+'/'+serviceLabel]);}
+ catch(error){if(error.code!==113)throw error;loaded=false;}
+ if(current===body){
+  if(!loaded)await bootstrapWithRetry({run,domain,plist});
+  await verify();
+  return {alreadyActive:loaded};
+ }
+ // Each attempt has a distinct, immutable backup. Old temporary files are
+ // evidence of a previous interruption, never an excuse to overwrite them.
+ const backup=path.join(backupDir,serviceLabel.split('.').at(-1)+'.rollback-'+randomUUID()+'.plist');
+ writeFileSync(backup,current,{mode:0o600,flag:'wx'});
+ if(loaded)try{await run('/bin/launchctl',['bootout',domain+'/'+serviceLabel]);}catch(error){if(error.code!==113)throw error;}
+ try{
+  replacePlist(plist,body);await run('/usr/bin/plutil',['-lint',plist]);
+  await bootstrapWithRetry({run,domain,plist});
+  await verify();
+ }catch(error){
+  try{
+   let newLoaded=true;try{await run('/bin/launchctl',['print',domain+'/'+serviceLabel]);}catch(e){if(e.code!==113)throw e;newLoaded=false;}
+   if(newLoaded)await run('/bin/launchctl',['bootout',domain+'/'+serviceLabel]);
+   replacePlist(plist,current);await bootstrapWithRetry({run,domain,plist});
+  }
+  catch{throw Error('ALERT_UPDATE_ROLLBACK_FAILED');}
+  throw Error('ALERT_UPDATE_ROLLED_BACK');
+ }
+ return {alreadyActive:false,backup};
+}
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  try{
   const [settingsPath,mode,previousSettingsPath]=process.argv.slice(2);
@@ -36,9 +75,10 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   if(mode==='--update'){
    const previous=JSON.parse(readFileSync(previousSettingsPath));
    previousBody=launchAgent({node:process.execPath,releaseRoot:previous.releaseRoot,settingsPath:previousSettingsPath,stateDir:previous.stateDir});
-   if(!existsSync(plist)||readFileSync(plist,'utf8')!==previousBody||previous.stateDir!==settings.stateDir)throw Error('ALERT_EXISTING_SCHEDULE_DIFFERS');
+   if(!existsSync(plist)||![previousBody,body].includes(readFileSync(plist,'utf8'))||previous.stateDir!==settings.stateDir)throw Error('ALERT_EXISTING_SCHEDULE_DIFFERS');
   }else if(existsSync(plist)&&readFileSync(plist,'utf8')!==body)throw Error('ALERT_EXISTING_SCHEDULE_DIFFERS');
   if(!existsSync(plist))writeFileSync(plist,body,{mode:0o600,flag:'wx'});
+  const ps=lstatSync(plist);if(!ps.isFile()||ps.isSymbolicLink()||ps.nlink!==1||ps.uid!==process.getuid()||(ps.mode&0o077))throw Error('ALERT_PLIST_INVALID');
   for(const filename of ['cycles.log','cycles.err.log']){
    const file=path.join(settings.stateDir,filename);
    if(!existsSync(file))writeFileSync(file,'',{mode:0o600,flag:'wx'});
@@ -48,19 +88,8 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   if(mode==='--activate'||mode==='--update'){
    const {stdout}=await run(settings.openclawBinary,['gateway','call','health','--json','--timeout','5000'],{timeout:10000});
    if(JSON.parse(stdout.slice(stdout.indexOf('{'))).ok!==true)throw Error('ALERT_GATEWAY_UNHEALTHY');
-   if(mode==='--update'){
-    writeFileSync(path.join(path.dirname(settingsPath),'alerts.rollback.plist'),previousBody,{mode:0o600,flag:'wx'});
-    await run('/bin/launchctl',['bootout',`gui/${process.getuid()}/${label}`],{timeout:10000});
-    try{
-     const temp=plist+'.update';writeFileSync(temp,body,{mode:0o600,flag:'wx'});renameSync(temp,plist);
-     await run('/usr/bin/plutil',['-lint',plist],{timeout:5000});
-     await bootstrapWithRetry({run,domain:`gui/${process.getuid()}`,plist});
-    }catch(error){
-     writeFileSync(plist,previousBody,{mode:0o600});
-     await bootstrapWithRetry({run,domain:`gui/${process.getuid()}`,plist});
-     throw Error('ALERT_UPDATE_ROLLED_BACK');
-    }
-   }else await bootstrapWithRetry({run,domain:`gui/${process.getuid()}`,plist});
+   await applySchedule({plist,body,previousBody,backupDir:path.dirname(settingsPath),domain:`gui/${process.getuid()}`,
+    run:(bin,args)=>run(bin,args,{timeout:10000})});
   }
   console.log(JSON.stringify({status:mode==='--prepare'?'PREPARED':'ACTIVE',label,sourceCommit:settings.sourceCommit,intervalSeconds:300,plist}));
  }catch(error){console.error(/^[A-Z_]{3,60}$/.test(error.message)?error.message:'ALERT_INSTALL_FAILED');process.exitCode=1;}

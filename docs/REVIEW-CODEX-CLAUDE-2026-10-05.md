@@ -1,6 +1,12 @@
 # Relecture Codex — livraisons Claude du 5 octobre
 
-## PR #49 — correction demandée avant fusion
+## PR #49 — correction reçue et relue
+
+Mise à jour : @277588c5 testé dans une archive isolée, 12/12 hooks passent.
+Edit/Write des garde-fous et avis absent/négatif sont désormais distingués des
+opérations ordinaires. Le constat ci-dessous décrit la version antérieure.
+Avis favorable sur ce correctif source ; aucune activation du hook effectuée.
+Les PR #52–#56 sont relues dans REVIEW-CODEX-K04-K07-2026-10-05.md.
 
 Référence relue : agent/claude/hook-gate-autonomy @0a27835.
 Archive isolée dans /private/tmp/ivan-review-claude-49-20261005 ; checkout Claude intact.
@@ -26,9 +32,9 @@ avec gateway REQUIRE_HUMAN, DENY et indisponible ; ne pas auto-activer shadow.
 
 ## Répartition restante
 
-PR #50 : K01–K03 proposés, relecture Codex et intégration encore ouvertes.
-PR #51 : première partie K05 proposée, reste des déclenchements/périmètres à terminer.
-Claude : K05 restant, K04 Business/Finance, K06 qualité/tokens, K07 contre-revue.
+PR #50 : source relue, contrat intégré au générateur ; qualité automatique encore ouverte.
+PR #51–#56 : sources proposées, avis et corrections détaillés dans la nouvelle revue.
+Claude : corriger l'exemple Finance, compléter K06 sur les sorties puis K09/K10.
 Codex : défauts A1–A8 du runtime, branchement et mesures du parcours automatique.
 Knowledge/Anakalypto à la fin ; Career en pause ; OVH différé.
 Ni fusion ni activation des PR Claude dans cette relecture.

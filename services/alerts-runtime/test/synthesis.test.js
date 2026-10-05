@@ -16,10 +16,18 @@ test('only read evidence enters an isolated native completion and private/deferr
 test('native RPC requires a checked plugin result and records one call without fabricated usage',async()=>{
  const synth=createNativeSynthesis({runImpl:async(_bin,args)=>{
   assert.equal(args[2],'tools.invoke');const p=JSON.parse(args[4]);assert.equal(p.name,'ivan_alert_synthesize');assert.equal(p.args.item.excerpt,item.excerpt);
-  return {stdout:JSON.stringify({ok:true,output:{details:{status:'READY',execution:'native-isolated-completion',brief}}})};}});
+  return {stdout:JSON.stringify({ok:true,output:{details:{status:'READY',execution:'native-isolated-completion',purpose:'selected',brief}}})};}});
  assert.equal((await synth(item)).generation.providerUsageAvailable,false);
  const bad=createNativeSynthesis({runImpl:async()=>({stdout:'{"ok":false}'})});await assert.rejects(bad(item),{code:'ALERT_SYNTHESIS_UNAVAILABLE'});
  const exit=createNativeSynthesis({runImpl:async()=>{throw Object.assign(Error(),{code:1});}});await assert.rejects(exit(item),{code:'ALERT_SYNTHESIS_UNAVAILABLE'});
+});
+test('editorial fixtures are explicit isolated tests and a test receipt cannot satisfy a production completion',async()=>{
+ assert.match(synthesisPrompt(item,{purpose:'editorial-evaluation'}),/aucune sélection Jev ni livraison de production/);
+ assert.doesNotMatch(synthesisPrompt(item,{purpose:'editorial-evaluation'}),/Jev a déjà sélectionné/);
+ const tool=createSynthesisTool({agentId:'ivan-system'},{complete:async()=>({text:JSON.stringify(brief)})});
+ assert.equal((await tool.execute('test',{item,purpose:'editorial-evaluation'})).details.purpose,'editorial-evaluation');
+ const production=createNativeSynthesis({runImpl:async()=>({stdout:JSON.stringify({ok:true,output:{details:{status:'READY',execution:'native-isolated-completion',purpose:'editorial-evaluation',brief}}})})});
+ await assert.rejects(production(item),{code:'ALERT_SYNTHESIS_UNAVAILABLE'});
 });
 test('indexed evidence supplies the exact quote; invalid indices and invented numbers never become ready',async()=>{
  const source={...item,excerpt:'Le service plafonne les appels à 10 euros. La reprise conserve le compteur.'};

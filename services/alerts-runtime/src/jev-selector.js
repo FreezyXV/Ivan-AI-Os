@@ -18,7 +18,7 @@ export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
     if (item.sourceStatus !== 'read'||suspiciousSource(item.excerpt)) return { decision: 'review', confidence: 0,
       provider: 'deterministic-kernel', context_version: PILOT_CONTEXT.version };
     const body = { scope: 'public', topic: item.topic, title: item.title,
-      excerpt: item.excerpt.slice(0, 500), context_version: PILOT_CONTEXT.version };
+      excerpt: item.excerpt, context_version: PILOT_CONTEXT.version };
     try {
       const response = await fetchImpl(new URL('/v1/alerts/select', url), {
         method: 'POST', redirect: 'error', signal: signal ? AbortSignal.any([signal,AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),

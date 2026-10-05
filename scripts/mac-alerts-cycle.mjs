@@ -23,7 +23,7 @@ export async function collectFeeds({directory,ledger}){
   const envelope=JSON.parse(readFileSync(output));
   const result=await ingestCandidates({ledger,envelope,readLimit:8});
   let official;try{official=await collectOfficialRelease({ledger});}catch{official={error_code:'OFFICIAL_RELEASE_UNAVAILABLE'};}
-  return {...result,official,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length+(official.error_code?1:0)};
+  return {...result,official,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length+(official.error_code?1:official.errors?.length??0)};
  }finally{rmSync(temp,{recursive:true,force:true});}
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,

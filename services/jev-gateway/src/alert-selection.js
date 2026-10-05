@@ -1,5 +1,5 @@
 import { askTypeSafe, ProviderError } from './provider.js';
-import { validateClassification, ClassificationInputError } from './classification.js';
+import { isPublicClassificationText, ClassificationInputError } from './classification.js';
 import { PILOT_CONTEXT, suspiciousSource } from '../../alerts-runtime/src/context.js';
 
 export const ALERT_SELECTION_QUESTION = 'alerts.pertinence.mac-v1';
@@ -18,13 +18,11 @@ export function validateAlertSelection(payload) {
       typeof payload.title !== 'string' || !payload.title.trim() || payload.title.length > 200 ||
       typeof payload.excerpt !== 'string' || payload.excerpt.trim().length < 20)
     throw new ClassificationInputError('INVALID_ALERT_SELECTION_INPUT');
-  // Reuse the existing public-text limits and credential/contact rejection.
+  // Reuse credential/contact rejection over ALL read evidence, without the
+  // generic classifier's shorter 500-character bound truncating the source.
   // Source text is evidence, never an instruction or caller-defined policy.
-  try {
-    validateClassification({ question: 'source.fiable', input: {
-      titre: payload.title, extrait: payload.excerpt, type_affirmation: payload.topic
-    }});
-  } catch { throw new ClassificationInputError('INVALID_ALERT_SELECTION_INPUT'); }
+  if(!isPublicClassificationText(payload.title,200)||!isPublicClassificationText(payload.excerpt,1200))
+    throw new ClassificationInputError('INVALID_ALERT_SELECTION_INPUT');
   return { scope: 'public', topic: payload.topic, title: payload.title.trim(),
     excerpt: payload.excerpt, context_version: PILOT_CONTEXT.version };
 }

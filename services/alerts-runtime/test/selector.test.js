@@ -15,8 +15,13 @@ test('selector posts only bounded public fields to loopback and forbids redirect
   }});
   const result=await select({...item,excerpt:'x'.repeat(1200),privateProfile:'ignored input'});
   assert.equal(result.decision,'keep');assert.equal(seen.url,'http://127.0.0.1:4311/v1/alerts/select');
-  assert.equal(seen.redirect,'error');assert.equal(JSON.parse(seen.body).excerpt.length,500);
+  assert.equal(seen.redirect,'error');assert.equal(JSON.parse(seen.body).excerpt.length,1200);
   assert.deepEqual(Object.keys(JSON.parse(seen.body)).sort(),['context_version','excerpt','scope','title','topic']);
+});
+test('decisive evidence beyond character 500 reaches Jev unchanged, without expanding the read envelope',async()=>{
+ let received;const select=createJevSelector({token,fetchImpl:async(_url,options)=>{received=JSON.parse(options.body);return {ok:true,json:async()=>answer};}});
+ const excerpt='Introduction publique. '.repeat(30)+'Le correctif corrige les accès à images.remotePatterns.';
+ await select({...item,excerpt});assert.equal(received.excerpt,excerpt);assert.ok(received.excerpt.indexOf('images.remotePatterns')>500);
 });
 
 test('deferred roles and unread sources cause zero HTTP requests',async()=>{

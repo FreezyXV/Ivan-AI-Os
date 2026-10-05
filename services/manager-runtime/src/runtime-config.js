@@ -8,7 +8,7 @@ export function proposeRuntimeConfig({ current, plan, defaultMainWorkspace, gate
   const port = Number(new URL(gatewayUrl).port);
   if (port < 1024 || port > 65535) throw new Error("LOOPBACK_GATEWAY_REQUIRED");
   const fragment = plan?.openclawFragment?.agents;
-  const pausedIds = plan?.roles?.filter(role=>role.status==="PAUSED").map(role=>role.agentId) ?? [];
+  const pausedIds = plan?.roles?.filter(role=>role.status==="PAUSED"||role.runtime!=='openclaw').map(role=>role.agentId) ?? [];
   if (pausedIds.some(id=>!Object.values(ROLE_IDS).includes(id)) || new Set(pausedIds).size!==pausedIds.length) throw new Error("INCOMPLETE_MANAGER_PLAN");
   const expectedIds = ["main", ...ROUTES.map(r => ROLE_IDS[r]).filter(id=>!pausedIds.includes(id))];
   if (!fragment || Object.keys(fragment.entries).length !== expectedIds.length || expectedIds.some(id => !fragment.entries[id])) throw new Error("INCOMPLETE_MANAGER_PLAN");
