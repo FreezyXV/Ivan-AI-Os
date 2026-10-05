@@ -1,6 +1,7 @@
 ---
 name: calibration-jev
 description: Mesurer la qualité des décisions Jev (routage vers les managers, détails manquants, urgence, avis sur action) sur des cas synthétiques étiquetés, avant de régler un seuil, d'ajouter une question ou de faire confiance à Jev pour un nouvel usage. Utiliser après la bascule du gateway, une fois par mois, quand un routage semble faux, avant tout changement de seuil ou de question, ou quand Ivan demande "Jev est-il fiable ?", "calibre Jev".
+compatibility: "claude-code, codex"
 metadata:
   version: "0.2.1"
   famille: system

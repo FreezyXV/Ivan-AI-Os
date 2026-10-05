@@ -1,6 +1,7 @@
 ---
 name: finance-engine
 description: Veille finance publique automatique d'Ivan (Finance Manager) - taux BCE, inflation zone euro, EUR/USD, taux US 10 ans, Bitcoin et Ether - collectée par script sans LLM, avec instantanés datés, alertes par seuils et bref sourcé. Utiliser pour "veille finance", "brief marché", "quoi de neuf côté taux / crypto / macro", avant une revue de placements, ou pour préparer le bref finance Telegram. Pour confronter à la stratégie personnelle d'Ivan : skill veille-investissements.
+compatibility: "claude-code, codex, openclaw"
 metadata:
   version: "1.2.0"
   famille: finance
@@ -11,6 +12,9 @@ metadata:
   provenance: "Ivan-AI-Os, roadmap v1 section 12 (Finance Engine), veille publique, 2026-09-29"
 ---
 # Finance Engine — veille publique
+
+Sans shell (OpenClaw) : ne pas lancer les scripts ; lire le dernier relevé public avec
+`ivan_finance_brief` (adaptateur Codex), dates visibles, aucune donnée personnelle.
 
 Outil : `node skills/finance-engine/scripts/veille.mjs collecter | alertes | rapport`.
 Contrat : `workflows/finance-engine.md`. Aucun LLM pour collecter : 0 token.

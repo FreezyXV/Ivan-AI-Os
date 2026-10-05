@@ -1,6 +1,7 @@
 ---
 name: veille-investissements
 description: Veille des évolutions et opportunités d'investissement (taux réglementés, ETF éligibles PEA, frais, fonds euros, SCPI, or, BCE, fiscalité France et Luxembourg) confrontée à la stratégie long terme d'Ivan. Utiliser pour "veille invest", "revue finance", "opportunité d'investissement", "qu'est-ce qui a changé côté placements", ou quand Ivan transfère une alerte Sentinelle finance.
+compatibility: "claude-code, codex"
 metadata:
   version: "1.2.0"
   famille: finance
