@@ -37,3 +37,14 @@ test("sources are new, public, read within 1200 characters, real ones hashed", (
   }
   assert.ok(fixtures.filter(f => f.reel).length >= 10, "mostly real sources");
 });
+
+test("assembler produces the single-file corpus format without leaking labels into items", async () => {
+  const { assembler } = await import("../rapport-telegram/corpus/pertinence-v1/assembler.mjs");
+  const corpus = assembler();
+  assert.equal(corpus.role, "evaluation-independante");
+  assert.equal(corpus.cas.length, fixtures.length);
+  for (const c of corpus.cas.filter(c => c.entree.source)) {
+    assert.ok(!JSON.stringify(c.entree).includes('"selection"'), c.id);
+    assert.equal(c.attendu.selection, labels.labels.find(l => l.id === c.id).selection);
+  }
+});
