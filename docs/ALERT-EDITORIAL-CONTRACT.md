@@ -15,7 +15,7 @@ change pour lui, action éventuelle, limites, puis le lien. Rien de retenu = auc
 |---|---|---|
 | Collecte, lecture effective, extrait, dates, empreinte | code Codex | enveloppe § 2 |
 | Doublons, fraîcheur, périmètre, sujets en pause, injection évidente | code Codex | `skip` / `review` / sélection requise |
-| Pertinence (keep / review / skip) | Jev `alerts.pertinence.mac-v1` | décision + confiance, **jamais de texte** |
+| Pertinence (keep / review / skip) | Jev `alerts.pertinence.mac-v3` (contexte v6) | décision + confiance, **jamais de texte** |
 | Synthèse d'un élément retenu | `ivan_alert_synthesize` (System, complétion isolée sans outils ni historique) | brief § 3 |
 | Contrôles (citations, chiffres, longueurs) puis rendu | code Codex | message § 4 |
 | Silence / digest / immédiat, envoi, reçu | code Codex | § 7 |
