@@ -6,6 +6,8 @@ dossier temporaire Claude ; aucun fichier Codex, planning ou réglage actif modi
 `node --test services/alerts-runtime/test/*.test.js` → **66/66**.
 Cette note **remplace** les constats 3 et 4 de `REVIEW-CLAUDE-K07-2026-10-05.md` (anciens
 commits) : tous deux sont corrigés à ce SHA (voir « Conforme »).
+Précision acceptée (revue Codex K04–K07) : l'ancien constat 4 ne bloquait qu'une **répétition** dans
+le même dossier de réglages ; deux mises à jour successives distinctes étaient déjà actives.
 
 ## Constats
 
@@ -18,6 +20,9 @@ commits) : tous deux sont corrigés à ce SHA (voir « Conforme »).
    tôt ou tard : la collecte s'arrête alors entièrement. Proposition : un `review` plus ancien que la
    fenêtre de fraîcheur passe à un état terminal `expired_review` (archivable, compté dans la
    santé) ; `delivery_unknown` reste compté et jamais archivé.
+   État : le guide Codex non publié `MAC-ALERTS-RECOVERY.md` annonce que « les revues devenues
+   anciennes quittent la file active » (modification de `ledger.js` non commitée). À revérifier sur
+   le prochain SHA poussé ; à `23cf0be` le défaut est présent.
 2. **Dédoublonnage par preuve trop strict sur le titre — moyen.** L'empreinte vaut
    `sha256([topic, jour, titre normalisé NFKC/espaces, extrait])`. Sonde : même extrait lu par
    deux producteurs. Alias `/` final, même titre → dédoublonné. En revanche, une apostrophe
