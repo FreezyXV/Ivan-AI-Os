@@ -1,5 +1,5 @@
 import {validateItem,PILOT_CONTEXT} from '../../../services/alerts-runtime/src/context.js';
-import {synthesisPrompt,parseBrief} from '../../../services/alerts-runtime/src/synthesis.js';
+import {synthesisPrompt,parseBrief,bindEvidence} from '../../../services/alerts-runtime/src/synthesis.js';
 import {renderBrief} from '../../../services/alerts-runtime/src/pipeline.js';
 const output=details=>({content:[{type:'text',text:JSON.stringify(details)}],details});
 export function createSynthesisTool(context,subagent){
@@ -12,7 +12,7 @@ export function createSynthesisTool(context,subagent){
    if(item.sourceStatus!=='read'||!PILOT_CONTEXT.active.includes(item.topic))throw Error();
    stage='COMPLETE';const result=await subagent.complete({agentId:'ivan-system',message:synthesisPrompt(item),
      extraSystemPrompt:'Tu produis uniquement un JSON de synthèse de la source fournie. Aucun outil, contexte privé ou pouvoir d’action.',timeoutMs:60000,signal});
-   stage='PARSE';const brief=parseBrief(result.text);renderBrief(item,brief);
+   stage='PARSE';const brief=bindEvidence(item,parseBrief(result.text));renderBrief(item,brief);
    return output({status:'READY',execution:'native-isolated-completion',brief});
   }catch(error){
    const reason=String(error?.message??'UNKNOWN').replace(/\bBearer\s+\S+|[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,240);

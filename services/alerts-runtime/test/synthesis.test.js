@@ -21,3 +21,13 @@ test('native RPC requires a checked plugin result and records one call without f
  const bad=createNativeSynthesis({runImpl:async()=>({stdout:'{"ok":false}'})});await assert.rejects(bad(item),{code:'ALERT_SYNTHESIS_UNAVAILABLE'});
  const exit=createNativeSynthesis({runImpl:async()=>{throw Object.assign(Error(),{code:1});}});await assert.rejects(exit(item),{code:'ALERT_SYNTHESIS_UNAVAILABLE'});
 });
+test('indexed evidence supplies the exact quote; invalid indices and invented numbers never become ready',async()=>{
+ const source={...item,excerpt:'Le service plafonne les appels à 10 euros. La reprise conserve le compteur.'};
+ let response={goal:'system',facts:[{summary:'Le plafond est de 10 euros.',evidence_index:0}],utility:'Surveiller les coûts.',action:'Vérifier le plafond.'};
+ const tool=createSynthesisTool({agentId:'ivan-system'},{complete:async()=>({text:JSON.stringify(response)})});
+ const good=(await tool.execute('test',{item:source})).details;
+ assert.equal(good.status,'READY');assert.equal(good.brief.facts[0].quote,'Le service plafonne les appels à 10 euros.');
+ response.facts[0].evidence_index=99;assert.equal((await tool.execute('test',{item:source})).details.status,'UNAVAILABLE');
+ response.facts[0]={summary:'Le plafond est de 100 euros.',evidence_index:0};
+ assert.equal((await tool.execute('test',{item:source})).details.status,'UNAVAILABLE');
+});
