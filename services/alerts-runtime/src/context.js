@@ -1,10 +1,11 @@
 import { PILOT_STATE } from '../../../shared/pilot-state.mjs';
 // Public, compact operator context. No profile, portfolio or caller policy.
 export const PILOT_CONTEXT = Object.freeze({
-  version: 'mac-alerts-20261005-v4',
+  version: 'mac-alerts-20261005-v5',
   active: Object.freeze(['business', 'finance', 'engineering', 'system']),
   deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.deferredProjects]),
   priorities: Object.freeze(['system','engineering','business','finance']),
+  stack: Object.freeze(['Mac','Node.js','TypeScript','Next.js','Git','Codex','Claude Code','OpenClaw','Jev','TypeSafe','Obsidian','Telegram']),
   facts: Object.freeze([
     'Le pilote fonctionne sur un Mac ; aucun serveur permanent n’est activé.',
     'Codex, Claude Code et OpenClaw collaborent avec Git et une mémoire Obsidian.',
@@ -21,7 +22,7 @@ export const PILOT_CONTEXT = Object.freeze({
     system: 'Fiabiliser le pilote Mac et réduire les coûts, doublons et interruptions.'
   })
 });
-export const ALERT_SELECTION_QUESTION='alerts.pertinence.mac-v2';
+export const ALERT_SELECTION_QUESTION='alerts.pertinence.mac-v3';
 export class AlertError extends Error { constructor(code) { super(code); this.code = code; } }
 export const fail = code => { throw new AlertError(code); };
 export function canonicalUrl(value) {
