@@ -1,12 +1,15 @@
 import { PILOT_STATE } from '../../../shared/pilot-state.mjs';
 // Public, compact operator context. No profile, portfolio or caller policy.
 export const PILOT_CONTEXT = Object.freeze({
-  version: 'mac-alerts-20261005-v3',
+  version: 'mac-alerts-20261005-v4',
   active: Object.freeze(['business', 'finance', 'engineering', 'system']),
   deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.deferredProjects]),
+  priorities: Object.freeze(['system','engineering','business','finance']),
   facts: Object.freeze([
     'Le pilote fonctionne sur un Mac ; aucun serveur permanent n’est activé.',
     'Codex, Claude Code et OpenClaw collaborent avec Git et une mémoire Obsidian.',
+    'Ivan construit une entreprise virtuelle : agents coordonnés, skills, mémoire et bots Telegram doivent fonctionner ensemble de façon fiable.',
+    'Le besoin immédiat est un système utile sur Mac : résumés autonomes avec faits, utilité concrète et prochaine étape proportionnée, sans devoir ouvrir chaque lien.',
     'Les services payants sont mesurés ; Jev partage un plafond mensuel.',
     'Les projets web utilisent par défaut Next.js et TypeScript ; les services sont en Node.js.',
     'La veille Finance porte sur les données publiques BCE, inflation et taux, sans portefeuille.'
@@ -18,6 +21,7 @@ export const PILOT_CONTEXT = Object.freeze({
     system: 'Fiabiliser le pilote Mac et réduire les coûts, doublons et interruptions.'
   })
 });
+export const ALERT_SELECTION_QUESTION='alerts.pertinence.mac-v2';
 export class AlertError extends Error { constructor(code) { super(code); this.code = code; } }
 export const fail = code => { throw new AlertError(code); };
 export function canonicalUrl(value) {

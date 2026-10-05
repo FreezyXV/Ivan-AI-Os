@@ -1,5 +1,5 @@
 import { readDecisionToken } from '../../jev-gateway/src/runtime-token.js';
-import { PILOT_CONTEXT, fail, validateItem, suspiciousSource } from './context.js';
+import { PILOT_CONTEXT, ALERT_SELECTION_QUESTION, fail, validateItem, suspiciousSource } from './context.js';
 
 export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
   token = readDecisionToken(), timeoutMs = 10000, fetchImpl = fetch } = {}) {
@@ -26,7 +26,7 @@ export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
       });
       if (!response.ok) fail('ALERT_SELECTION_UNAVAILABLE');
       const result = await response.json();
-      if (result?.question !== 'alerts.pertinence.mac-v1' ||
+      if (result?.question !== ALERT_SELECTION_QUESTION ||
           !['keep', 'review', 'skip'].includes(result.decision) ||
           !['jev', 'deterministic-kernel'].includes(result.provider) ||
           !Number.isFinite(result.confidence) || result.confidence < 0 || result.confidence > 1 ||

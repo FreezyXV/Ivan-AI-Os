@@ -79,10 +79,10 @@ test('the production adapter rejects malformed probabilities rather than silentl
   const malformed=[null,[],{keep:0.99,review:0.99,skip:0.99},{keep:0.8,review:0.2},{keep:0.8,review:0.1,skip:-0.1}];
   for(const probabilities of malformed){
     const select=createJevSelector({token:'synthetic-token-'.repeat(4),fetchImpl:async()=>({ok:true,json:async()=>({
-      ...receipt(0.9),question:'alerts.pertinence.mac-v1',probabilities})})});
+      ...receipt(0.9),question:'alerts.pertinence.mac-v2',probabilities})})});
     await assert.rejects(select(item('malformed'),PILOT_CONTEXT),{code:'ALERT_SELECTION_UNAVAILABLE'});
   }
   const legacy=createJevSelector({token:'synthetic-token-'.repeat(4),fetchImpl:async()=>({ok:true,json:async()=>({
-    ...receipt(0.9),question:'alerts.pertinence.mac-v1'})})});
+    ...receipt(0.9),question:'alerts.pertinence.mac-v2'})})});
   assert.deepEqual(await legacy(item('legacy'),PILOT_CONTEXT),receipt(0.9),'a genuinely absent field stays compatible');
 });

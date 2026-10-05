@@ -28,7 +28,7 @@ async function gateway(t,options){
 test('selection only accepts bounded public evidence and the fixed current context',()=>{
   assert.deepEqual(validateAlertSelection(payload),payload);
   for(const patch of [{scope:'private'},{profile:'synthetic private context'},{context_version:'old'},
-    {goals:['caller policy']},{excerpt:'x'.repeat(1201)},{title:'x'.repeat(201)},
+    {goals:['caller policy']},{context_version:'mac-alerts-20261005-v3'},{excerpt:'x'.repeat(1201)},{title:'x'.repeat(201)},
     {excerpt:'contact@example.org with a long source excerpt'},
     {excerpt:`apikey_${'x'.repeat(30)} and further text`},{topic:'unknown'}])
     assert.throws(()=>validateAlertSelection({...payload,...patch}),{code:'INVALID_ALERT_SELECTION_INPUT'});
