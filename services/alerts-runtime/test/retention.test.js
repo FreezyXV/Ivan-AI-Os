@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,rmSync,readFileSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,rmSync,readFileSync,writeFileSync,mkdirSync,cpSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {openLedger} from '../src/ledger.js';
@@ -32,7 +34,9 @@ test('terminal history does not exhaust the active queue and archival keeps rece
  assert.equal(ledger.archiveTerminal().archived,0);
  const archive=path.join(dir,'archive',restored.archive.filename),bytes=readFileSync(archive);
  writeFileSync(archive,Buffer.from('damaged'));
- assert.throws(()=>ledger.get(first.id),{code:'ALERT_ARCHIVE_UNAVAILABLE'});writeFileSync(archive,bytes);
+ assert.throws(()=>ledger.get(first.id),{code:'ALERT_ARCHIVE_UNAVAILABLE'});
+ assert.equal(ledger.ingest(source()).state,'delivered');assert.equal(ledger.ingest(source('https://example.net/offline-archive')).id,first.id);
+ writeFileSync(archive,bytes);
  assert.equal(ledger.get(second.id).state,'skipped');
 });
 test('uncertain sends, active work and reviews are retained intact instead of archived or reopened',t=>{
@@ -59,4 +63,31 @@ test('archival can run in successive batches and opening another connection pres
   assert.equal(other.ingest({...source('https://example.net/one'),title:'one'}).state,'skipped');
   assert.equal(other.list('skipped').length,2);assert.equal(other.archiveTerminal().archived,0);
  }finally{other.close();}
+});
+test('stale uncertainty leaves the active queue with its original opinion intact',t=>{
+ const {ledger,advance}=fixture(t);const {id}=ledger.ingest(source()),job=ledger.claim();
+ const selection={decision:'keep',confidence:0.26,provider:'jev'};
+ ledger.finish(id,job.owner,{state:'review',reason:'SELECTION_UNCERTAIN',brief:{selection}});
+ assert.equal(ledger.settleStaleReviews().expired,0);advance(4);
+ assert.equal(ledger.settleStaleReviews().expired,1);assert.equal(ledger.get(id).state,'expired_unsent');
+ assert.equal(ledger.get(id).reason,'SELECTION_UNCERTAIN');assert.deepEqual(ledger.get(id).brief.selection,selection);
+ assert.equal(ledger.claim(),null);
+});
+test('restoring a real backup preserves archived proof and reconciles an interrupted send without replay',t=>{
+ const {ledger,advance,dir}=fixture(t);const first=ledger.ingest(source()),job=ledger.claim();
+ ledger.finish(job.id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Une preuve conservée.'}});
+ const sent=ledger.beginDelivery(first.id);ledger.finishDelivery(first.id,sent.owner,{delivered:true,messageId:'one'});
+ advance(31);ledger.archiveTerminal();
+ const unknown=ledger.ingest({...source('https://example.org/uncertain'),title:'Une autre annonce'}),other=ledger.claim();
+ ledger.finish(other.id,other.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Envoi interrompu.'}});ledger.beginDelivery(unknown.id);
+ const backup=path.join(dir,'backup'),command=fileURLToPath(new URL('../../../scripts/backup-alert-state.py',import.meta.url));
+ const result=spawnSync('python3',[command,'--source',dir,'--output',backup],{encoding:'utf8'});
+ assert.equal(result.status,0,result.stdout+result.stderr);
+ const restored=path.join(dir,'restored');mkdirSync(restored,{mode:0o700});cpSync(path.join(backup,'alerts.sqlite'),path.join(restored,'alerts.sqlite'));
+ cpSync(path.join(backup,'archive'),path.join(restored,'archive'),{recursive:true});
+ const clone=openLedger(path.join(restored,'alerts.sqlite'),{now:()=>Date.parse('2026-12-05T10:00:00Z')});
+ try{assert.equal(clone.reconcile(),1);assert.equal(clone.get(unknown.id).state,'delivery_unknown');assert.equal(clone.claim(),null);
+  assert.equal(clone.get(first.id).brief.message,'Une preuve conservée.');assert.equal(clone.get(first.id).receipt.messageId,'one');
+  assert.equal(clone.ingest(source('https://example.net/repost')).id,first.id);
+ }finally{clone.close();}
 });

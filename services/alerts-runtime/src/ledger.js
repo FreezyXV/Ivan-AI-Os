@@ -52,6 +52,10 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
     ingest(raw){const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');return tx(()=>{
+      // A tombstone suffices to suppress a replay, even if an archive disk is
+      // temporarily unavailable. Never reopen a delivered source to reconstruct it.
+      const tombstone=db.prepare('SELECT state FROM alerts WHERE id=? AND archive IS NOT NULL').get(id);
+      if(tombstone)return {id,duplicate:true,state:tombstone.state};
       const prior=get(id);if(prior){
         // A feed-only record must be able to acquire actual page evidence later.
         // Never alter a lease, an evaluated read source or an attempted send.
@@ -61,7 +65,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
           if(equivalent&&equivalent.id!==id){
             db.prepare("UPDATE alerts SET item=?,state='skipped',reason='DUPLICATE_EVIDENCE',brief=?,updated=? WHERE id=?")
               .run(JSON.stringify(item),JSON.stringify({duplicateOf:equivalent.id}),now(),id);
-            return {id:equivalent.id,duplicate:true,state:get(equivalent.id).state,deduplication:'read-evidence'};
+            return {id:equivalent.id,duplicate:true,state:db.prepare('SELECT state FROM alerts WHERE id=?').get(equivalent.id).state,deduplication:'read-evidence'};
           }
           db.prepare("UPDATE alerts SET item=?,state='pending',reason=NULL,brief=NULL,updated=? WHERE id=?")
             .run(JSON.stringify(item),now(),id);
@@ -105,6 +109,15 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         if(state==='expired_unsent')expired++;else reviewed++;
       }
       return {expired,reviewed};
+    });},
+    settleStaleReviews(at=now()){return tx(()=>{
+      let expired=0;
+      for(const row of db.prepare("SELECT id,item FROM alerts WHERE state='review'").all()){
+        if(prefilter(JSON.parse(row.item),{now:at}).reason!=='SOURCE_STALE')continue;
+        // Keep the original review reason, evidence and Jev receipt for audit.
+        db.prepare("UPDATE alerts SET state='expired_unsent',updated=? WHERE id=?").run(now(),row.id);expired++;
+      }
+      return {expired};
     });},
     list(state,limit=100){if(!['pending','review','ready','delivered','skipped','delivery_unknown','expired_unsent'].includes(state)||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_LIST_INVALID');
       return db.prepare('SELECT id FROM alerts WHERE state=? ORDER BY created,id LIMIT ?').all(state,limit).map(r=>get(r.id));},

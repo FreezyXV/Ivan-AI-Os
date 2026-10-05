@@ -1,53 +1,35 @@
-## État courant — pipeline Mac v3 et sorties natives mesurées (2026-10-05)
+## État courant — livraison et qualification Mac (2026-10-05)
 
-Cette section remplace les états historiques suivants. Codex travaille sur
-agent/codex/alerts-integration, PR #57 sur #48, elle-même sur #47. CI du commit
-9136f58 : 11/11 verte. Rien n'est fusionné dans cette session.
-Lire MAC-ALERT-ORCHESTRATOR.md, PROJECT-CHECKLISTS.md,
-HANDOFF-CLAUDE-ALERTS-2026-10-05.md, REVIEW-CODEX-K04-K07-2026-10-05.md et
-ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md ; poursuivre le projet entier.
+Codex : agent/codex/alerts-integration, PR #57 sur #48, elle-même sur #47.
+Dernier commit testé en CI : 23cf0be, 11/11 ; aucune fusion de cette session.
+Lire PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
+CLAUDE-NEXT-ACTIONS-2026-10-05.md et ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md.
+Le relais couvre le projet entier ; les sections suivantes sont historiques.
 
-Actifs : Jev 4311, plugin System et planning Mac sur orchestrator-9136f58,
-contexte mac-alerts-20261005-v3. Runner Mac copié sans changement de alerts-59fbd7e
-(provenance cc1d2a5) ; jeton/Trousseau/budget/file conservés. La bascule 9136f58
-n'a consommé aucun appel Jev. Sentinelle distant reste désactivé ; un seul planning.
-Worker launchd : deux passages, sortie 0 ; idle entre passages est normal.
-Secrétaire, mémoire et registre live conservés ; Career reste absent des actifs.
+Actifs vérifiés : worker et plugin System 23cf0be, Jev 4311 sur 9136f58,
+contexte mac-alerts-20261005-v3. Runner Mac conservé de alerts-59fbd7e.
+File/budget/Trousseau/Secrétaire conservés ; Sentinelle distant arrêté, un planning.
+Source suivante : expiration des reviews anciennes, rétention non bloquante,
+sauvegarde/restauration avec archives et hook Codex ; activation worker à vérifier.
+Tests affectés : 91 Node alertes/scripts/hook, 60 gateway, 21 managers,
+17 Python, soit 189. CI de cette nouvelle source à confirmer après push.
 
-Corrigés et testés : digest paginé sans abandon silencieux, lecteur Next.js et
-passages, fraîcheur par source, chiffres français, extrait entier 1200 pour Jev,
-collecte des trois releases avec erreurs isolées, mise à jour répétable et rollback.
-Plan source : compatibility/runtimes respectés, sept rôles conservés, Engineering
-préparé sur Codex/Claude. Aucun manager live supprimé par ce changement source.
-Diagnostic : raisons du backlog et prochaine action, expiration non envoyée incluse.
-Tests affectés : 75 Node alertes/scripts, 60 gateway, 21 managers, 15 Python = 171.
+File vérifiée : 14 review, 3 skipped, aucune livraison de production retenue.
+Jev : 262 appels, 0,005123 EUR estimé, plafond 10 EUR, usage inconnu 0.
+Next.js réel v3 : keep 0,26 → review ; aucune génération/livraison forcée.
+Référence v2 : 8/12 correctes, dont 3/7 Jev ; ne pas réutiliser comme jeu indépendant.
+Huit sorties natives disponibles : quatre current, quatre compact-v1 éditoriales.
+Compact : 27–33 % de caractères de prompt en moins ; aucun gain de tokens facturés,
+de rapidité ou de qualité prouvé. Production current conservée ; zéro Telegram/Jev.
 
-Claude : #49 @277588c5 corrigée, 12/12 hooks ; #52 pause conforme ; #53 47/47 ;
-#54 45/45 et parser Kraken compatible ; exemple sur la contribution énergétique
-à corriger ; #55 51/51 et protocole K06 ; #56 revue utile, causes traitées côté Codex.
-Archives de revue isolées, checkout Claude intact. Source proposée != activation.
-
-Référence Jev v2 déjà exécutée UNE fois : 14 cas, 12 sélections mesurables,
-8 correctes, dont 3/7 Jev. Le jeu ne peut plus être une nouvelle validation indépendante.
-Après v3 : source Next.js réellement retéléchargée, vrai Jev keep 0,26 → review
-selon le seuil conservé ; un appel, zéro génération/livraison, file de test isolée.
-Ce diagnostic ne prouve pas un parcours automatique retenu.
-
-Quatre sorties natives K06 réelles : 950–1146 caractères, 10,4–42,5 s,
-contrôles Claude OK ; zéro nouvelle sélection et zéro Telegram. Fixtures de capture
-publique, dont I12 synthétique ; aucune prétention de lecture fraîche de ce corpus.
-Coût/tokens natifs indisponibles. Variante compacte et notation indépendante encore ouvertes.
-À 14:11 UTC : 262 appels Jev, 0,005123 EUR estimé, plafond 10 EUR, usage inconnu 0.
-File production : 14 review, 3 skipped ; dernière livraison de production absente.
-Finance réel : 7 indicateurs, erreur 0, seuil 0, 1899 ms ; Business : doublon lu,
-nouveau signal 0, 5 ms. L'historique des collectes dégradées est conservé.
-Preuves : ~/.ivan-ai-os/mac-alerts-9136f58/ et référence mac-alerts-2ab2042/.
-
-Suite : pertinence Jev sur un NOUVEAU jeu indépendant, retour K06 sur les sorties,
-A/B si justifié ; aucun seuil abaissé pour fabriquer un reçu. Intégration source des
-PR relues après GO, parcours réellement retenu, urgence liée à l'inventaire,
-rétention/doublons sémantiques, Engineering/System et reprise réelle après sommeil.
-Knowledge/Anakalypto à la fin ensemble ; Career en pause, OVH différé.
+Claude #49 corrigée installée en gate, permissions projet conservées, 12 tests.
+#50–#56 relues, pas fusionnées ici. #54 : déduction énergétique à corriger.
+Mission précise Claude dans CLAUDE-NEXT-ACTIONS-2026-10-05.md : noter les huit
+sorties, nouveau jeu disjoint, revue du HEAD #57 ; pas de calibration dupliquée.
+Hook Codex source : interface native découverte, statut untrusted ; pas activé.
+Sauvegarde privée réelle mac-alerts-23cf0be/state-backup-20261005 restaurée
+sur copie ; archives et envoi interrompu testés. Sommeil réel reste à mesurer.
+Career en pause, OVH différé, Knowledge/Anakalypto en dernière étape ensemble.
 
 ## Historique — sélection active et Sentinelle retrouvé (2026-10-05)
 

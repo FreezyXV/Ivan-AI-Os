@@ -18,20 +18,22 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ## Avancement du 5 octobre — intégration des alertes
 
-PR #57, runtime Mac actif @9136f58, contexte v3. CI 11/11 ; 171 tests affectés passent.
+PR #57 : worker/plugin actifs @23cf0be, gateway @9136f58, contexte v3.
+CI 23cf0be : 11/11. Livraison suivante : 189 tests affectés ; CI à confirmer.
 Planning exclusif, workflow Sentinelle distant désactivé. Digest paginé, lecture par
 passages, erreurs de releases isolées, reprise/idempotence d'installation vérifiées.
 Jev reçoit les 1200 caractères lus ; confiance de livraison conservée à 0,75.
 C10 reste ouvert : source réelle → vrai Jev keep 0,26 → review, aucun message forcé.
 Le reçu 58 antérieur est un test de transport avec tri simulé ; ce n'est pas C10.
-C08/K06 : quatre sorties natives isolées mesurées, 950–1146 caractères,
-10,4–42,5 s, contrôles Claude OK ; fidélité/utilité indépendante et A/B encore ouverts.
+C08/K06 : huit sorties natives isolées, quatre par variante ; contrôles Claude OK.
+Prompt compact : 27–33 % de caractères en moins. Qualité indépendante et tokens
+facturés inconnus ; aucune accélération démontrée. Production current conservée.
 C14 : diagnostic enrichi avec les raisons du backlog et la prochaine action.
 C18 : compteur partagé 262 appels / 0,005123 EUR estimé ; coût prose non exposé.
 C15 : plan source respectant runtimes/compatibility, Engineering externe conservé ;
 son agent live reste intact, pas d'usine native prétendument exécutée.
 Claude a proposé #50–#56. Revue détaillée : REVIEW-CODEX-K04-K07-2026-10-05.md.
-#49 est corrigée et relue (12/12), source non activée. Exemple Finance #54 à corriger.
+#49 corrigée et installée en gate (12/12), permissions conservées. Exemple #54 à corriger.
 Les cases finales restent ouvertes lorsqu'une preuve source/test ne remplit pas
 le critère de qualité ou d'usage réel défini ci-dessous.
 
@@ -68,7 +70,9 @@ le critère de qualité ou d'usage réel défini ci-dessous.
   fraîcheur/périmètre, reprise après panne et réservation des tâches.
   Fin : preuves de concurrence, de redémarrage et de doublon interproducteur.
   Source testée en #48 ; sélection/synthèse/envoi bornés, reçus Jev conservés.
-  Intégration aux producteurs réels et rétention encore ouvertes.
+  Capacité fondée sur les tâches actives ; doublons de preuve exacte lus avant Jev.
+  Archives terminales, expiration des reviews anciennes et restauration sur copie
+  testées. La qualification sur les producteurs réels reste ouverte.
   Régression corrigée : une entrée RSS non lue acquiert sa preuve de page sans
   perdre le dédoublonnage ni rouvrir un envoi incertain.
 - [ ] **C07** : sélection Jev sur un contexte public compact ; pas de Jev pour
@@ -127,6 +131,9 @@ le critère de qualité ou d'usage réel défini ci-dessous.
   puis adapter les mêmes règles que Claude si possible. Fin : preuve native ;
   si aucune interface existe, documenter la limite et le contrôle alternatif,
   sans annoncer un hook fictif ni contourner les approbations existantes.
+  Interface PreToolUse native découverte dans Codex 0.160.0 ; adaptateur source
+  testé (4 cas), règles Claude réutilisées. Découverte untrusted, pas activé.
+  ask est non supporté : traduit en blocage, jamais en autorisation.
 - [ ] **C17** : contrôle proportionné des outils OpenClaw, observation et
   décisions humaines liées à l'action exacte quand nécessaire.
   Fin : pilote ciblé mesurant blocages utiles, faux refus et latence ;
@@ -159,6 +166,8 @@ le critère de qualité ou d'usage réel défini ci-dessous.
   nombre de tests.
 - [ ] **C24** : guide d'exploitation Mac, diagnostic, sauvegarde/restauration,
   arrêt/reprise et mises à jour vérifiés avec Claude K09.
+  Guide MAC-ALERTS-RECOVERY.md, sauvegarde SQLite/WAL et archives vérifiées ;
+  restauration sur copie sans renvoi d’un envoi interrompu. Revue K09 ouverte.
 - [ ] **C25** : bilan final et reste à faire explicite : livré, limité, différé.
   Career réactivable sur demande ; OVH réévalué seulement après le bilan Mac.
 
@@ -167,11 +176,12 @@ le critère de qualité ou d'usage réel défini ci-dessous.
 K01–K03 : PR #50 relue, contrat repris au runtime ; intégration finale ouverte.
 K05 : propositions #51–#53 relues ; raccord capability fait côté Codex en source.
 K04 : #54 relue, parser compatible, déduction économique de l'exemple à qualifier.
-K06 : #55 relue, quatre sorties automatiques remises ; noter leur qualité puis
+K06 : #55 relue, huit sorties automatiques remises ; noter leur qualité puis
 construire un nouveau jeu indépendant. Ne pas refaire la référence déjà payée.
 K07 : #56 relue, défauts de collecte/installation traités et testés côté Codex.
 K08 attend la dernière étape ; K09/K10 peuvent préparer la clôture après ces preuves.
-Aucune PR Claude fusionnée ni sa configuration live modifiée dans cette session.
+Aucune PR Claude fusionnée ici. Installation privée du hook #49 corrigé uniquement ;
+aucune modification de ses sources ou de son worktree.
 
 ### 1. Contrat éditorial et évaluations — commencer maintenant
 

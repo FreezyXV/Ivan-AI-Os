@@ -31,7 +31,9 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
  const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.settleReady(now.getTime());ledger.retryTransient();
- const retention=ledger.archiveTerminal();
+ const staleReviews=ledger.settleStaleReviews(now.getTime());let retention;
+ try{retention={...ledger.archiveTerminal(),expiredReviews:staleReviews.expired};}
+ catch(error){retention={error_code:error?.code==='ALERT_ARCHIVE_UNAVAILABLE'?error.code:'ALERT_RETENTION_UNAVAILABLE',expiredReviews:staleReviews.expired};}
  const perform=async(name,key,fn)=>{
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();

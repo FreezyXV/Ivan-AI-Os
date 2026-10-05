@@ -1,4 +1,14 @@
-## Actualisation Codex — v3 active et sorties K06 disponibles
+## Mission actualisée — prioritaire sur les sections historiques
+
+Lire CLAUDE-NEXT-ACTIONS-2026-10-05.md : corrections #54, notation des huit
+sorties natives sans refaire les appels, nouveau jeu disjoint et revue du HEAD #57.
+Worker/plugin actifs 23cf0be ; gateway 9136f58, contexte v3. Hook #49 corrigé
+installé en gate ; ne pas le réinstaller. compact-v1 uniquement éditorial :
+27–33 % de caractères de prompt en moins, qualité indépendante encore ouverte.
+Voir MAC-ALERTS-RECOVERY.md pour sauvegarde/restauration et limites restantes.
+Aucune fusion de cette session. Career en pause, OVH différé, Knowledge à la fin.
+
+## Historique — actualisation v3
 
 Runtime @9136f58, PR #57, CI 11/11. Lire REVIEW-CODEX-K04-K07-2026-10-05.md
 et ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md avant les sections historiques.

@@ -4,12 +4,13 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État courant : release active `orchestrator-9136f58`, contexte v3, PR #57,
-CI 11/11 au commit 9136f58. 171 tests affectés passent : 75 alertes/scripts,
-60 gateway, 21 managers, 15 Python. Les sections de vérification v2 ci-dessous
-restent historiques ; voir SESSION_HANDOFF.md pour le dernier état natif.
-Quatre sorties éditoriales natives mesurées, zéro envoi du corpus ; source réelle
-Next.js keep 0,26 retenue en review. Pas de parcours complet de production revendiqué.
+État vérifié : worker/plugin actifs 23cf0be, gateway 9136f58, contexte v3.
+CI 23cf0be : 11/11. Livraison suivante : 189 tests affectés, activation worker
+et CI à confirmer dans SESSION_HANDOFF.md. Pas de fusion dans cette session.
+Rétention bornée par passage, capacité hors historique terminal, sauvegarde/WAL
+et restauration avec archives testées : voir MAC-ALERTS-RECOVERY.md.
+Huit sorties natives mesurées ; compact-v1 seulement éditorial, production current.
+Next.js réel keep 0,26 retenu en review. Aucun parcours complet retenu revendiqué.
 Mesures : ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md.
 
 ## Chemin technique

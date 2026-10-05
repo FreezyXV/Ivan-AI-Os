@@ -1,6 +1,6 @@
 # Mesure Codex — sorties éditoriales natives
 
-Source et services : 9136f58, contexte mac-alerts-20261005-v3.
+Référence current : 9136f58 ; variante compacte : 23cf0be. Contexte v3.
 Corpus Claude PR #55 @ba9fbe80, fixtures I01/I02b/I12/I13, capturées par Claude.
 Commandes : generate-alert-editorial-samples.mjs --live <corpus> <sorties privées>,
 puis evaluer.mjs noter <sorties privées> depuis l'archive isolée de la PR #55.
@@ -28,7 +28,24 @@ pas d'incident attribué à l'installation dans le scénario I12. I13 recommande
 vingt répétitions d'après le benchmark : rendre cette action proportionnée au
 workflow mesuré, plutôt que transformer un protocole d'article en seuil universel.
 La notation indépendante fidélité/utilité/action/effort reste à Claude/Ivan.
-Variante compacte non exécutée : aucun gain A/B ou qualité préservée revendiqués.
+Variante compacte exécutée une fois sur les mêmes quatre fixtures, sans label
+fourni au modèle, sans Jev et sans Telegram. Sorties privées :
+~/.ivan-ai-os/mac-alerts-23cf0be/editorial-samples-compact.jsonl.
+
+| Cas | Durée compacte | Prompt, caractères | Message, caractères | Réduction prompt |
+|---|---:|---:|---:|---:|
+| I01 | 13 002 ms | 2964 | 1133 | 27,2 % |
+| I02b | 15 088 ms | 2656 | 1323 | 29,6 % |
+| I12 synthétique | 25 779 ms | 1991 | 953 | 32,9 % |
+| I13 | 40 813 ms | 2989 | 1331 | 27,8 % |
+
+Contrôles mécaniques Claude : zéro échec pour chaque sortie compacte. Huit
+complétions natives au total ; ne pas répéter les appels pour remplir le protocole.
+Le prompt compact précise aussi la proportionnalité des actions : la comparaison
+ne mesure donc pas seulement une compression. Un passage par cas ne démontre
+ni accélération, ni qualité préservée, ni économie de tokens facturés. La notation
+indépendante reste ouverte. compact-v1 est réservé à editorial-evaluation ; le
+mode de production reste current.
 
 Essai distinct, source Next.js réellement retéléchargée après correctif v3 :
 4315 caractères lus, 1193 dans l'extrait ; vrai Jev keep 0,26, puis review du pipeline.
