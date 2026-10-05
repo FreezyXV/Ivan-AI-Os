@@ -185,7 +185,12 @@ class ArticleParser(HTMLParser):
                   (self.host == "nextjs.org" and bool({"prose", "next-prose"}.intersection(classes))) or
                   (self.host == "news.ycombinator.com" and "toptext" in classes))
         self.active = self.active or starts
-        self.ignored = self.ignored or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes
+        # HF's blog-content also contains its page heading and controls. Exclude
+        # structural metadata, not matching words from actual article paragraphs.
+        hf_chrome = self.host == "huggingface.co" and (
+            tag in {"header", "time", "h1"} or
+            (tag == "a" and attrs.get("href", "").rstrip("/") == "/blog"))
+        self.ignored = self.ignored or hf_chrome or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes
         if self.active and tag in {"p", "li", "h1", "h2", "h3", "blockquote", "div"}: self.parts.append("\n")
         if self.host == "news.ycombinator.com" and tag == "span" and "age" in classes and self.page_date is None:
             self.page_date = attrs.get("title", "").split(" ")[0]
@@ -227,7 +232,7 @@ def read_article(url, *, published_at, title, topic, producer, fetcher=fetch_sou
             "sourceStatus": "read", **excerpt_evidence(text)},
             "sourceReceipt": {"url": url, "readAt": observed, "publicationPrecision": "feed-and-page-day",
             "publishedDay": published_at[:10], "responseSha256": hashlib.sha256(body).hexdigest(),
-            "bodyBytes": len(body), "extractor": "public-article-v1", "coverageVersion": "passages-v2"}}
+            "bodyBytes": len(body), "extractor": "public-article-v1", "coverageVersion": "passages-v3"}}
 
 
 def read_source(url, *, topic="system", producer="sentinelle-pilot", fetcher=fetch_source, now=None):

@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {openLedger} from '../src/ledger.js';
 import {processNext} from '../src/pipeline.js';
+import {PILOT_CONTEXT} from '../src/context.js';
 import {runCycle} from '../../../scripts/mac-alerts-cycle.mjs';
 const at=Date.parse('2026-10-05T18:00:00Z');
 const item=n=>({producer:'sentinelle',scope:'public',topic:'system',url:`https://example.org/native/${n}`,title:'Reprise mesurée du service',
@@ -55,7 +56,7 @@ test('an invalid model output is held for review without spending a transient-re
  assert.equal(ledger.retryTransient({minDelayMs:0}),0);
 });
 test('qualified native editorial mode requires the recorded Jev keep before any completion and preserves both decisions',async t=>{
- const {ledger}=fixture(t);let native=0;const select=async()=>({decision:'keep',confidence:0.9,provider:'jev',context_version:'mac-alerts-20261005-v5',request_id:'00000000-0000-4000-a000-000000000001'});
+ const {ledger}=fixture(t);let native=0;const select=async()=>({decision:'keep',confidence:0.9,provider:'jev',context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000001'});
  ledger.ingest(item('borderline'));
  const held=await processNext({ledger,now:at,assessmentAfterSelection:true,select:async()=>({decision:'review',confidence:0.9}),assess:async()=>{native++;assert.fail('uncertain Jev must not invoke prose');}});
  assert.equal(held.reason,'SELECTION_UNCERTAIN');assert.equal(native,0);
@@ -65,7 +66,7 @@ test('qualified native editorial mode requires the recorded Jev keep before any 
 });
 test('qualified mode caches the paid decision across a native outage and respects the cycle model limits',async t=>{
  const {ledger,dir}=fixture(t);ledger.ingest(item('native-down'));let paid=0;
- const select=async()=>{paid++;return{decision:'keep',confidence:0.9,provider:'jev',context_version:'mac-alerts-20261005-v5',request_id:'00000000-0000-4000-a000-000000000002'};};
+ const select=async()=>{paid++;return{decision:'keep',confidence:0.9,provider:'jev',context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000002'};};
  const failed=await processNext({ledger,now:at,assessmentAfterSelection:true,select,assess:async()=>{throw Error('temporary outage');}});
  assert.equal(failed.reason,'NATIVE_ASSESSMENT_UNAVAILABLE');assert.equal(failed.brief.selection.provider,'jev');
  assert.equal(ledger.retryTransient({minDelayMs:0}),1);
@@ -98,4 +99,26 @@ test('an uncertain first page prevents automatic digest continuation for later r
  ledger.ingest(item('uncertain-page'));await runCycle(options);assert.equal(sends,1);
  ledger.ingest(item('after-uncertain'));await runCycle({...options,now:new Date(at+60000)});assert.equal(sends,1);
  assert.equal(ledger.counts().ready,1);
+});
+
+
+test('native failure stages survive durable storage while malformed prose cannot consume a retry',async t=>{
+ const {ledger}=fixture(t);
+ for(const [stage,code] of [['COMPLETE','ALERT_ASSESSMENT_UNAVAILABLE'],['PARSE','ALERT_ASSESSMENT_INVALID'],['VALIDATE','ALERT_FACT_UNSUPPORTED']]){
+  const {id}=ledger.ingest(item('stage-'+stage));
+  await processNext({ledger,now:at,assessmentAfterSelection:true,
+   select:async()=>({decision:'keep',confidence:0.9,provider:'jev',context_version:PILOT_CONTEXT.version}),
+   assess:async()=>{throw Object.assign(Error('synthetic private exception'),{code,failureStage:stage});}});
+  const stored=ledger.get(id);
+  assert.deepEqual(stored.brief.nativeFailure,{code,stage});
+  assert.equal(stored.brief.selection.provider,'jev');assert.ok(!JSON.stringify(stored.brief).includes('private exception'));
+ }
+ assert.equal(ledger.retryTransient({minDelayMs:0}),1,'only completion outage is retryable');
+});
+
+test('a short unverified incident is held without either provider call',async t=>{
+ const {ledger}=fixture(t);ledger.ingest({...item('rumour'),title:'GitHub down?',excerpt:'GitHub is down again; production builds are broken.'});
+ const result=await processNext({ledger,now:at,assessmentAfterSelection:true,
+  select:async()=>assert.fail('no Jev spend'),assess:async()=>assert.fail('no native spend')});
+ assert.equal(result.reason,'SOURCE_EVIDENCE_INSUFFICIENT');assert.equal(result.state,'review');
 });

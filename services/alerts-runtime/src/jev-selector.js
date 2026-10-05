@@ -1,6 +1,9 @@
 import { readDecisionToken } from '../../jev-gateway/src/runtime-token.js';
-import { PILOT_CONTEXT, ALERT_SELECTION_QUESTION, fail, validateItem, suspiciousSource } from './context.js';
+import { PILOT_CONTEXT, ALERT_SELECTION_QUESTION, fail, validateItem, suspiciousSource, insufficientShortEvidence } from './context.js';
 
+// A read public source may contain a disclosure/contact address. Redact only the
+// transport projection; retain the original excerpt/hash for prose and audit.
+export const redactPublicContacts=text=>text.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[contact public masqué]').slice(0,1200);
 export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
   token = readDecisionToken(), timeoutMs = 10000, fetchImpl = fetch } = {}) {
   let url;
@@ -15,10 +18,10 @@ export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
     // Local exclusions are free even if this adapter is called outside the queue.
     if (PILOT_CONTEXT.deferred.includes(item.topic)) return { decision: 'skip', confidence: 1,
       provider: 'deterministic-kernel', context_version: PILOT_CONTEXT.version };
-    if (item.sourceStatus !== 'read'||suspiciousSource(item.excerpt)) return { decision: 'review', confidence: 0,
+    if (item.sourceStatus !== 'read'||suspiciousSource(item.excerpt)||insufficientShortEvidence(item)) return { decision: 'review', confidence: 0,
       provider: 'deterministic-kernel', context_version: PILOT_CONTEXT.version };
-    const body = { scope: 'public', topic: item.topic, title: item.title,
-      excerpt: item.excerpt, context_version: PILOT_CONTEXT.version };
+    const body = { scope: 'public', topic: item.topic, title: redactPublicContacts(item.title).slice(0,200),
+      excerpt: redactPublicContacts(item.excerpt), context_version: PILOT_CONTEXT.version };
     try {
       const response = await fetchImpl(new URL('/v1/alerts/select', url), {
         method: 'POST', redirect: 'error', signal: signal ? AbortSignal.any([signal,AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),

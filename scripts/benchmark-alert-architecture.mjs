@@ -21,7 +21,7 @@ export async function benchmark(fixtures,{select,assess,record=()=>{}}={}){
    if(!fn){row[key]={error:'PROVIDER_NOT_MEASURED'};continue;}
    const started=Date.now();if(key==='jev')jevAttempts++;else nativeAttempts++;
    try{row[key]={...await fn(item,PILOT_CONTEXT),ms:Date.now()-started};}
-   catch(error){errors++;row[key]={error:/^(ALERT_|NATIVE_)[A-Z_]{1,64}$/.test(error.code??'')?error.code:'PROVIDER_UNAVAILABLE',ms:Date.now()-started};}
+   catch(error){errors++;row[key]={error:/^(ALERT_|NATIVE_)[A-Z_]{1,64}$/.test(error.code??'')?error.code:'PROVIDER_UNAVAILABLE',...(['COMPLETE','PARSE','VALIDATE'].includes(error.failureStage)?{stage:error.failureStage}:{}),ms:Date.now()-started};}
   }
   record(row);
  }

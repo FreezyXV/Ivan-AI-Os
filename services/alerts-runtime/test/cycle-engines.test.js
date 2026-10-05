@@ -4,6 +4,7 @@ import {mkdtempSync,rmSync,mkdirSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {openLedger} from '../src/ledger.js';
+import {PILOT_CONTEXT} from '../src/context.js';
 import {runCycle} from '../../../scripts/mac-alerts-cycle.mjs';
 import {modernFinanceUrl,collectFinance,financeCycle,businessCycle,observationUrl} from '../src/engines.js';
 const now=new Date('2026-10-05T10:00:00Z');
@@ -56,7 +57,7 @@ test('one transient public-source timeout is recovered; permanent HTTP errors ar
 
 test('the configured worker policy reuses a recorded review once without another Jev call',async t=>{
  const {dir,ledger}=fixture(t),item={producer:'sentinelle',scope:'public',topic:'system',url:'https://example.org/policy',title:'Une mesure utile',publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z',sourceStatus:'read',excerpt:'Le pilote conserve les preuves et les reçus lors de ses redémarrages.'};
- const {id}=ledger.ingest(item),job=ledger.claim(),selection={decision:'keep',confidence:0.3,provider:'jev',context_version:'mac-alerts-20261005-v5',request_id:'00000000-0000-4000-a000-000000000000'};
+ const {id}=ledger.ingest(item),job=ledger.claim(),selection={decision:'keep',confidence:0.3,provider:'jev',context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000000'};
  ledger.finish(id,job.owner,{state:'review',reason:'SELECTION_UNCERTAIN',brief:{selection}});
  let generated=0;
  const options={ledger,settings:{stateDir:dir,selectionPolicy:{keepMinConfidence:0.2,skipMinConfidence:0.25}},now,

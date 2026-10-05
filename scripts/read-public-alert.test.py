@@ -83,6 +83,21 @@ class ReaderTests(unittest.TestCase):
                 with self.assertRaises(reader.SourceError):
                     reader.read_article(url,published_at='2026-10-04T08:00:00Z',title='Source publique',topic='business',producer='sentinelle',fetcher=lambda _:page)
 
+    def test_huggingface_header_inside_content_is_not_a_citation(self):
+        page=b'<meta property="article:published_time" content="2026-10-05"><meta property="og:title" content="Public benchmark"><div class="blog-content prose"><a href="/blog">Back to Articles</a><h1>Public benchmark</h1><time>Published October 5, 2026</time><header><p>Author Follow Upvote</p></header><p>A benchmark verifies database records after an agent finishes.</p><h2>Checking results</h2><p>The checks compare actual effects with the requested task.</p></div>'
+        value=reader.read_article('https://huggingface.co/blog/example',published_at='2026-10-05T08:00:00Z',title='Public benchmark',topic='engineering',producer='sentinelle',fetcher=lambda _:page)
+        self.assertEqual(value['item']['title'],'Public benchmark')
+        excerpt=value['item']['excerpt']
+        for text in ['Back to Articles','Public benchmark','Published October','Author Follow']:
+            self.assertNotIn(text,excerpt)
+        self.assertIn('A benchmark verifies database records',excerpt)
+        self.assertIn('Checking results',excerpt)
+
+    def test_huggingface_real_paragraph_with_navigation_words_is_preserved(self):
+        page=b'<meta property="article:published_time" content="2026-10-05"><div class="blog-content prose"><p>The Back to Articles button is checked by an automated accessibility test.</p></div>'
+        value=reader.read_article('https://huggingface.co/blog/example',published_at='2026-10-05T08:00:00Z',title='An accessibility test',topic='engineering',producer='sentinelle',fetcher=lambda _:page)
+        self.assertIn('Back to Articles button',value['item']['excerpt'])
+
     def test_huggingface_interface_is_not_article_evidence(self):
         page=b'<meta property="article:published_time" content="2026-10-05"><div class="prose"><p>Back to Articles</p><div class="blog-content prose"><div class="not-prose">Follow Upvote author buttons</div><p>A benchmark checks the actual database state left by an agent.</p></div></div>'
         value=reader.read_article('https://huggingface.co/blog/example',published_at='2026-10-05T08:00:00Z',title='Public benchmark',topic='engineering',producer='sentinelle',fetcher=lambda _:page)

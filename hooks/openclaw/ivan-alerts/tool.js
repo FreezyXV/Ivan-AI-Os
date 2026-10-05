@@ -1,4 +1,4 @@
-import {validateItem,PILOT_CONTEXT,suspiciousSource} from '../../../services/alerts-runtime/src/context.js';
+import {validateItem,PILOT_CONTEXT,suspiciousSource,insufficientShortEvidence} from '../../../services/alerts-runtime/src/context.js';
 import {synthesisPrompt,parseBrief,bindEvidence,validatePromptVariant,validateAssessment,assessmentItemSha256} from '../../../services/alerts-runtime/src/synthesis.js';
 import {renderBrief} from '../../../services/alerts-runtime/src/pipeline.js';
 const output=details=>({content:[{type:'text',text:JSON.stringify(details)}],details});
@@ -11,20 +11,20 @@ export function createSynthesisTool(context,subagent){
    const item=validateItem(args?.item);
    const purpose=args?.purpose??'selected';
    const promptVariant=args?.promptVariant??'current';validatePromptVariant(purpose,promptVariant);
-   if(item.sourceStatus!=='read'||!PILOT_CONTEXT.active.includes(item.topic)||suspiciousSource(item.excerpt)||signal?.aborted)throw Error();
+   if(item.sourceStatus!=='read'||!PILOT_CONTEXT.active.includes(item.topic)||suspiciousSource(item.excerpt)||insufficientShortEvidence(item)||signal?.aborted)throw Error();
    stage='COMPLETE';const result=await subagent.complete({agentId:'ivan-system',message:synthesisPrompt(item,{purpose,promptVariant}),
      extraSystemPrompt:'Tu produis uniquement le JSON documentaire demandé à partir de la source fournie. Aucun outil, contexte privé ou pouvoir d’action.',timeoutMs:60000,signal});
    if(signal?.aborted)throw Error();
    if(purpose==='assessment'){
-    stage='PARSE';const assessment=validateAssessment(item,parseBrief(result.text));
+    stage='PARSE';const parsed=parseBrief(result.text);stage='VALIDATE';const assessment=validateAssessment(item,parsed);
     return output({status:assessment.decision==='keep'?'READY':assessment.decision==='skip'?'SKIPPED':'REVIEW',
      execution:'native-isolated-completion',purpose,promptVariant,context_version:PILOT_CONTEXT.version,itemSha256:assessmentItemSha256(item),
      ...assessment,...(assessment.decision==='skip'?{reason_code:'EDITORIAL_NOT_RELEVANT'}:assessment.decision==='review'?{reason_code:'EDITORIAL_EVIDENCE_INSUFFICIENT'}:{})});
    }
-   stage='PARSE';const brief=bindEvidence(item,parseBrief(result.text));renderBrief(item,brief);
+   stage='PARSE';const parsed=parseBrief(result.text);stage='VALIDATE';const brief=bindEvidence(item,parsed);renderBrief(item,brief);
    return output({status:'READY',execution:'native-isolated-completion',purpose,promptVariant,brief});
   }catch(error){
-   const code=stage==='PARSE'&&['ALERT_FACT_UNSUPPORTED','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG','ALERT_ASSESSMENT_INVALID','ALERT_SYNTHESIS_INVALID'].includes(error?.code)?error.code:'ALERT_SYNTHESIS_UNAVAILABLE';
+   const code=['PARSE','VALIDATE'].includes(stage)&&['ALERT_FACT_UNSUPPORTED','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG','ALERT_ASSESSMENT_INVALID','ALERT_SYNTHESIS_INVALID'].includes(error?.code)?error.code:'ALERT_SYNTHESIS_UNAVAILABLE';
    return output({status:'UNAVAILABLE',error_code:code,error_stage:stage});}}
  };
 }

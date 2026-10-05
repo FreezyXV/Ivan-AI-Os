@@ -7,13 +7,23 @@ const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.
   if(/^[+\-]?[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?$/.test(s))return s.replaceAll(',','');
   return s.replaceAll(',','.');
 });
+const factIdentifiers=value=>value.match(/\b(?:CVE-\d{4}-\d+|GHSA-[a-z\d]{4}(?:-[a-z\d]{4}){2}|v\d+(?:\.\d+){1,3}(?:-[a-z\d.-]+)?|[A-Z][A-Z\d]{2,})\b/g)??[];
+function hasFactIdentifier(quote,identifier){
+ const variants=identifier==='BCE'?['BCE','ECB']:[identifier];
+ return variants.some(token=>{
+  const escaped=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const plural=/^[A-Z]{3,}$/.test(token)?'s?':'';
+  return new RegExp('(?<![A-Za-z0-9_-])'+escaped+plural+'(?![A-Za-z0-9_-]|\\.\\d)','i').test(quote);
+ });
+}
 export function renderBrief(item,brief){
   if(!brief||!Array.isArray(brief.facts)||brief.facts.length<1||brief.facts.length>3||
       !text(brief.utility,500)||!text(brief.action,300)||!PILOT_CONTEXT.active.includes(brief.goal)||
       (brief.uncertainty!==undefined&&!text(brief.uncertainty,300)))fail('ALERT_BRIEF_INVALID');
   for(const fact of brief.facts){
     if(!text(fact.summary,350)||!text(fact.quote,600)||!item.excerpt.includes(fact.quote)||
-       numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n)))fail('ALERT_FACT_UNSUPPORTED');
+       numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n))||
+       factIdentifiers(fact.summary).some(id=>!hasFactIdentifier(fact.quote,id)))fail('ALERT_FACT_UNSUPPORTED');
   }
   const grounded=brief.facts.flatMap(f=>numbers(f.quote));
   if(numbers(brief.utility+' '+brief.action).some(n=>!grounded.includes(n)))fail('ALERT_FACT_UNSUPPORTED');
@@ -41,6 +51,10 @@ export function selectionOutcome(selection,policy=DEFAULT_SELECTION_POLICY){
   if(keep)return 'keep';if(skip)return 'skip';
   return 'review';
 }
+const nativeFailure=error=>({nativeFailure:{
+  code:/^(?:ALERT_|NATIVE_)[A-Z_]+$/.test(error?.code??'')?error.code:'NATIVE_ASSESSMENT_UNAVAILABLE',
+  ...(['COMPLETE','PARSE','VALIDATE'].includes(error?.failureStage)?{stage:error.failureStage}:{})
+}});
 export async function processNext({ledger,select,synthesize,assess,assessmentAfterSelection=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
   selectionOutcome({decision:'review',confidence:0},selectionPolicy); // invalid configuration fails before any claim
   if(typeof assessmentAfterSelection!=='boolean'||(assessmentAfterSelection&&typeof assess!=='function'))fail('ALERT_ASSESSMENT_CONFIG_INVALID');
@@ -61,7 +75,7 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
     catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
       error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
-      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE');}
+      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',nativeFailure(error));}
     if(!result||!['keep','review','skip'].includes(result.decision)||
        (result.decision!=='keep'&&result.brief!==undefined))return complete('review','NATIVE_ASSESSMENT_INVALID');
     const selection={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256,
@@ -99,7 +113,7 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
     catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
       error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
-      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',{selection:trace});}
+      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',{selection:trace,...nativeFailure(error)});}
     if(!result||!['keep','review','skip'].includes(result.decision)||
        (result.decision!=='keep'&&result.brief!==undefined))return complete('review','NATIVE_ASSESSMENT_INVALID',{selection:trace});
     const assessment={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256};
@@ -115,7 +129,7 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     const brief=await withDeadline(signal=>synthesize(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SYNTHESIS_TIMEOUT');
     const message=renderBrief(job.item,brief);
     return complete('ready','BRIEF_VERIFIED',{...brief,message,contextVersion:PILOT_CONTEXT.version,selection:trace});
-  }catch(e){return complete('review',['ALERT_FACT_UNSUPPORTED','SYNTHESIS_TIMEOUT'].includes(e?.code)?e.code:'SYNTHESIS_UNAVAILABLE',{selection:trace});}
+  }catch(e){return complete('review',['ALERT_FACT_UNSUPPORTED','SYNTHESIS_TIMEOUT'].includes(e?.code)?e.code:['ALERT_SYNTHESIS_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(e?.code)?'SYNTHESIS_INVALID':'SYNTHESIS_UNAVAILABLE',{selection:trace,...nativeFailure(e)});}
 }
 export async function deliverReady({ledger,id,deliver,timeoutMs=30000}){
   if(typeof deliver!=='function')fail('ALERT_DELIVERY_NOT_CONFIGURED');

@@ -1,7 +1,7 @@
 import { PILOT_STATE } from '../../../shared/pilot-state.mjs';
 // Public, compact operator context. No profile, portfolio or caller policy.
 export const PILOT_CONTEXT = Object.freeze({
-  version: 'mac-alerts-20261005-v5',
+  version: 'mac-alerts-20261006-v6',
   active: Object.freeze(['business', 'finance', 'engineering', 'system']),
   deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.deferredProjects]),
   priorities: Object.freeze(['system','engineering','business','finance']),
@@ -11,8 +11,8 @@ export const PILOT_CONTEXT = Object.freeze({
     'Codex, Claude Code et OpenClaw collaborent avec Git et une mémoire Obsidian.',
     'Ivan construit une entreprise virtuelle : agents coordonnés, skills, mémoire et bots Telegram doivent fonctionner ensemble de façon fiable.',
     'Le besoin immédiat est un système utile sur Mac : résumés autonomes avec faits, utilité concrète et prochaine étape proportionnée, sans devoir ouvrir chaque lien.',
-    'Les services payants sont mesurés ; Jev partage un plafond mensuel.',
-    'Les projets web utilisent par défaut Next.js et TypeScript ; les services sont en Node.js.',
+    'Jev (TypeSafe) a un plafond dur mensuel appliqué par le gateway. Les complétions natives et les autres services payants ne sont ni plafonnés ni mesurés par Ivan AI OS.',
+    'Les nouveaux projets web partent par défaut sur Next.js et TypeScript ; l’inventaire des projets existants et de leurs versions n’est pas connu du système. Les services sont en Node.js.',
     'La veille Finance porte sur les données publiques BCE, inflation et taux, sans portefeuille.'
   ]),
   goals: Object.freeze({
@@ -42,6 +42,18 @@ export function sourceMaxAgeHours(item){
 }
 export function suspiciousSource(text){
   return /ignore\s+(?:(?:all|your|previous)\s+)*instructions|system\s+note\s+to\s+ai|(?:include|send|reveal|print|exfiltrate)\b[^.!?]{0,80}\b(?:secret|token|api[ -]?key)|classify\s+(?:this\s+)?as\s+urgent/i.test(text);
+}
+export function insufficientShortEvidence(item){
+  const excerpt=item.excerpt.trim();
+  if(excerpt.length>=200)return false;
+  // Length alone is not a quality measure. Hold short incident allegations or
+  // rumours lacking named attribution; preserve actual official observations.
+  const allegation=/\b(?:(?:GitHub|OpenAI|service|server|API)\s+(?:is\s+)?down|down\s+again|outage|hacked|breach|rumou?r|unconfirmed|panne|rumeur|pirat[ée]|non confirm[ée])\b/i.test(excerpt);
+  if(!allegation)return false;
+  const host=new URL(item.url).hostname;
+  if(['www.ecb.europa.eu','nextjs.org','www.githubstatus.com','status.openai.com','status.anthropic.com'].includes(host))return false;
+  const attributed=/\b(?:according to|selon)\s+(?:(?:the|la|le)\s+)?(?:ECB|BCE|GitHub|OpenAI|Anthropic|Microsoft|Cloudflare)\b/i.test(excerpt);
+  return !attributed;
 }
 function timestamp(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value) ||
@@ -75,5 +87,6 @@ export function prefilter(item, { now = Date.now(), maxAgeHours = sourceMaxAgeHo
   if (now - Date.parse(item.publishedAt) > maxAgeHours * 3600000) return { decision:'skip', reason:'SOURCE_STALE' };
   if (item.sourceStatus !== 'read') return { decision:'review', reason:'SOURCE_NOT_READ' };
   if(suspiciousSource(item.excerpt))return {decision:'review',reason:'INJECTION_SUSPECTE'};
+  if(insufficientShortEvidence(item))return {decision:'review',reason:'SOURCE_EVIDENCE_INSUFFICIENT'};
   return { decision:'select', reason:'SELECTION_REQUIRED' };
 }
