@@ -3,7 +3,7 @@ name: calibration-jev
 description: Mesurer la qualité des décisions Jev (routage vers les managers, détails manquants, urgence, avis sur action) sur des cas synthétiques étiquetés, avant de régler un seuil, d'ajouter une question ou de faire confiance à Jev pour un nouvel usage. Utiliser après la bascule du gateway, une fois par mois, quand un routage semble faux, avant tout changement de seuil ou de question, ou quand Ivan demande "Jev est-il fiable ?", "calibre Jev".
 compatibility: "claude-code, codex"
 metadata:
-  version: "0.3.0"
+  version: "0.3.1"
   famille: system
   manager: system
   risque: lecture
@@ -33,6 +33,9 @@ Depuis, `/v1/classify` (10 questions) et `/v1/alerts/select` existent ; voir `je
 | `skills/rapport-telegram/corpus/calibration-jev-v1` | dev 83 + holdout 11 | v3, v4, v5 mesurés |
 | `skills/rapport-telegram/corpus/controle-v2` | contrôle 12 cas | mesuré une fois (11/12) |
 | `skills/rapport-telegram/benchmark/architecture-v1` | benchmark A–E, 26 cas | mesuré une fois |
+
+Tous ces scores portent sur v3/v4/v5 : **aucune passe v6**. Une politique pour le contexte v6 se
+valide sur un jeu nouveau (ex. `skills/rapport-telegram/corpus/mesure-v6`), une seule passe coordonnée.
 
 Règles : labels fixés avant mesure ; recalculer **hors ligne** avec `selectionOutcome` du runtime
 (`scripts/calibrate-alert-selection.mjs`), jamais avec un calcul maison ; scoreur strict
