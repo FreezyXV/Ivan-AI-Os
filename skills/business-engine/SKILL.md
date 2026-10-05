@@ -3,7 +3,7 @@ name: business-engine
 description: Moteur d'opportunités d'Ivan (Opportunity Manager) - collecter des signaux publics de problèmes monétisables, les dédoublonner, mesurer leur récurrence, noter les opportunités sur preuves et les classer Cash (1er euro en 30 jours) ou Venture, puis livrer un top 3 actionnable. Utiliser pour toute veille business, recherche d'opportunités, d'arbitrages, de services ou de SaaS, "trouve-moi des opportunités", "cycle business", ou quand une alerte Sentinelle business arrive.
 compatibility: "claude-code, codex, openclaw"
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   famille: business
   manager: business
   risque: brouillon
@@ -43,6 +43,12 @@ Contrat complet : `workflows/business-engine.md`. Notation d'une idée isolée :
    Règles codées : aucune preuve de paiement = abandon ; ≥ 22 lancer, ≥ 16 creuser.
 6. **Livrer** : `signals.mjs rapport --top 3` → note `decision` via `memoire-obsidian`
    (sensibilité `interne`) + synthèse Telegram via `rapport-telegram` forme A.
+
+## Fiche d'opportunité (contrat `docs/BUSINESS-OPPORTUNITY-CONTRACT.md`)
+Problème, acheteur (hypothèse sauf paiement observé), preuves citées de l'extrait lu (douleur,
+demande, offre existante, paiement observé), objections, hypothèse, prochain test réversible
+(≤ 7 jours, 0 €, aucun contact), décision `exploratoire`/`a-noter` sans score codé. Contrôle :
+`node skills/business-engine/scripts/fiche.mjs <fiche.json> <sources.jsonl>`.
 
 ## Synthèse pour Ivan : preuve, hypothèse, recommandation
 - **Preuve** (faits) : ce que des gens disent ou paient, cité depuis la page lue, avec sa date.
