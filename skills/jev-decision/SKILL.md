@@ -7,7 +7,7 @@ metadata:
   manager: system
   risque: lecture
   profil: "non"
-  statut: actif
+  statut: brouillon
   provenance: "services/jev-gateway, docs/CLASSIFY-GATEWAY.md, docs/ALERTS-RUNTIME.md (Codex) ; budget fixé par Ivan le 2026-09-29 ; état revu le 2026-10-05"
 ---
 # Jev : décisions rapides et bon marché
