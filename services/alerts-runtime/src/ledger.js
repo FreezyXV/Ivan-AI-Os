@@ -168,7 +168,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     });},
     cycleStatus(){return db.prepare('SELECT name,key,status,attempts,updated,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all().map(r=>({...r,metrics:r.metrics?JSON.parse(r.metrics):null}));},
     retryTransient({minDelayMs=900000}={}){if(!Number.isSafeInteger(minDelayMs)||minDelayMs<0)fail('ALERT_RETRY_INVALID');return tx(()=>
-      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT') AND retries<1 AND updated<=?")
+      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT','NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT') AND retries<1 AND updated<=?")
         .run(now(),now()-minDelayMs).changes);},
     get,
     reviewCandidates({revision,limit=100}={}){
@@ -193,7 +193,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     },
     reselectReviewedContext({limit=8}={}){
       // Explicit operator migration after a versioned question/context change.
-      // This schedules a NEW paid selection, never treats an obsolete receipt as current.
+      // This schedules a NEW assessment, never treats an obsolete receipt as current.
       if(!Number.isInteger(limit)||limit<1||limit>8)fail('ALERT_REVISION_INVALID');
       const revision='context-'+createHash('sha256').update(JSON.stringify(PILOT_CONTEXT)).digest('hex').slice(0,16);
       return tx(()=>{
