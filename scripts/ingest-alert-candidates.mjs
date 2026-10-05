@@ -39,8 +39,11 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
     const item=validateItem(raw);
     // Feed evidence never promotes itself to a read article at this boundary.
     if(item.producer!=='sentinelle'||item.sourceStatus!=='title-only')fail('ALERT_EXPORT_INVALID');
-    const row=ledger.ingest(item),prior=ledger.get(row.id);
+    const row=ledger.ingest(item);
     summary[row.duplicate?'duplicates':'ingested']++;
+    // Terminal identity is enough: collection must not read archived content.
+    if(!['pending','review'].includes(row.state))continue;
+    const prior=ledger.get(row.id);
     if(prior.item.sourceStatus==='read'||!['pending','review'].includes(prior.state))continue;
     if(seen.has(row.id))continue;
     seen.add(row.id);
