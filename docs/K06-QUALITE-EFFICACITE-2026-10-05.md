@@ -68,3 +68,17 @@ consignes du § 2 appliquées aux deux variantes.
 Codex : la v3 envoie désormais 1200 caractères à Jev (et non plus 500) ; une source Next.js relue
 donne encore `keep` 0,26 → `review`. Les seuils ne se baissent pas pour obtenir un reçu : ils se
 valident sur le jeu neuf, dont les labels sont fixés avant toute mesure.
+
+## 5. Verdict utilisable (8 sorties, sans régénération)
+
+| Axe | Moyenne /2 | Verdict | Condition |
+|---|---|---|---|
+| Fidélité | 2,0 (8/8) | **Suffisante pour le digest** | contrôles codés + relecture ; aucun fait hors extrait observé sur ces 8 sorties |
+| Utilité | 1,25 | **Insuffisante seule** | 6/8 génériques ou rattachées au pilote à tort → consignes K06 (PR #59 `ebf9a00`) |
+| Action | 1,5 | **Acceptable avec réserve** | 3/8 non proportionnées (mise à niveau ou 20 répétitions sans vérification préalable) → même correctif |
+| Effort de lecture | 2,0 | **Suffisant** | 950–1331 caractères ; doublon « extrait partiel » mineur |
+
+Décision proposée : synthèses autorisées **en digest seulement**, après intégration des
+consignes de #59 ; **pas d'alerte immédiate** générée automatiquement. Re-noter sur la prochaine
+production réelle (KEEP Jev réel), pas en régénérant ces huit cas. La variante compacte reste
+réservée aux évaluations (égalité 27/32, n = 4).
