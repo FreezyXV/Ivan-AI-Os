@@ -2,8 +2,9 @@
 
 ## Actualisation du lot — intégration Codex en cours le 5 octobre
 
-Claude n'a pas encore commencé ce lot (attente de quota confirmée par Ivan).
-Le prompt transmis directement à Ivan remplace les états anciens ci-dessous.
+Claude a proposé K01–K03 dans la PR #50, une première partie K05 dans #51
+et le changement du hook gate dans #49. Rien n'est fusionné ni activé.
+Cette actualisation remplace les états anciens ci-dessous.
 Codex a construit les collecteurs locaux, lecteurs BCE/HF/Next/Ask HN, file
 durable, cycles, génération native et digest sur `agent/codex/alerts-integration`.
 Lire `docs/MAC-ALERT-ORCHESTRATOR.md` sur cette branche lorsqu'elle est publiée.
@@ -14,7 +15,15 @@ donc pas de génération automatique de production. Ne pas annoncer un parcours
 réel KEEP Jev complet. K03 doit analyser cette forte abstention sur un corpus
 indépendant ; ne pas calibrer seulement sur les sources qui ont déjà échoué.
 
-K01–K03 restent entièrement à Claude : skill, contrat et évaluation indépendante.
+K01–K03 attendent la relecture et l'intégration Codex, sans recommencer le corpus.
+Prochain travail Claude : terminer K05 (déclenchements, pause Career, compétences
+réellement utilisables), K04 (contrats Business/Finance), K06 (qualité/tokens et
+calibration indépendante coordonnée), puis K07 sur les nouveaux commits Codex.
+Avant fusion #49, préserver la validation explicite des fichiers partagés : le
+hook gate actuel supprime aussi un REQUIRE_HUMAN sur constitution/CONSTITUTION.md.
+La preuve est dans docs/REVIEW-CODEX-CLAUDE-2026-10-05.md. Ne pas activer shadow
+comme contournement. Codex corrige A1–A8 dans les fichiers runtime qu'il possède ;
+Claude les relit ensuite sans modifier simultanément ces fichiers.
 Ne pas reconstruire le runtime, les collecteurs ou l'authentification. Le contrat
 `coded-brief-v1-provisional` est volontairement provisoire, à contester/revoir.
 Sortie finale : goal, facts[{summary,quote}], utility, action, uncertainty.

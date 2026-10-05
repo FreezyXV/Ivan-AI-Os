@@ -29,7 +29,12 @@ C11 planning exclusif actif, cycles réels et restart vérifiés ; C12 reste lim
 à veille/tri Business et Finance publique, pas d'opportunité rentable inventée.
 C14 diagnostic étendu aux cycles, erreurs sources, backlog et reçu. C18 mesures
 initiales consignées (11 appels Jev, 0,000359 EUR estimé), coût prose non exposé.
-K01–K03 et qualité indépendante restent à Claude ; aucun de ses lots annoncé fini.
+Claude a livré K01–K03 en source dans la PR #50 et un premier passage K05
+dans la PR #51 ; rien n'est fusionné ni activé. La relecture Codex et la mesure
+des sorties automatiques restent ouvertes. K05 restant, K04 et K06 peuvent
+avancer en parallèle ; K07 relira les nouveaux commits du runtime.
+La PR #49 nécessite une correction : son mode gate rend aussi silencieux un
+REQUIRE_HUMAN concernant la constitution ; voir REVIEW-CODEX-CLAUDE-2026-10-05.md.
 
 ## Checklist Codex — responsable de la réalisation et de l'intégration
 
@@ -154,9 +159,9 @@ K01–K03 et qualité indépendante restent à Claude ; aucun de ses lots annonc
 
 ## Checklist Claude — travail en parallèle, sans toucher au runtime Codex
 
-Les cases ci-dessous sont les tâches attribuées, pas une affirmation que Claude
-les a commencées. Son premier lot reste `agent/claude/telegram-syntheses`.
-Pour les suivants : une branche par sujet, même worktree séparé.
+K01–K03 sont proposés en PR #50 ; la case finale attend relecture et intégration.
+K05 est partiellement proposé en PR #51. Les prochains lots restent sur une
+branche par sujet, dans le même worktree séparé ; aucun runtime live à modifier.
 
 ### 1. Contrat éditorial et évaluations — commencer maintenant
 
