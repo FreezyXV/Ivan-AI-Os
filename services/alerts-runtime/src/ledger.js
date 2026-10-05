@@ -191,6 +191,26 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         return {revised:true,id,outcome};
       });
     },
+    reselectReviewedContext({limit=8}={}){
+      // Explicit operator migration after a versioned question/context change.
+      // This schedules a NEW paid selection, never treats an obsolete receipt as current.
+      if(!Number.isInteger(limit)||limit<1||limit>8)fail('ALERT_REVISION_INVALID');
+      const revision='context-'+createHash('sha256').update(JSON.stringify(PILOT_CONTEXT)).digest('hex').slice(0,16);
+      return tx(()=>{
+        const rows=db.prepare("SELECT id FROM alerts WHERE state='review' AND reason='SELECTION_UNCERTAIN' AND json_extract(brief,'$.selection.context_version')<>? AND NOT EXISTS (SELECT 1 FROM evidence_revisions WHERE evidence_revisions.id=alerts.id AND revision=?) ORDER BY created,id LIMIT 100")
+          .all(PILOT_CONTEXT.version,revision);
+        let checked=0;const ids=[];
+        for(const row of rows){
+          const old=get(row.id),selection=old.brief?.selection;
+          db.prepare('INSERT INTO evidence_revisions VALUES(?,?,?,?,?,?)').run(old.id,revision,JSON.stringify(old.item),JSON.stringify(old.brief),old.reason,now());checked++;
+          if(prefilter(old.item,{now:now()}).decision!=='select'||selection?.provider!=='jev'||
+             !/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(selection.request_id??''))continue;
+          db.prepare("UPDATE alerts SET state='pending',reason='SELECTION_CONTEXT_CHANGED',brief=NULL,updated=? WHERE id=?").run(now(),old.id);
+          ids.push(old.id);if(ids.length===limit)break;
+        }
+        return{revision,checked,requeued:ids.length,ids};
+      });
+    },
     reviseReviewedEvidence(raw,{revision}={}){
       // Explicit operator repair after a reader change, never a scheduled retry
       // of a semantic decision. Preserve the old evidence and Jev receipt.

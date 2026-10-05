@@ -86,3 +86,34 @@ test('the production adapter rejects malformed probabilities rather than silentl
     ...receipt(0.9),question:'alerts.pertinence.mac-v3'})})});
   assert.deepEqual(await legacy(item('legacy'),PILOT_CONTEXT),receipt(0.9),'a genuinely absent field stays compatible');
 });
+test('a versioned context migration is bounded, preserves obsolete decisions and never resends attempted alerts',async t=>{
+ const f=fixture(t),ids=[];
+ for(let i=0;i<10;i++){
+  ids.push(f.ledger.ingest(item('migration-'+i)).id);
+  const job=f.ledger.claim();
+  f.ledger.finish(job.id,job.owner,{state:'review',reason:'SELECTION_UNCERTAIN',brief:{selection:{...receipt(0.3),context_version:'old-context'}}});
+ }
+ const migrated=f.ledger.reselectReviewedContext();assert.equal(migrated.requeued,8);
+ assert.equal(f.ledger.counts().pending,8);assert.equal(f.ledger.counts().review,2);
+ const second=f.ledger.reselectReviewedContext();assert.equal(second.requeued,2);
+ let calls=0;
+ const result=await processNext({ledger:f.ledger,now:f.now,select:async()=>{calls++;return receipt(0.9);},synthesize:async()=>brief()});
+ assert.equal(result.state,'ready');assert.equal(calls,1);assert.equal(result.brief.selection.replayed,undefined);
+ const send=f.ledger.beginDelivery(result.id);f.ledger.finishDelivery(send.id,send.owner,undefined);
+ assert.equal(f.ledger.get(send.id).state,'delivery_unknown');
+ assert.equal(f.ledger.reselectReviewedContext().requeued,0);
+ assert.equal(f.ledger.get(send.id).state,'delivery_unknown');
+ assert.throws(()=>f.ledger.reselectReviewedContext({limit:9}),{code:'ALERT_REVISION_INVALID'});
+});
+test('context migration cannot promote an old, deferred, unread or fabricated receipt',async t=>{
+ const f=fixture(t);
+ f.ledger.ingest(item('stale-migration'));
+ const old=f.ledger.claim();f.ledger.finish(old.id,old.owner,{state:'review',reason:'SELECTION_UNCERTAIN',brief:{selection:{...receipt(0.3),context_version:'old-context'}}});
+ f.advance(73*3600000);
+ assert.equal(f.ledger.reselectReviewedContext().requeued,0);
+ assert.equal(f.ledger.reselectReviewedContext().checked,0,'examined stale reviews do not mask the next page forever');
+ const id=f.ledger.ingest({...item('fabricated'),publishedAt:new Date(f.now).toISOString(),observedAt:new Date(f.now).toISOString(),readAt:new Date(f.now).toISOString()}).id;
+ const job=f.ledger.claim();
+ f.ledger.finish(id,job.owner,{state:'review',reason:'SELECTION_UNCERTAIN',brief:{selection:{...receipt(0.3),context_version:'old-context',request_id:'invented'}}});
+ assert.equal(f.ledger.reselectReviewedContext().requeued,0);
+});
