@@ -1,3 +1,16 @@
+## Rectification du 6 octobre — fidélité et livraison
+
+Claude #60 a relu les trois messages réels : utilité Budget trop centrée sur Jev,
+faits ThinkingBox répétés, SSRF cité sans preuve dans son passage et applicabilité
+Next.js inventée. Les contrôles mécaniques antérieurs n'en prouvaient pas la fidélité.
+Contexte/prompt/contrôles corrigés et activés bf2d2e1 (v6). Hors ligne, le message
+Next.js ancien est refusé ; les deux autres passent mécaniquement seulement.
+Aucun message régénéré/renvoyé, aucun nouveau benchmark payant.
+Résultats v5 historiques ; v6 et l'utilité quotidienne restent à qualifier.
+Voir REVIEW-CODEX-EDITORIAL-FIXES-2026-10-06.md et ARCHITECTURE-BENCHMARK-2026-10-05.md.
+
+## Mesures historiques conservées
+
 ## Mode conservateur — troisième synthèse réelle
 
 Worker 9f7f653, gateway/plugin 1c769a3 : Next.js Security Release du 30 septembre

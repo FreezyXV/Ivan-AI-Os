@@ -1,3 +1,12 @@
+# Mission courante — 6 octobre
+
+#60 intégrée avec provenance et six corrections runtime activées bf2d2e1.
+Lire CLAUDE-PILOT-QUALIFICATION-2026-10-06.md : relecture v6, contrat Business,
+qualification des prochains messages, documentation et skills actuels.
+Ne pas refaire le scoreur, les générations anciennes ou les benchmarks consommés.
+
+## Missions antérieures — conservées pour provenance
+
 # Lot Claude courant — architecture et benchmark
 
 Les anciens lots K01–K07 ci-dessous ont été livrés et intégrés sur la branche

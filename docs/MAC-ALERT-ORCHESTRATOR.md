@@ -4,18 +4,15 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État actif : worker @9f7f653, plugin System/gateway @1c769a3, contexte v5.
-Mode jev-native-editorial : sélection Jev à 0,75 puis jugement/rédaction native.
-Mode natif seul conservé pour comparaison ; benchmark neuf : trois faux keep natifs.
-La politique probabiliste en réserve produit un faux keep sur ce contrôle, non activée.
-Deux sources réelles retenues et synthétisées automatiquement, reçu Telegram 59 ;
-aucune sélection simulée, aucun appel Jev pour ce premier passage natif.
-Puis Next.js officiel : keep Jev 0,92, validation native et reçu 60 ; quatre
-sélections et une génération au passage conservateur, aucun renvoi au second.
-223 tests locaux passent. Processus natif précédent 25 955 ms,
-digest 5 187 ms. Qualité indépendante/usage quotidien restent à mesurer.
-La file, les secrets locaux et la personnalité de la Secrétaire sont conservés.
-Pas de fusion foundation/main. Voir le relais courant pour la provenance complète.
+État actif vérifié le 6 octobre : worker/plugin/gateway bf2d2e1, contexte v6.
+Mode jev-native-editorial : confiance 0,75 puis jugement/rédaction native.
+Politique basse non active ; benchmark v5 historique, pas qualification du contexte v6.
+Six corrections et limites : REVIEW-CODEX-EDITORIAL-FIXES-2026-10-06.md.
+366 tests Node, 19 Python ; activation sans nouveau coût Jev ni envoi Telegram.
+rapport-telegram 2.1.0 installé chez les quatre rôles déjà équipés, avec sauvegardes.
+Les trois messages historiques sont livrés ; revue indépendante constate des erreurs
+éditoriales. Le contrôle actuel refuse le sigle mal cité de l'ancien message Next.js.
+La qualité et l'utilité des prochains messages doivent encore être évaluées.
 
 ## Chemin technique
 
@@ -49,6 +46,12 @@ publique : date réelle, changelog épinglé au tag, empreinte, aucun redirect v
 main. Seules les nouveautés publiées depuis moins de 72 heures entrent en file.
 Une release déjà lue ne masque pas les backports récents ; une page indisponible
 reste non lue et comptée, sans interrompre la lecture des autres releases.
+Une courte allégation non attribuée dans l'extrait (<200 caractères) reste en
+revue sans fournisseur. La longueur seule ne rejette pas un relevé officiel.
+Le client Jev masque les adresses de contact dans sa projection ; la preuve
+originale reste intacte. Échecs natifs : phase COMPLETE/PARSE/VALIDATE et code
+conservés en SQLite, sans texte d'exception. Contenu invalide non réessayé.
+Le lecteur HF passages-v3 exclut les en-têtes structurels, pas les mots du corps.
 Le lecteur HF exclut maintenant l'interface `not-prose`, les auteurs et boutons.
 Une réparation opérateur de preuve déjà évaluée archive l'ancien extrait et son
 reçu Jev dans SQLite, ne modifie pas le sujet/date, ne rouvre jamais un envoi,
@@ -58,13 +61,13 @@ Mode natif seul (comparaison) : après les exclusions locales, une complétion j
 l'utilité et produit la synthèse seulement pour keep. Les skips/reviews consomment
 également un créneau natif : deux tentatives maximum par passage, sans rafale.
 Mode Jev conservé pour comparaison : huit sélections et deux générations maximum.
-La question mac-v3/context v5 est disponible, sans obligation de passer par elle.
+La question mac-v3/context v6 est disponible, sans obligation de passer par elle.
 Les probabilités contradictoires donnent review ; aucun seuil keep prioritaire.
 
 Le plugin `ivan-ai-os-alerts` fournit `ivan_alert_synthesize` à System seulement.
 Il utilise `api.runtime.subagent.complete` : complétion native isolée sans outils,
 bootstrap ou historique. Authentification gérée dans le gateway ; aucune clé
-copiée et aucun override de modèle. Citations et chiffres contrôlés avant READY.
+copiée et aucun override de modèle. Citations, chiffres, sigles et identifiants contrôlés dans chaque passage avant READY.
 Le modèle référence des passages numérotés ; le code insère leurs citations
 exactes. L'extrait n'est pas injecté une seconde fois avec les métadonnées.
 Le service l'appelle avec purpose assessment dans le mode actif : jugement et

@@ -16,6 +16,19 @@ la dernière étape de cette livraison. La pause Career et le report OVH ne
 bloquent pas cette définition. Ne pas annoncer un service permanent pendant
 le sommeil du Mac sans en avoir mesuré le comportement.
 
+## Corrections activées — 6 octobre 2026
+
+Worker/gateway/plugin bf2d2e1, contexte v6, mode conservateur inchangé (.75).
+366 tests Node / 19 Python ; six corrections détaillées dans
+REVIEW-CODEX-EDITORIAL-FIXES-2026-10-06.md. Lecture HF réelle sans en-tête,
+probe du plugin sans complétion ; budget inchangé pendant cette activation.
+Rejeu hors ligne Next.js ancien : refus pour sigle absent de sa propre citation.
+La qualité générale et l'utilité des prochains messages restent à mesurer.
+Les trois messages reçus sont des preuves de livraison, pas trois preuves de qualité.
+Claude #60 intégrée jusqu'à 8549eac ; sa correction du scoreur acceptée.
+rapport-telegram 2.1.0 installé chez les quatre rôles existants avec sauvegardes.
+Claude poursuit CLAUDE-PILOT-QUALIFICATION-2026-10-06.md, sans rejouer les mesures.
+
 ## Avancement du 5 octobre — intégration des alertes
 
 PR #57 : worker @9f7f653, plugin/gateway @1c769a3, contexte v5, jev-native-editorial actif.

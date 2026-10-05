@@ -1,3 +1,45 @@
+## État courant vérifié — 6 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 empilée sur #48/#47 ; aucune
+fusion foundation/main. Claude #60 repris avec provenance jusqu'à 8549eac.
+Worker, plugin System et gateway actifs bf2d2e1 ; contexte mac-alerts-20261006-v6,
+mode jev-native-editorial, confiance keep/skip 0,75. Politique basse non active.
+Activation coordonnée réversible, Node 24.19.0, runner provenance cc1d2a5.
+File, budget/Trousseau, roster, personnalité/mémoire Secrétaire conservés.
+Career en pause, Knowledge/Anakalypto dernière étape, OVH différé.
+
+Six corrections Claude traitées : contexte projet/coûts exact, sigles/versions
+par citation, courte rumeur tenue par code, contacts publics masqués vers Jev,
+échecs COMPLETE/PARSE/VALIDATE conservés, interface HF exclue des extraits.
+366 tests Node et 19 Python passent ; CI source bf2d2e1 : état des 11 jobs à contrôler sur la PR.
+Relecture hors ligne reçus 59/60 : le message Next.js historique est désormais
+refusé (ALERT_FACT_UNSUPPORTED). Les contrôles mécaniques ne garantissent pas
+l'utilité Budget ni l'absence de faits répétés ThinkingBox. Aucun message renvoyé.
+Les cinq erreurs natives historiques n'ont pas de cause rétrospective connue.
+
+Probe du plugin réellement chargé : rumeur refusée avant toute complétion ;
+lecture HF réelle : 18 967 caractères, extrait 1196, aucun en-tête détecté.
+Zéro appel fournisseur et zéro envoi pour ces vérifications et la bascule.
+Skill rapport-telegram 2.1.0 installé avec sauvegardes chez Business, Finance,
+Knowledge et System ; pas de profil ajouté, pas de changement de rôle.
+Jev/calibration 0.5.0/0.3.0 intégrés en source pour Codex/Claude uniquement.
+Budget au contrôle : 741 appels / 0,028199 EUR estimé, inconnus 0, plafond 10 EUR.
+File : delivered 3 / review 17 / skipped 5 / expired_unsent 3 ; zéro pending/ready.
+Preuves privées : ~/.ivan-ai-os/mac-alerts-bf2d2e1/coordinated-activation.json,
+editorial-live-free-probe.json et rapport-telegram-2.1.0/proof.json.
+
+Les scores du benchmark v5 restent historiques ; aucune qualification v6 déduite.
+Pas de nouvelle passe des corpus ni des huit anciennes générations.
+Lire REVIEW-CODEX-EDITORIAL-FIXES-2026-10-06.md,
+CLAUDE-PILOT-QUALIFICATION-2026-10-06.md, PROJECT-CHECKLISTS.md,
+MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
+ARCHITECTURE-BENCHMARK-2026-10-05.md et les mesures éditoriales.
+Reste : prochains vrais messages, utilité quotidienne, coûts natifs, Business
+approfondi, vraie veille Mac, inventaire d'urgence, hook Codex source non actif,
+puis Knowledge/Anakalypto avec Claude. Rien de tout cela n'est déclaré terminé.
+
+## Historique — état antérieur conservé
+
 ## État courant vérifié — 5 octobre 2026
 
 Branche agent/codex/alerts-integration, PR #57 sur #48/#47 ; aucune fusion foundation/main.
