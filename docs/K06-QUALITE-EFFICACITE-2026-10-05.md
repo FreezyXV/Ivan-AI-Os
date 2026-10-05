@@ -37,9 +37,11 @@ et la proportion de l'action, c'est-à-dire sur le cadrage, pas sur la lecture.
 
 Défauts communs, à corriger côté runtime/prompt (Codex) :
 1. Chaque limite commence par « Lecture sur extrait partiel ; les passages omis ne sont pas
-   vérifiés », **même pour I12** dont l'extrait (246 caractères) est la source entière : la
-   mention doit dépendre de `excerptTruncated`/`textChars`. Elle se cumule souvent avec la
-   même idée reformulée par le modèle (effort de lecture).
+   vérifiés ». `renderBrief` @23cf0be l'ajoute quand `excerptTruncated` n'est pas `false` :
+   pour I12, la fixture synthétique ne déclarait pas sa couverture, donc le défaut sûr
+   s'applique (correction de ma première lecture : ce n'est pas un défaut du runtime ; les
+   fixtures doivent déclarer `textChars`). Reste un point d'effort de lecture : la mention se
+   cumule souvent avec la même idée reformulée par le modèle.
 2. Rattachement abusif au « pilote Mac » (I01) : le contexte doit distinguer ce qui tourne
    dans le pilote (OpenClaw, Jev, Node) des projets d'Ivan en général. Proposition de
    consigne : « Ne rattache une source au pilote que si le composant y est nommé dans le
