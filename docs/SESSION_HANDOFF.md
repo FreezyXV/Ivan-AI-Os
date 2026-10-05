@@ -1,3 +1,107 @@
+## État courant — sélection active et Sentinelle retrouvé (2026-10-05)
+
+Cette section remplace les états historiques ci-dessous « endpoint non activé »
+et « producteur inconnu ». Branche agent/codex/mac-alerts-pilot, PR #48 sur #47.
+Lire docs/MAC-PILOT-OPERATIONS.md, docs/SENTINELLE-INTEGRATION.md et
+docs/ALERTS-RUNTIME.md ; poursuivre docs/PROJECT-CHECKLISTS.md.
+
+Jev /v1/alerts/select est actif sur 4311, LaunchAgent épinglé à la release
+alerts-59fbd7e : gateway 59fbd7e, runner Mac cc1d2a5. Token, Trousseau et
+compteur préservés ; zéro appel fournisseur à la bascule. Health et refus
+Career vérifiés. Deux cas Finance synthétiques atteignent le vrai Jev via le
+client du moteur ; aucun seuil réel ou conseil financier n'est revendiqué.
+Preuves privées : ~/.ivan-ai-os/background-alerts-59fbd7e/{activation,live-probe,finance-probe}.json.
+
+Sentinelle @sentinelleenginebot est produit par FreezyXV/sentinelle sur GitHub
+Actions, quatre passages par jour et digest hebdomadaire, MODE=ombre confirmé.
+Sa perte des dates RSS et l'absence de lecture des pages sont reproduites.
+PR Sentinelle #1, codex/collector-export : export public sans profil, décision
+ni message. Passage réel : 40 candidats récents, 139 anciens écartés, huit
+flux accessibles. Aucun changement du workflow existant, de main ou des secrets.
+
+Consommateur Mac : 40 ingestions, une première page réellement lue et une
+sélection Jev review, sans génération ni livraison automatique. Deux refus de
+date sont reproduits puis corrigés (classe HTML des notes courtes) ; un passage
+sans sélection met à jour ces deux doublons : trois pages lues au total,
+37 sources non supportées non lues, zéro appel Jev supplémentaire.
+Premier lecteur limité aux
+permaliens datés du blog Simon Willison ; date de la page et empreinte vérifiées.
+La file accepte maintenant une preuve de lecture pour un doublon RSS encore
+pending ou review/SOURCE_NOT_READ, sans rouvrir une tentative d'envoi.
+
+Une prévisualisation manuelle, rédigée et relue par Codex sur cette source,
+est reçue sur Secrétaire Ivan : reçu natif 57 et contrôle visuel Telegram.
+Elle annonce explicitement l'essai manuel et laisse la sélection en revue.
+Preuves privées : ~/.ivan-ai-os/alert-source-pilot-20261005/.
+Pour naviguer dans Telegram : Cmd+K, recherche, Entrée ; Cmd+flèche droite
+ouvre le profil. Les clics AX défaillants ne doivent plus être répétés.
+
+Tests : gateway 58, managers 18, file/adaptateurs 29, diagnostic 2, lecteur
+Python 4 : 111 passent. Export Sentinelle : 5 tests distincts passent.
+Les tests HTTP nécessitent une permission réseau locale ; le premier lancement
+sandbox a échoué sur listen EPERM, puis le relancement autorisé passe entièrement.
+
+Reste à livrer : contrat/corpus Claude K01/K02, lecteurs supplémentaires,
+récupération des exports et planning unique, générateur de synthèse, digest,
+test automatique avec reçu avant de couper l'ancien mode de Sentinelle.
+Career reste en pause, Workshop en propose ; Knowledge/Anakalypto à la fin,
+OVH reporté. Ne pas toucher au worktree Claude ni à ses trois hooks non commités.
+La prévisualisation manuelle ne constitue pas une preuve de ce parcours complet.
+
+## Historique — pauses durables et sélection préparée (2026-10-05)
+
+Lire docs/MAC-PILOT-OPERATIONS.md. Le registre natif révèle huit tâches après
+pause complète Career : six revues Workshop sont désormais désactivées en
+mode propose (runtime incompatible prouvé dans le code installé), heartbeat
+et consolidation mémoire restent actifs. Six rôles actifs, sept définis dans
+le projet ; définition/workspace Career conservés. Secrétaire inchangée.
+Preuves privées : ~/.ivan-ai-os/pause-career-complete-20261005/result.json et
+~/.ivan-ai-os/workshop-propose-20261005/result.json. Aucun nouveau modèle.
+scripts/inspect-mac-pilot.mjs vérifie santé/budget et tâches par API native,
+sans exposer les journaux ; ne plus déduire zéro tâche d'un ancien jobs.json absent.
+Lire docs/ALERTS-RUNTIME.md : endpoint candidat /v1/alerts/select, contexte fixe,
+même bearer/budget/audit ; client loopback, délais par étape, reçus conservés.
+58 tests gateway, 22 file/client, deux diagnostic, 18 managers : 100 tests OK.
+Sources candidat, endpoint non activé. Mac verrouillé pendant lecture
+Telegram ; Sentinelle montre calibrage/liens/scores, producteur toujours inconnu.
+Claude n'a pas encore publié telegram-syntheses ; ne pas toucher à ses trois
+fichiers hooks/claude non commités. Son skill jev-decision garde des passages
+obsolètes (« classify n'existe pas ») : à corriger dans son audit K05.
+Source commit 59fbd7e et release privée alerts-59fbd7e préparés ; runner
+cc1d2a5 conservé avec provenance distincte. Probe de la vraie copie figée :
+health, authentification et exclusion Career OK, zéro appel fournisseur.
+Candidate ~/.ivan-ai-os/background-alerts-59fbd7e/settings.json valide,
+settings/plist/jeton/budget live inchangés. Pas de lecture du Trousseau.
+Bascule encore à faire lorsque le Mac est déverrouillé ; ne pas reprovisionner.
+
+## Checklists et file des alertes — Codex (2026-10-05)
+
+Lire docs/PROJECT-CHECKLISTS.md : 25 tâches Codex et 10 tâches Claude avec
+critères de fin, dépendances et zones d'écriture. Codex pilote l'intégration,
+Claude démarre rapport-telegram/contrat/corpus sur sa branche séparée ;
+Knowledge/Anakalypto dernière étape commune, Career suspendu, OVH différé.
+Lire docs/ALERTS-RUNTIME.md : file SQLite candidate, 15 tests synthétiques,
+doublons interbots, baux et crash, envoi incertain retenu sans renvoi automatique.
+Sélection/synthèse/envoi injectés, aucune collecte ou livraison live raccordée.
+Finance : régression prouvée sur judge (0 appels au lieu de 2), valeurs publiques
+formatées désormais acceptées dans le gateway source, sans modifier le moteur
+Claude. Gateway complet 53/53 tests ; file alertes 15/15 tests, CI ajoutée.
+Ce lot ne remplace pas encore le service Jev actif.
+
+## Priorités Ivan — pilote Mac et alertes utiles (2026-10-05)
+
+Lire docs/MAC-PILOT-PRIORITIES.md et docs/HANDOFF-CLAUDE-ALERTS-2026-10-05.md.
+Career en pause pour plusieurs mois, données préservées. Finaliser Knowledge/
+Anakalypto à la toute fin avec Codex + Claude. OVH reporté pendant le pilote Mac.
+Priorité aux synthèses Telegram sourcées et utiles au contexte, pas aux liens seuls.
+Codex : pipeline/filtre/collectes/envoi ; Claude : rapport-telegram, contrat éditorial
+et évaluations. Pas de modification concurrente des fichiers de l'autre.
+Sentinelle non identifié dans le dépôt/LaunchAgents examinés ; ne pas annoncer
+un raccordement ou des nouvelles alertes actifs avant preuve. Pause Career appliquée : retiré des allowAgents du chef, config native validée,
+restart sain ; workspace Career et reste de config conservés. Préférences USER.md
+ajoutées sans remplacer le contenu existant. Preuve privée :
+~/.ivan-ai-os/pilot-mac-20261005/result.json. Synthèses live pas encore activées.
+
 ## Reprise Codex — capacités et skills OpenClaw (2026-10-04)
 
 Lire docs/OPENCLAW-READ-SKILLS.md. Branche agent/codex/openclaw-capability-skills,

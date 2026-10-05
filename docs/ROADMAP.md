@@ -1,3 +1,13 @@
+# Priorités du pilote Mac — 2026-10-05
+
+Décision Ivan : Career en pause ; finalisation Knowledge/Anakalypto à la fin avec
+Codex + Claude ; OVH reporté. Les cases historiques ci-dessous décrivent les
+livraisons, pas l'ordre de travail actuel. Lire docs/MAC-PILOT-PRIORITIES.md.
+Priorité : alertes Telegram synthétiques contextualisées, filtrage et dédoublonnage,
+puis collectes locales, fiabilité, usine logicielle et System.
+Suivi opérationnel jusqu'à la livraison : docs/PROJECT-CHECKLISTS.md,
+25 tâches Codex / 10 tâches Claude avec preuves de fin et répartition des fichiers.
+
 # Implementation Roadmap
 
 ## Phase 0 — Foundation

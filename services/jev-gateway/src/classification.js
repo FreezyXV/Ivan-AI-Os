@@ -57,6 +57,9 @@ export const QUESTIONS = Object.freeze({
   },
   "alerte.importante": {
     fields: ["indicateur", "ancien", "nouveau", "seuil"], required: ["indicateur", "ancien", "nouveau", "seuil"],
+    // The Finance engine sends formatted public values, e.g. "12 %" and
+    // "±10 % sur 7 jours". Keep numeric inputs compatible as well.
+    formattedFields: ["ancien", "nouveau", "seuil"],
     prompt: yesNo("Determine if this public market-indicator change merits a concise informational alert. Do not recommend a transaction.",
       "Meaningful threshold crossing with decision relevance.", "Routine fluctuation or insufficient context for an alert.")
   },
@@ -107,10 +110,11 @@ export function validateClassification(payload) {
       Object.keys(input).some(key => !spec.fields.includes(key)) ||
       spec.required.some(key => !Object.hasOwn(input, key))) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
   for (const [key, value] of Object.entries(input)) {
-    if (NUMERIC_FIELDS.has(key) ?
-      !(typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1_000_000) :
-      !(typeof value === "string" && value.length > 0 && value.length <= 500 &&
-        !CREDENTIALS.test(value) && !CONTACT.test(value))) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
+    const validNumber = typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1_000_000;
+    const validText = typeof value === "string" && value.length > 0 && value.length <= 500 &&
+      !CREDENTIALS.test(value) && !CONTACT.test(value);
+    const valid = spec.formattedFields?.includes(key) ? validNumber || validText : NUMERIC_FIELDS.has(key) ? validNumber : validText;
+    if (!valid) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
     if (key === "domaines" && value !== domains.join(",")) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
   }
   return { question, input, spec };
