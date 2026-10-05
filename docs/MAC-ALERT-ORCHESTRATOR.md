@@ -75,9 +75,13 @@ Seuls les aliases de permaliens Next.js perdent leur barre finale ; les chemins
 des autres sites restent distincts (Simon exige notamment cette barre).
 
 Validation du lot : 59 tests alertes/diagnostic, 58 gateway, 7 lecteur et 6 export,
-soit 130 tests. Les neuf tests Node de régression et le cas Python de décision
-après introduction échouaient avant le correctif (le test de reprise ajouté
-ensuite étend la couverture). Ceci est une preuve source, pas une preuve live.
+soit 130 tests. Huit tests Node de régression et le cas Python de décision après
+introduction échouaient avant le correctif ; le test de reprise ajouté ensuite
+étend la couverture. Deux tests supplémentaires vérifient le rechargement launchd.
+Après bootout, bootstrap peut renvoyer EIO pendant le déchargement du précédent
+job : huit tentatives courtes au maximum, uniquement sur code 5, aussi lors du
+retour à l'ancien plist. Aucun retry sur erreur permanente ni élévation root.
+Ceci est une preuve source, pas une preuve live.
 
 ## Moteurs
 

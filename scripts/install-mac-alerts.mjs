@@ -5,6 +5,7 @@ import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {pathToFileURL} from 'node:url';
+import {bootstrapWithRetry} from './reload-launch-agent.mjs';
 const run=promisify(execFile),label='com.ivan-ai-os.alerts';
 const xml=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 export function launchAgent({node,releaseRoot,settingsPath,stateDir}){
@@ -53,13 +54,13 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
     try{
      const temp=plist+'.update';writeFileSync(temp,body,{mode:0o600,flag:'wx'});renameSync(temp,plist);
      await run('/usr/bin/plutil',['-lint',plist],{timeout:5000});
-     await run('/bin/launchctl',['bootstrap',`gui/${process.getuid()}`,plist],{timeout:10000});
+     await bootstrapWithRetry({run,domain:`gui/${process.getuid()}`,plist});
     }catch(error){
      writeFileSync(plist,previousBody,{mode:0o600});
-     await run('/bin/launchctl',['bootstrap',`gui/${process.getuid()}`,plist],{timeout:10000});
+     await bootstrapWithRetry({run,domain:`gui/${process.getuid()}`,plist});
      throw Error('ALERT_UPDATE_ROLLED_BACK');
     }
-   }else await run('/bin/launchctl',['bootstrap',`gui/${process.getuid()}`,plist],{timeout:10000});
+   }else await bootstrapWithRetry({run,domain:`gui/${process.getuid()}`,plist});
   }
   console.log(JSON.stringify({status:mode==='--prepare'?'PREPARED':'ACTIVE',label,sourceCommit:settings.sourceCommit,intervalSeconds:300,plist}));
  }catch(error){console.error(/^[A-Z_]{3,60}$/.test(error.message)?error.message:'ALERT_INSTALL_FAILED');process.exitCode=1;}
