@@ -42,7 +42,9 @@ Le test automatisé inclut aussi une archive et un crash pendant l'envoi :
 la citation/le reçu sont restitués et l'envoi devient incertain sans être rejoué.
 
 Pour restaurer, copier `alerts.sqlite` et `archive/` dans un nouveau dossier privé,
-vérifier ses données puis préparer des settings qui désignent ce dossier.
+fixer explicitement les permissions des dossiers à 0700 et des fichiers à 0600
+(une copie récursive dépend de la plateforme), vérifier les données puis préparer
+des settings qui désignent ce dossier.
 Ne pas ouvrir la sauvegarde immuable avec le worker : travailler sur une copie.
 Ne jamais remplacer directement la base active. Une migration de production
 reste une activation distincte après contrôle du snapshot et arrêt du worker.

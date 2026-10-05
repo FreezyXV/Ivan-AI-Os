@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,rmSync,readFileSync,writeFileSync,mkdirSync,cpSync} from 'node:fs';
+import {mkdtempSync,rmSync,readFileSync,writeFileSync,mkdirSync,cpSync,chmodSync,readdirSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {tmpdir} from 'node:os';
@@ -85,6 +85,10 @@ test('restoring a real backup preserves archived proof and reconciles an interru
  assert.equal(result.status,0,result.stdout+result.stderr);
  const restored=path.join(dir,'restored');mkdirSync(restored,{mode:0o700});cpSync(path.join(backup,'alerts.sqlite'),path.join(restored,'alerts.sqlite'));
  cpSync(path.join(backup,'archive'),path.join(restored,'archive'),{recursive:true});
+ // Node's recursive copying has platform-dependent directory permissions.
+ // Restores must explicitly keep the ledger's private-directory contract.
+ chmodSync(path.join(restored,'archive'),0o700);
+ for(const name of readdirSync(path.join(restored,'archive')))chmodSync(path.join(restored,'archive',name),0o600);
  const clone=openLedger(path.join(restored,'alerts.sqlite'),{now:()=>Date.parse('2026-12-05T10:00:00Z')});
  try{assert.equal(clone.reconcile(),1);assert.equal(clone.get(unknown.id).state,'delivery_unknown');assert.equal(clone.claim(),null);
   assert.equal(clone.get(first.id).brief.message,'Une preuve conservée.');assert.equal(clone.get(first.id).receipt.messageId,'one');
