@@ -1,6 +1,7 @@
 ---
 name: revue-croisee
 description: Protocole de relecture croisée entre agents (Claude Code ↔ Codex) sur un même dépôt, sans se gêner - worktree séparé, lecture seule du travail de l'autre, constats prouvés par une commande, correctifs minimaux sur une branche agent/<nom>/<sujet>, note de revue et PR relue avant fusion. Utiliser dès qu'il faut relire, auditer ou compléter le travail d'un autre agent, reprendre une branche, ou quand Ivan dit "relis", "vérifie ce qu'a fait Codex/Claude", "aide-le sans le gêner".
+compatibility: "claude-code, codex"
 metadata:
   version: "1.0.0"
   famille: engineering

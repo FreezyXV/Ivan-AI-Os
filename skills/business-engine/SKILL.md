@@ -1,6 +1,7 @@
 ---
 name: business-engine
 description: Moteur d'opportunités d'Ivan (Opportunity Manager) - collecter des signaux publics de problèmes monétisables, les dédoublonner, mesurer leur récurrence, noter les opportunités sur preuves et les classer Cash (1er euro en 30 jours) ou Venture, puis livrer un top 3 actionnable. Utiliser pour toute veille business, recherche d'opportunités, d'arbitrages, de services ou de SaaS, "trouve-moi des opportunités", "cycle business", ou quand une alerte Sentinelle business arrive.
+compatibility: "claude-code, codex, openclaw"
 metadata:
   version: "1.1.0"
   famille: business
@@ -11,6 +12,9 @@ metadata:
   provenance: "Ivan-AI-Os, roadmap v1 section 11 (Business Engine), 2026-09-29"
 ---
 # Business Engine
+
+Sans shell (OpenClaw) : ne pas lancer les scripts ; lire les résultats préparés avec
+`ivan_business_brief` (adaptateur Codex) et signaler EMPTY/UNAVAILABLE sans inventer.
 
 Mission : détecter des **preuves** de problèmes monétisables, pas produire « 10 idées de SaaS ».
 Outil : `node skills/business-engine/scripts/signals.mjs` (registre privé hors Git).

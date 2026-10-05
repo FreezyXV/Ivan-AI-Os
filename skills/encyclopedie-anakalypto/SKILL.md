@@ -1,6 +1,7 @@
 ---
 name: encyclopedie-anakalypto
 description: Moteur de contenu Anakalypto - trouver beaucoup de sujets captivants (pages les plus consultées + série « Après l'apocalypse »), les faire trier et classer par Jev dans les 19 domaines en priorisant les domaines sous-couverts, rédiger des fiches courtes (≤ 2 min de lecture) centrées sur un visuel ou une interaction, vérifier les faits par code et publier seulement avec la décision Jev. Utiliser dès qu'Ivan parle d'Anakalypto, de fiches, d'un "nouveau lot", de sujets à couvrir, de la série reconstruction, ou d'une fiche de connaissance.
+compatibility: "claude-code, codex"
 metadata:
   version: "2.0.0"
   famille: knowledge
