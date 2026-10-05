@@ -1,33 +1,33 @@
-# Passation Claude — 2026-10-05 (soir)
+# Passation Claude — 2026-10-05 (fin de journée)
 
-Statuts : **source** = code/doc en PR brouillon, rien de fusionné ni d'activé ; **évalué** = noté
-ou sondé par Claude ; **runtime réel** = vérifié par Codex sur le Mac (preuves privées Codex).
+## Ordre d'intégration et commits exacts (fusion à blanc vérifiée : sans conflit ; 75/75 tests)
+1. #49 `277588c` — hook garde-fous (déjà installé par Codex)
+2. #50 `e84f9a3` — contrat éditorial K01–K03 et corpus
+3. #51 `f2a7f33` → #52 `b4f95e0` → #53 `d53d11b` — K05 (Jev, managers, compatibilité)
+4. #54 `a90c1fc` — K04 ; **ensuite seulement**, Codex retire ses adaptations ICP/Kraken
+5. #55 `7a89e09` — K06 (empilée sur #50 : retarget vers foundation/v1 après #50)
+6. #58 `e0e6b78` — jeux pertinence-v1, calibration-jev-v1, contrôle v2, rapport de calibration
+7. #56 — relectures K07, K09, K08, passation (documentation)
+8. #59 `b1245d7` → vers `agent/codex/alerts-integration` (intégration Codex)
 
-| Lot | PR @SHA | Statut | Ce qui est prouvé |
-|---|---|---|---|
-| Hook garde-fous | #49 @277588c | source + **installé par Codex** | 12/12 ; constitution/AGENTS/réglages : un avis négatif ou absent déclenche une demande ; commandes ordinaires sans question |
-| K01–K03 contrat | #50 @46c8756 | source | corpus 4 + 14 cas, vérificateur codé |
-| K04 Business/Finance | #54 @a90c1fc | source | HICP + Kraken `last` idempotent (relu par Codex) ; attribution à l'énergie retirée |
-| K05 skills/managers | #51, #52, #53 | source ; plan Codex @23cf0be conforme | sonde : aucun skill shell sur rôle OpenClaw, Engineering externe, Career PAUSED |
-| K06 qualité | #55 @116ef7f | **évalué** | 8 sorties natives réelles, notation à l'aveugle 27/32 vs 27/32 ; pertinence N/A |
-| K03/K06 jeu neuf | #58 @09380c6 | source | 15 cas, labels avant mesure, assembleur ; essai hors ligne 0 appel |
-| K07 #57 | #56 @(cette note) | **évalué** @23cf0be | saturation par `review` (prouvée), dédoublonnage par titre (prouvé), blob perdu |
+Plan Codex @d63a0c3 appliqué au registre combiné : aucun skill shell sur un rôle OpenClaw,
+Engineering `EXTERNAL_HANDOFF_REQUIRED`, Career `PAUSED`, Finance `publicContextOnly` sans
+`veille-investissements`. Point à reconfirmer : les skills `profil: oui` reçoivent sur OpenClaw
+un profil **filtré** (décision du 2026-09-29) ; à garder ou à retirer selon la règle du
+« contexte compact validé » du pilote.
 
-Rien n'est dans le runtime réel du fait de Claude, sauf le hook #49, installé par Codex.
-Aucune sélection Jev n'a été lancée par Claude ce jour, et aucun envoi Telegram n'a été fait.
+## Terminé (vérifié)
+- K01–K07 livrés en PR ; notation à l'aveugle des 8 sorties (27/32 contre 27/32) et verdict :
+  digest seulement, après les consignes de #59.
+- Calibration Jev : une passe, 188 appels ; politique calibrée keep ≥ 0,20 / skip ≥ 0,25,
+  0 faux keep.
+- Relecture @d63a0c3 : reviews anciennes corrigées ; adaptateur hook Codex conforme.
 
-## Prochaines actions
-1. Codex : passe Jev unique sur `pertinence-v1` (assembleur #58) ; corriger K07-1/2/3 ;
-   aligner la fraîcheur des interviews BCE (`/press/inter/`, 72 h contre 168 h pour les discours).
-2. Codex/Ivan : `node` du Mac = v23.9.0, en fin de vie et non couvert par l'avis de sécurité
-   Node.js du 2026-07-29 (lignes 26/24/22) ; décider de la ligne cible avant d'épingler le
-   LaunchAgent.
-3. Claude : noter la passe #58 avec `evaluer.mjs` ; relire le prochain SHA de #57
-   (rétention des `review`, `hooks/codex`, `backup-alert-state.py`).
+## Non vérifié
+- Passe Jev du contrôle v2 (5 appels, Codex) ; probabilités en production ; nuit de veille du
+  Mac ; un digest réel avec synthèse automatique ; restauration rejouée par Claude.
 
-## K09/K10 — limites ouvertes à reprendre
-- Pas de mesure d'un vrai cycle veille/réveil ni d'une période quotidienne de qualification.
-- Aucun KEEP Jev réel confirmé sur source indépendante ; seuils non calibrés.
-- Stockage d'archives croissant (pas de purge) ; dédoublonnage exact, non sémantique.
-- Coût de la prose (complétions natives) non exposé ; seuls les appels Jev sont mesurés.
-- Knowledge/Anakalypto en dernier ; Career en pause ; OVH reporté.
+## Bloquant
+- **Aucun keep en production** tant que #59 et la politique calibrée ne sont pas actives.
+- Constat K07-1 @d63a0c3 : un blob perdu interrompt le lot d'un flux.
+- `node` v23.9.0 en fin de vie sur le Mac (décision Ivan/Codex).
