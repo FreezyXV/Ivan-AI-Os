@@ -1,132 +1,139 @@
-# Benchmark d'architecture — où mettre code, Jev, LLM et humain (Claude, 2026-10-05)
+# Benchmark d'architecture — où mettre code, Jev, LLM et humain (Claude, 2026-10-05, révisé)
 
-**Code examiné** : `agent/codex/alerts-integration` @`f9b502f`. **Runtime actif observé** (diagnostic
-en lecture seule, non relu) : worker `a604aa6`, question Jev v3, politique de sélection
-`keep ≥ 0,20 / skip ≥ 0,25` (`coordinated-activation.json`), 0 synthèse générée à ce jour,
-715 appels Jev ce mois (0,027 €). Aucun appel payant n'a été fait pour ce rapport : il s'appuie sur
-les passes déjà enregistrées (`~/.ivan-ai-os/mac-alerts-f9b502f/`) et sur des évaluations hors
-ligne. Le nouveau benchmark est prêt pour **une** passe coordonnée par Codex (§ 6).
+**Code examiné** : `agent/codex/alerts-integration` @`752bded` (fusionné dans cette branche).
+**Runtime actif** (relais Codex, non relu par Claude) : worker `9f7f653`, gateway/plugin `1c769a3`,
+**mode conservateur E** = Jev v5 avec la règle 0,75, puis jugement et rédaction natifs, en digest
+seulement. Trois messages réellement livrés : reçu 59 (Simon Willison, ThinkingBox) et reçu 60
+(Next.js). Aucun appel payant et aucune nouvelle passe pour cette révision.
 
-## 1. Ce que disent les mesures existantes (labels figés avant mesure)
+## 0. Correction de la version précédente (6c6e36a)
 
-Jeu `dev` = calibration-jev-v1 (83 cas réels, lecteur de production ; 14 keep, 11 review, 58 skip).
+J'affirmais que la politique v5 « P(keep) ≥ 0,10 / P(skip) ≥ 0,20 » retenait 25 cas de bruit.
+**C'était faux.** Mon calcul hors ligne donnait la priorité à keep quand les deux seuils étaient
+atteints, alors que `selectionOutcome` (runtime @752bded) rend **review** dans ce cas. Recalculé avec
+la fonction du runtime sur dev (83 cas) : **10/14 utiles, 0 bruit, 58/83 exacts**, ce qui confirme
+la revue de Codex. La recommandation « ne pas activer cette politique » est retirée ; Codex la
+garde de toute façon en réserve (1 faux keep sur le benchmark).
 
-| Architecture / politique | Keep retrouvés | Bruit retenu | Utiles écartés | Abstention | Exact |
-|---|---|---|---|---|---|
-| A. Règles seules (écrites sur dev) | 8/14 | **9** | 6 | 1 % | 75 % |
-| B. Jev v3, règle 0,75 | 0/14 | 0 | 0 | 88 % | 25 % |
-| B. Jev v3, **0,20/0,25 (actif)** | 2/14 | 0–1¹ | 0 | 71 % | 40–42 % |
-| B. Jev v3, P(keep) ≥ 0,30 / P(skip) ≥ 0,30 | 5/14 | 1 | 1 | 51 % | 57 % |
-| B. Jev v4 candidat, règle 0,75 | 9/14 | 3 | 0 | 65 % | 42 % |
-| B. **Jev v5 candidat, règle 0,75** | **6/14** | **0** | **0** | 58 % | 55 % |
-| B. Jev v5, politique enregistrée P(keep) ≥ 0,10 / P(skip) ≥ 0,20 | 14/14 | **25** | 0 | 1 % | 66 % |
-| B. Jev v5, brut (confiance ignorée) | 10/14 | 6 | 2 | 11 % | 78 % |
+## 1. Mesures sur dev (calibration-jev-v1, labels figés, `selectionOutcome` du runtime)
 
-¹ Deux passes v3 du même jour sur les mêmes entrées diffèrent sur 3 cas sur 94 : 0 faux keep dans
-la passe Claude, 1 dans la passe Codex. Jev est **presque** stable, pas parfaitement.
-
-Contrôle v2 (12 cas, déjà mesuré par Codex avec v5 + P(keep) ≥ 0,10) : 11/12, mais 7 cas sont
-tranchés par le code et les deux keep sont synthétiques et faciles. Ce n'est pas une validation de
-cette politique. Le seul désaccord, V12 (alerte Telegram conditionnelle, labellisée review), est
-passé en keep à P(keep) = 0,94 : **désaccord maintenu**. Sans inventaire, ce cas ne peut être
-qu'un digest prudent, jamais une urgence.
-
-**Conclusion chiffrée** : la politique v5 enregistrée maximise le rappel en retenant 25 cas de
-bruit sur 69 non-keep : elle ne doit pas être activée. À zéro bruit observé, le meilleur point
-mesuré est **v5 + règle 0,75** (6/14 keep), trois fois mieux que la politique active (2/14).
-
-## 2. Nouveau benchmark (`skills/rapport-telegram/benchmark/architecture-v1/`)
-
-26 cas, labels figés avant toute mesure (empreinte `71ee9caf…`), disjoints de tous les corpus
-mesurés (vérifié par test). 21 réels lus par le lecteur de production, avec une collecte simulée à
-`publishedAt + 2 h` pour neutraliser la fraîcheur (tranchée par le code dans toutes les
-architectures). 5 synthétiques. On y trouve : 4 utiles (digest), 1 urgence conditionnée à
-l'inventaire, 4 plausibles mais insuffisants, 2 extraits incomplets, 11 bruits, 2 sujets
-différés, 1 injection, 1 titre seul. Plus 6 demandes de routage (dont des demandes mixtes) et
-3 pannes à injecter.
-
-Première mesure, **A (règles seules, figées sur dev avant ce jeu)** : 3/5 keep, 2 bruits retenus
-(A08 coût isolé, A10 annonce sans détails), 2 utiles écartés (A03/A04 : enseignements AGENTS.md
-qu'aucune règle lexicale ne voit), urgence 0/1, 73 % d'exacts, 0 appel, ≈ 0 ms.
-B, C et D restent à mesurer (§ 6).
-
-## 3. Les quatre architectures
-
-| | A. Règles | B. Règles + Jev | C. Règles + 1 LLM juge-rédacteur | D. Ciblée |
+| Politique | Utiles | Bruit | Écartés | Exact |
 |---|---|---|---|---|
-| Appels par élément lu | 0 | 1 Jev | 1 LLM | 1 Jev, puis 1 LLM seulement si Jev n'écarte pas |
-| Dépendances | aucune | gateway + TypeSafe | OpenClaw + modèle | les deux, mais LLM sur une fraction |
-| Point fort mesuré | exclusions sûres, 0 coût | `skip` très fiable (v3 : 24/24 corrects) | non mesuré | combine le filtre fiable et le jugement riche |
-| Point faible mesuré | sémantique (A03/A04), 9 bruits sur dev | `review` qui absorbe tout, sensible à la politique | coût et latence non exposés, juge et rédacteur confondus | deux fournisseurs ; à mesurer |
-| Panne d'un fournisseur | sans effet | review + un seul nouvel essai | review | Jev en panne : passage au LLM borné ; LLM en panne : review |
+| Règles seules (A) | 8/14 | 9 | 6 | 64/83 |
+| Jev v3, 0,20/0,25 | 2/14 | 0–1 | 0 | ≈ 34/83 |
+| Jev v5, 0,75 | 6/14 | 0 | 0 | 46/83 |
+| Jev v5, P(keep) ≥ 0,10 / P(skip) ≥ 0,20 | **10/14** | **0** | 0 | **58/83** |
 
-Sélectionner une information ne vaut jamais autorisation d'agir. Dans les quatre cas, l'action
-reste une proposition, et l'urgence immédiate est décidée par le code contre un inventaire local.
+## 2. Passe unique sur le benchmark neuf (26 cas, labels figés, par Codex @a604aa6)
 
-## 4. Recommandation par tâche
+Rescorée par Claude avec le scoreur strict (couverture complète vérifiée) :
 
-| Tâche | Recommandé | Pourquoi (preuve) |
+| Mode | Utiles /5 | Bruit retenu | Utiles écartés | Abstention | Exact /26 | Erreurs |
+|---|---|---|---|---|---|---|
+| A. Règles | 3 | 2 | 2 | 8 % | 19 | 0 |
+| B. Jev v5, 0,75 | **4** | **0** | 0 | 54 % | 19 | 1 Jev |
+| C. Natif juge et rédacteur | 4 | 3 | 0 | 27 % | 19 | 5 natives |
+| D. Jev skip, puis natif | 4 | 3 | 0 | 27 % | 19 | 5 natives |
+| E. Jev keep, puis natif (**actif**) | 3 | **0** | 0 | 58 % | 18 | 1 + 1 |
+
+Temps : Jev 402 ms en médiane, 645 ms au p95 ; natif 9349 ms en médiane, 17 464 ms au p95.
+Coût Jev de la passe : 0,00125 € estimé par le gateway ; coût natif non exposé.
+Urgence : 0/1 dans tous les modes (aucun inventaire n'est branché), ce qui est attendu.
+Les dates de collecte sont rejouées : ce benchmark ne prouve **pas** la fraîcheur d'une veille
+quotidienne réelle.
+
+### Cas à expliquer
+- **A02** (attaque d'agents contre Hugging Face, label keep) : Jev v5 répond review à 0,12
+  (P(keep) = 0,28). Le natif le retient avec un brief juste. C'est un vrai utile manqué par B et
+  E : Jev sous-estime les incidents de sécurité d'agents qui ne nomment pas un composant du
+  pilote.
+- **A03** (AGENTS.md 100 % contre skills 79 %, label keep) : Jev keep à 0,91, mais **erreur
+  native** (`ALERT_ASSESSMENT_UNAVAILABLE` après 18 s, avant le délai de 60 s). C'est la seule
+  raison de l'écart entre E (3/5) et B (4/5). 5 erreurs natives sur 22 (23 %), toutes entre
+  7 et 18 s : l'étape en échec n'est pas enregistrée dans la passe, donc la cause est inconnue.
+- **A07** (moratoire sur les descriptions de PR générées, label review) : le natif retient, avec un
+  brief fidèle et une action testable. **Désaccord de label défendable**, pas du bruit inutile ;
+  le label figé reste review.
+- **A10** (annonce « correctifs plus tard aujourd'hui », label review) : Jev en erreur, parce que
+  l'extrait contient l'adresse de contact publique `security@…` et que le gateway refuse tout texte
+  avec une adresse. Le natif retient. C'est du **bruit réel** : l'annonce est remplacée par la
+  publication effective (A01), dont elle est un doublon sémantique non détecté.
+- **A18** (« GitHub down again? », 67 caractères, label skip) : le natif retient sur une seule
+  phrase non vérifiée. **Bruit réel** : il manque une preuve minimale.
+- **A24** (synthétique, faille OpenClaw exploitée, label keep immédiat) : retenu en digest, avec
+  une action conditionnelle correcte. L'immédiat dépend d'un inventaire local (version installée,
+  exposition réseau) qui n'existe pas : rester en digest est le bon comportement en attendant.
+
+## 3. Qualité des sorties keep (fidélité / utilité / action / lisibilité, 0–2)
+
+| Sortie | F | U | A | L | Constat précis |
+|---|---|---|---|---|---|
+| A01 Next.js août | 1 | 1 | 2 | 2 | F1 ajoute « désactivent l'optimisation AVIF », présent dans l'extrait mais **pas dans sa citation** ; utilité « les projets d'Ivan utilisent Next.js » (non établi) |
+| A02 Attaque Hugging Face | 2 | 2 | 2 | 2 | action conditionnelle et proportionnée |
+| A04 Next.js 16.3 IA | 2 | 2 | 2 | 1 | trois faits denses ; conditionnel correct (« si un projet passe à 16.3 ») |
+| A07 Varda (désaccord) | 2 | 2 | 2 | 2 | utile pour l'usine logicielle ; label review maintenu |
+| A10 Annonce Next.js | 2 | 1 | 2 | 2 | fidèle mais redondant avec A01 ; « utilisent par défaut » |
+| A18 GitHub en panne | 2 | 0 | 1 | 2 | rumeur d'une ligne promue en alerte |
+| A24 OpenClaw (synth.) | 2 | 1 | 2 | 2 | « si OpenClaw est utilisé » alors qu'il est au cœur du pilote : l'inventaire doit trancher |
+| **Reçu 59 — plafonds budget** | 2 | **0** | **1** | 1 | voir ci-dessous |
+| **Reçu 59 — ThinkingBox** | 2 | 2 | 1 | 1 | F0 et F1 répètent « état final et effets de bord » ; « vingt fois » reste un fait, pas une exigence (bien) ; action « flux envisagés » un peu vague |
+| **Reçu 60 — Next.js septembre** | **1** | 1 | 2 | 1 | F0 affirme « dont une SSRF haute sévérité » alors que sa citation ne parle que des versions ; F0 et F1 se recouvrent ; « les projets d'Ivan utilisent Next.js » |
+
+Reçu 59, plafonds budget, détail :
+- F0 est une généralité sans valeur (« des API payantes peuvent générer des coûts »).
+- L'utilité « le plafond mensuel partagé de Jev peut être protégé… » se trompe de cible : Jev
+  (TypeSafe) est **déjà** plafonné en dur par le gateway, et ce plafond ne couvre rien d'autre.
+- L'action « services payants utilisés par Jev » est mal cadrée, puisque Jev n'utilise que TypeSafe.
+
+Version attendue, sans inventer de configuration :
+- *Utilité* : « Le pilote a un seul plafond dur connu : Jev/TypeSafe dans le gateway. Les autres
+  postes payants (complétions natives, abonnements Claude/Codex, API externes éventuelles) n'ont
+  pas de plafond imposé par Ivan AI OS ; leurs limites dépendent des offres des fournisseurs. »
+- *Action* : « Lister une fois chaque service payant du pilote avec son type de limite (dure,
+  alerte, aucune) ; ne rien activer sans ton GO. »
+
+Moyennes : fidélité 1,8 · utilité 1,2 · action 1,7 · lisibilité 1,6. La fidélité est bonne mais
+a deux fuites hors citation ; l'utilité reste l'axe faible.
+
+## 4. Causes et corrections
+
+| Défaut observé | Cause | Correction (périmètre) |
 |---|---|---|
-| Exclusions (différé, non lu, ancien, injection, doublon) | **Code** | déterministe, 0 coût ; 7/7 et 6/6 corrects hors ligne |
-| Routage vers un manager | **Code (table)** | table 19/19 contre Jev 17/19 avec 53 % de REVIEW (calibration du 29 septembre) |
-| Écarter le bruit d'un flux | **Jev** (côté `skip`) | v3 : 24/24 skip corrects ; v5 à 0,75 : 0 faux keep |
-| Retenir une information utile | **Jev v5 à 0,75**, puis **LLM** sur le reste | Jev seul plafonne à 6/14 ; jugement LLM non mesuré (§ 6) |
-| Urgence immédiate | **Code + inventaire**, jamais un modèle | V12 : P(keep) = 0,94 pour un cas conditionnel |
-| Rédaction de la synthèse | **LLM** (une complétion isolée) | fidélité 2/2 sur 8 sorties ; utilité 1,25/2 avant les consignes K06 |
-| Vérification de la synthèse | **Code** (citations, chiffres) + **humain** par échantillon | le code a laissé passer une erreur de fidélité dans mon propre exemple C1 |
-| Business : signal pertinent | **Non qualifié** : code + revue humaine du top 3 | aucune mesure Jev `signal.pertinent` sur un jeu figé |
-| Finance : importance d'un mouvement | **Code** (seuils) ; Jev seulement pour déclasser, après mesure | `alerte.importante` jamais évalué sur un jeu étiqueté |
-| Avis sur un outil (hook) | **Code** (niveau 0) + **humain** pour les garde-fous ; Jev en audit | décision PR #49 |
-| Reprise après panne, réservations, reçus | **Code** uniquement | idempotence et baux SQLite testés |
-| Action externe, dépense, publication | **Humain** | constitution |
+| « Les projets d'Ivan utilisent Next.js » (A01, A10, reçu 60) | fait de contexte v5 : « Les projets web utilisent par défaut Next.js » | **Codex, `context.js`** : « Les nouveaux projets web partent par défaut sur Next.js/TypeScript ; l'inventaire des projets existants et de leurs versions n'est pas connu du système. » |
+| Utilité budget centrée sur Jev (reçu 59) | fait v5 : « Les services payants sont mesurés ; Jev partage un plafond mensuel » (seul Jev est mesuré) | **Codex, `context.js`** : « Jev (TypeSafe) a un plafond dur mensuel appliqué par le gateway. Les complétions natives et les autres services payants ne sont ni plafonnés ni mesurés par Ivan AI OS. » |
+| Affirmation hors de sa citation (A01 F1, reçu 60 F0) | le contrôle des nombres n'inspecte pas les identifiants | **Codex, `pipeline.js renderBrief`** : refuser un fait dont un sigle ou identifiant (≥ 3 majuscules, `CVE-…`, `GHSA-…`, `v1.2.3`) est absent de sa citation (« SSRF » et « AVIF » auraient été refusés) ; **Claude** : règle ajoutée au contrat et au skill |
+| Faits répétés ou génériques (reçu 59 ×2, reçu 60) | prompt | **Claude** : contrat § 3 et skill ; **Codex** : reprendre la règle dans `synthesisPrompt` |
+| Rumeur d'une ligne promue (A18) | pas de seuil de preuve | **Codex** : extrait de moins de 200 caractères avec une seule affirmation non attribuée → review sans appel natif |
+| Annonce remplacée par la publication (A10/A01) | pas de dédoublonnage sémantique | **Claude** : critère au contrat (une annonce « publiera plus tard » sans correctif = review) |
+| Erreur Jev sur adresse publique (A10) | le gateway refuse tout texte contenant une adresse | **Codex** : remplacer côté client, **avant** l'appel Jev et pour les seules sources publiques lues, les adresses de contact par `[adresse de contact publique]` ; le refus du gateway reste en place pour tout le reste ; aucune donnée privée ajoutée |
+| 23 % d'erreurs natives sans étape connue | journal de passe incomplet | **Codex** : enregistrer l'étape (`COMPLETE`, `PARSE`, `VALIDATE`) et le code d'erreur de validation (déjà annoncé dans sa revue) |
+| Chrome de page dans la citation (ThinkingBox « Back to Articles … ») | lecteur Hugging Face | **Codex** : nettoyer l'en-tête dans `read-public-alert.py` |
 
-## 5. Jev : qualifié, non qualifié, inutile
+## 5. Recommandation par tâche (révisée)
 
-| Usage | Statut | Condition |
+| Tâche | Recommandé | Preuve |
 |---|---|---|
-| Écarter le bruit (`skip`) dans la veille | **Qualifié** | v3/v5, labels figés ; garder une repasse mensuelle |
-| Retenir (`keep`) dans la veille | **Qualifié partiellement** | seulement v5 + 0,75 ; rappel 6/14 ; jamais la politique P(keep) ≥ 0,10 |
-| Routage | **Non qualifié** | une table fait mieux |
-| `signal.pertinent`, `preuve.suffisante`, `alerte.importante`, `source.fiable`, `sujet.*`, `publication.prete` | **Non qualifiés** | aucun jeu figé mesuré ; à évaluer avant d'en dépendre |
-| Urgence, autorisation, reprise, dédoublonnage | **Inutile** | code déterministe suffisant ou obligatoire |
+| Exclusions (différé, non lu, ancien, injection, doublon exact) | **Code** | déterministe, 0 coût |
+| Routage | **Code (table active)** | table 19/19 contre Jev 17/19 ; aucun appel `/v1/route` présenté comme mesure Jev |
+| Retenir pour le digest | **Jev v5, 0,75** (B/E) | 4/5 puis 3/5, 0 bruit ; natif seul (C/D) : 3 bruits |
+| Rédiger | **Natif**, seulement après Jev keep (E) | évite 3 bruits ; ≈ 9 s par synthèse |
+| Juger l'utilité par le natif seul | **Non recommandé** | C/D : A07 défendable, mais A10 et A18 sont du bruit réel |
+| Urgence immédiate | **Code + inventaire**, jamais un modèle | A24 |
+| Vérifier la synthèse | **Code** (citations, nombres, **identifiants**) + **humain** par échantillon | A01, reçu 60 |
+| Business, Finance (`signal.pertinent`, `alerte.importante`) | **Non qualifiés** | jamais mesurés sur un jeu figé |
+| Reprise, reçus, dédoublonnage | **Code** | tests existants |
+| Agir, dépenser, publier | **Humain** | constitution |
 
-## 6. Passe coordonnée proposée (Codex, une fois, aucune mesure concurrente)
+## 6. Jev qualifié, non qualifié, inutile
 
-Entrées : `benchmark/architecture-v1/fixtures.jsonl` (22 cas atteignent un fournisseur après les
-exclusions codées).
-- **B** : sélection Jev **v3 active** et **v5 + règle 0,75** → 44 appels Jev au plus.
-- **C** : une complétion isolée par cas, avec un prompt « juge puis rédige » :
-  `{"useful":true|false,"why":"…","brief":{…} seulement si useful}`, avec les consignes K06 et le
-  contrat `alert-editorial-v1` → 22 complétions.
-- **D** : dérivée des sorties v5 (skip → écarté) et de C sur les cas restants ; aucun appel en plus.
-- **Pannes** P01–P03 : injection par le banc de test, sans appel réel.
-- **Routage** R01–R06 : table contre `/v1/route` → 6 appels.
+| Usage | Statut |
+|---|---|
+| Sélection de veille, question `alerts.pertinence.mac-v3`, contexte v5, règle 0,75 | **Qualifié (rappel limité)** : 4/5 et 6/14 utiles, 0 bruit mesuré ; manque des incidents de sécurité génériques (A02) |
+| Même question avec P(keep) ≥ 0,10 / P(skip) ≥ 0,20 | **Réserve** : 10/14 et 0 bruit sur dev, mais 1 faux keep sur le benchmark |
+| Routage, `signal.pertinent`, `preuve.suffisante`, `alerte.importante`, `source.fiable`, `sujet.*`, `publication.prete` | **Non qualifiés** |
+| Urgence, autorisation, reprise, dédoublonnage | **Inutile** (code) |
 
-Sorties au format de `benchmark-architecture.mjs score` (`decision`, `delivery`, `ms`, `calls`,
-`error`) ; la prose des keep est notée sur les 5 axes du contrat. Coût : uniquement ce que
-renvoient `/v1/usage` et l'API native ; rien d'estimé n'est présenté comme facturé.
-
-## 7. Changements recommandés, classés par bénéfice mesurable
-
-1. **Ne pas activer la politique v5 P(keep) ≥ 0,10 / P(skip) ≥ 0,20** : elle retient 25 bruits
-   sur dev. Bénéfice : éviter un digest pollué.
-2. **Passer à la question v5 avec la règle 0,75** après la passe B sur ce benchmark : de 2/14 à
-   6/14 keep sur dev, à 0 bruit observé.
-3. **D** : envoyer au LLM juge seulement les cas que Jev v5 n'écarte pas. Gain attendu : moins
-   d'appels LLM qu'avec C (≈ 60 % des cas sont des skip fiables), à mesurer.
-4. **Routage en mode table** par défaut (PR #17), Jev en audit seulement.
-5. Corriger le constat K07 @d63a0c3 (blob perdu dans `ingest-alert-candidates`) si ce n'est pas
-   déjà fait à `a604aa6` : à relire au prochain SHA.
-6. Faire étiqueter 10 cas du benchmark par Ivan : mesurer l'accord entre annotateurs, puisque
-   tous les labels actuels viennent d'un seul annotateur (Claude).
-
-## 8. Désaccords et limites
-
-- **Avec Codex** : politique v5 P(keep) ≥ 0,10 (contestée par les chiffres du § 1) ; V12
-  (urgence conditionnelle).
-- Petits effectifs (14 keep sur dev, 5 sur le benchmark) : ces seuils sont des seuils de pilote,
-  pas des garanties.
-- Les synthétiques ne prouvent pas l'utilité de la veille réelle ; les flux de production
-  contiennent peu de positifs récents.
-- Aucune synthèse automatique réelle n'a encore été produite : la revue de la prose réelle
-  attend le reçu de Codex.
+## 7. Ce qui n'est pas prouvé
+Fraîcheur en veille réelle ; comportement pendant le sommeil du Mac ; coût des complétions
+natives ; utilité perçue par Ivan des trois messages livrés (à lui demander) ; un seul annotateur
+pour tous les labels (proposer à Ivan d'étiqueter 10 cas).
