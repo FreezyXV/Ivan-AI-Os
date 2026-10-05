@@ -217,3 +217,18 @@ test('invalid stage configuration cannot consume a queued source or masquerade a
  await processNext({ledger,now:at,select:async()=>{throw Error();}});
  assert.equal(ledger.retryTransient({minDelayMs:0}),0);
 });
+test('operator reader repair permits one changed evidence revision but never reopens an attempted send',async t=>{
+ const {ledger}=fixture(t);const original=item();const {id}=ledger.ingest(original);
+ await processNext({ledger,now:at,select:async()=>({decision:'review',confidence:0.8})});
+ const updated={...original,excerpt:'Une preuve différente, réellement lue, après correction du lecteur.'};
+ assert.equal(ledger.reviseReviewedEvidence(updated,{revision:'reader-clean-v2'}).revised,true);
+ await processNext({ledger,now:at,select:async()=>({decision:'review',confidence:0.8})});
+ assert.equal(ledger.reviseReviewedEvidence(original,{revision:'reader-clean-v2'}).revised,false);
+ assert.equal(ledger.get(id).state,'review');
+ assert.equal(ledger.reviseReviewedEvidence({...original,topic:'finance'},{revision:'reader-clean-v3'}).revised,false);
+ const {id:other}=ledger.ingest(item({url:'https://example.org/sent'}));
+ await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()});
+ await deliverReady({ledger,id:other,deliver:async()=>{throw Error();}});
+ assert.equal(ledger.reviseReviewedEvidence({...updated,url:'https://example.org/sent'},{revision:'reader-clean-v2'}).revised,false);
+ assert.equal(ledger.get(other).state,'delivery_unknown');
+});

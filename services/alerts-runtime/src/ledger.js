@@ -21,7 +21,9 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
     CREATE TABLE IF NOT EXISTS cycles(key TEXT PRIMARY KEY,name TEXT NOT NULL,status TEXT NOT NULL,
       owner TEXT,expires INTEGER,attempts INTEGER NOT NULL,updated INTEGER NOT NULL,metrics TEXT);
     CREATE TABLE IF NOT EXISTS digests(key TEXT PRIMARY KEY,ids TEXT NOT NULL,text TEXT NOT NULL,
-      owner TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER,updated INTEGER NOT NULL,receipt TEXT);`);
+      owner TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER,updated INTEGER NOT NULL,receipt TEXT);
+    CREATE TABLE IF NOT EXISTS evidence_revisions(id TEXT NOT NULL,revision TEXT NOT NULL,item TEXT NOT NULL,
+      brief TEXT,reason TEXT,updated INTEGER NOT NULL,PRIMARY KEY(id,revision));`);
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='retries'))db.exec('ALTER TABLE alerts ADD COLUMN retries INTEGER NOT NULL DEFAULT 0');
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
   const get=id=>{const r=db.prepare('SELECT * FROM alerts WHERE id=?').get(id);return r?{...r,item:JSON.parse(r.item),brief:r.brief?JSON.parse(r.brief):null,receipt:r.receipt?JSON.parse(r.receipt):null}:null;};
@@ -102,6 +104,21 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
       db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT') AND retries<1 AND updated<=?")
         .run(now(),now()-minDelayMs).changes);},
     get,
+    reviseReviewedEvidence(raw,{revision}={}){
+      // Explicit operator repair after a reader change, never a scheduled retry
+      // of a semantic decision. Preserve the old evidence and Jev receipt.
+      const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');
+      if(item.sourceStatus!=='read'||!/^reader-[a-z0-9-]{1,40}$/.test(revision??''))fail('ALERT_REVISION_INVALID');
+      return tx(()=>{
+        const old=get(id);
+        if(!old||old.state!=='review'||old.reason!=='SELECTION_UNCERTAIN'||old.item.sourceStatus!=='read'||
+           old.item.topic!==item.topic||old.item.publishedAt!==item.publishedAt||old.item.excerpt===item.excerpt||
+           db.prepare('SELECT id FROM evidence_revisions WHERE id=? AND revision=?').get(id,revision))return {revised:false};
+        db.prepare('INSERT INTO evidence_revisions VALUES(?,?,?,?,?,?)').run(id,revision,JSON.stringify(old.item),JSON.stringify(old.brief),old.reason,now());
+        db.prepare("UPDATE alerts SET item=?,state='pending',reason=NULL,brief=NULL,updated=? WHERE id=?").run(JSON.stringify(item),now(),id);
+        return {revised:true,id,revision};
+      });
+    },
     ownsLease(id,owner){const r=get(id);return !!r&&r.state==='processing'&&r.owner===owner&&r.expires>now();},
     counts(){return Object.fromEntries(db.prepare('SELECT state,count(*) AS n FROM alerts GROUP BY state').all().map(r=>[r.state,r.n]));},
     close(){db.close();}

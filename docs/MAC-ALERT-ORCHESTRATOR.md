@@ -31,6 +31,14 @@ concordant avec le flux, empreinte de réponse, HTTPS sans redirect, limites
 d'octets/délai. Un site hors périmètre ou incomplet reste non lu. Le lecteur
 n'est pas un navigateur universel et ne prétend pas lire les liens externes.
 
+La dernière release stable officielle OpenClaw est aussi collectée par son API
+publique : date réelle, changelog épinglé au tag, empreinte, aucun redirect vers
+main. Seules les nouveautés publiées depuis moins de 72 heures entrent en file.
+Le lecteur HF exclut maintenant l'interface `not-prose`, les auteurs et boutons.
+Une réparation opérateur de preuve déjà évaluée archive l'ancien extrait et son
+reçu Jev dans SQLite, ne modifie pas le sujet/date, ne rouvre jamais un envoi,
+et n'est permise qu'une fois par version du lecteur. Le planning ne l'appelle pas.
+
 Jev trie seulement les preuves lues, sur le budget commun existant. Maximum
 huit sélections et deux générations par passage de traitement. Confidences
 incertaines, sources anciennes et projets reportés ne produisent pas de message.
@@ -39,6 +47,8 @@ Le plugin `ivan-ai-os-alerts` fournit `ivan_alert_synthesize` à System seulemen
 Il utilise `api.runtime.subagent.complete` : complétion native isolée sans outils,
 bootstrap ou historique. Authentification gérée dans le gateway ; aucune clé
 copiée et aucun override de modèle. Citations et chiffres contrôlés avant READY.
+Le modèle référence des passages numérotés ; le code insère leurs citations
+exactes. L'extrait n'est pas injecté une seconde fois avec les métadonnées.
 Le service l'appelle après sélection ; le plugin seul n'est pas un juge de
 pertinence. Schéma `coded-brief-v1-provisional`, à relire avec Claude K01/K02,
 sans écrire à sa place dans ses skills/contrats.
@@ -57,6 +67,8 @@ dans services/alerts-runtime, sans modifier son skill : ICP retiré en février
 calcul. Sources : [BCE, changement de dataset](https://www.ecb.europa.eu/stats/inflation/html/index.mt.html),
 [nouvelle série totale](https://data.ecb.europa.eu/data/datasets/HICP/HICP.M.U2.N.000000.4D0.ANR).
 Une variation sans avis Jev disponible n'entre pas dans les synthèses automatiques.
+Un cycle partiellement indisponible est dégradé et conserve une tentative bornée
+après quinze minutes ; il ne compte pas comme une collecte complète réussie.
 URLs d'observation datées empêchent de supprimer à vie les événements futurs
 d'un même indicateur. Message « Relevé le » distingue relevé et publication.
 Aucun portefeuille, allocation personnelle ou transaction dans ce cycle.
@@ -78,3 +90,35 @@ La complétion native expose sa comptabilité interne ; sans usage/tarif disponi
 ne pas inventer un coût premium ni assimiler zéro coût Jev à zéro coût total.
 Le corpus indépendant Claude et une période de mesure sont encore nécessaires
 pour déclarer la qualité ou la fiabilité en usage quotidien.
+
+## Vérifications du 5 octobre — avant bascule du planning
+
+- 46 tests Node file/cycles/prose/envoi/installation, 6 lecteur Python et 5
+  collecteur : 57 passent. Gateway 58, managers 18 et diagnostic 2 passent dans
+  le lot précédent ; ils ne mesurent pas la qualité éditoriale.
+- Lectures publiques : neuf pages acquièrent une preuve. Un signal Ask HN entre
+  dans le vrai ledger Business et reçoit son tri Jev. Aucune preuve de paiement
+  ou opportunité rentable inventée. Finance : 5–6/7 réponses selon le passage ;
+  la série sous-jacente vérifiée directement répond bien avec septembre 2026.
+- Dix sélections réelles initiales/révision donnent revue ou rejet, aucune KEEP
+  suffisamment confiante. Les décisions sont conservées ; ni seuil abaissé ni
+  notification forcée. Ce résultat est un constat de calibration pour Claude K03.
+- Génération native sur une vraie source : premier résultat corrigé, 1136
+  caractères en 11118 ms. Test technique isolé : tri explicitement simulé,
+  génération native réelle, digest reçu 58, puis réouverture SQLite et zéro
+  second envoi/génération. L'avis Jev de production n'est pas modifié.
+- La route source réelle → KEEP Jev → digest reste à observer. Le test de
+  transport ne prouve pas cette sélection ni la pertinence quotidienne.
+- `usage.cost` de System affiche zéro entrée pour ces complétions isolées ; le
+  contrat native complete ne retourne que le texte. Ne pas interpréter ce zéro
+  comme gratuité : coût/tokens de prose non disponibles par cette API.
+
+Preuves privées : `~/.ivan-ai-os/mac-alerts-9572e42/` (lectures, révision,
+release officielle, test de transport). File commune conservée dans
+`~/.ivan-ai-os/mac-alerts-fff06c4/state/`. Aucun contenu privé dans ces docs.
+
+Installation réversible : `scripts/install-mac-alerts.mjs <settings> --prepare`,
+puis `--activate` après arrêt du workflow Sentinelle et contrôle de santé.
+Le plist épingle Node et la release ; aucun destinataire ou secret en arguments.
+Retour : `launchctl bootout gui/$(id -u)/com.ivan-ai-os.alerts`, puis
+`gh workflow enable sentinelle.yml --repo FreezyXV/sentinelle`. Pas les deux actifs.

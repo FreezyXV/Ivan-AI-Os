@@ -12,6 +12,7 @@ import {createJevSelector} from '../services/alerts-runtime/src/jev-selector.js'
 import {processNext} from '../services/alerts-runtime/src/pipeline.js';
 import {sendDigest} from '../services/alerts-runtime/src/digest.js';
 import {prefilter} from '../services/alerts-runtime/src/context.js';
+import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
 const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
 export async function collectFeeds({directory,ledger}){
@@ -21,7 +22,8 @@ export async function collectFeeds({directory,ledger}){
   await run('python3',[path.join(root,'scripts/collector_export.py'),'--config',path.join(root,'scripts/alert-feeds.json'),'--output',output],{timeout:125000,maxBuffer:65536});
   const envelope=JSON.parse(readFileSync(output));
   const result=await ingestCandidates({ledger,envelope,readLimit:8});
-  return {...result,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length};
+  let official;try{official=await collectOfficialRelease({ledger});}catch{official={error_code:'OFFICIAL_RELEASE_UNAVAILABLE'};}
+  return {...result,official,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length+(official.error_code?1:0)};
  }finally{rmSync(temp,{recursive:true,force:true});}
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
