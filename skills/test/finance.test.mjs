@@ -6,8 +6,9 @@ import path from "node:path";
 import { PARSERS, SOURCES, alerts, collect, judge, privateDir, report, saveSnapshot, snapshots } from "../finance-engine/scripts/veille.mjs";
 
 const ecb = (date, value) => JSON.stringify({ dataSets: [{ series: { "0:0": { observations: { "0": [value] } } } }], structure: { dimensions: { observation: [{ values: [{ id: date }] }] } } });
-// Kraken always returns the current, still-forming daily candle last (here 999).
-const kraken = (closes, start = Date.UTC(2026, 7, 29) / 1000) => JSON.stringify({ error: [], result: { XXBTZEUR: [...closes, 999].map((c, i) => [start + i * 86400, "0", "0", "0", String(c)]), last: 0 } });
+// Kraken always returns the current, still-forming daily candle last (here 999); `last` is the
+// time of the last committed candle.
+const kraken = (closes, start = Date.UTC(2026, 7, 29) / 1000) => JSON.stringify({ error: [], result: { XXBTZEUR: [...closes, 999].map((c, i) => [start + i * 86400, "0", "0", "0", String(c)]), last: start + (closes.length - 1) * 86400 } });
 const closes = (last, sevenAgo) => [...Array(23).fill(100), sevenAgo, ...Array(6).fill(100), last];
 
 function fixtureFetch({ failing = [], dfr = 2.5 } = {}) {
@@ -111,4 +112,8 @@ test("ECB inflation series use HICP (ICP retired in February 2026) and Kraken's 
   const parsed = PARSERS.kraken(kraken(closes(112, 100)));
   assert.equal(parsed.valeur, 112);
   assert.deepEqual(parsed.extra, { variation_7j_pct: 12, variation_30j_pct: 12 });
+  // Idempotent when a caller already removed the forming row (Codex runtime engines.js):
+  const prepopped = JSON.parse(kraken(closes(112, 100)));
+  prepopped.result.XXBTZEUR.pop();
+  assert.deepEqual(PARSERS.kraken(JSON.stringify(prepopped)), parsed, "no second candle is dropped");
 });

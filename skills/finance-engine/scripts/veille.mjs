@@ -57,8 +57,12 @@ export const PARSERS = {
     const j = JSON.parse(text);
     if (j.error?.length) fail("PARSE_KRAKEN");
     const key = Object.keys(j.result ?? {}).find(k => k !== "last");
-    // The last OHLC row is the current day, still forming: it is not a close.
-    const rows = j.result?.[key]?.slice(0, -1);
+    // The last OHLC row is the current day, still forming: it is not a close. Kraken's `last`
+    // is the time of the last committed candle; filtering on it is idempotent, so a caller that
+    // already removed the forming row (Codex runtime) does not lose a real close.
+    const all = j.result?.[key];
+    const committed = Number(j.result?.last);
+    const rows = Array.isArray(all) ? (committed > 0 ? all.filter(r => Number(r[0]) <= committed) : all.slice(0, -1)) : all;
     if (!Array.isArray(rows) || rows.length < 31) fail("PARSE_KRAKEN");
     const close = i => Number(rows.at(i)[4]);
     const last = close(-1);
