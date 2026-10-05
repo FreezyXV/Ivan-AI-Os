@@ -3,7 +3,7 @@ name: calibration-jev
 description: Mesurer la qualité des décisions Jev (routage vers les managers, détails manquants, urgence, avis sur action) sur des cas synthétiques étiquetés, avant de régler un seuil, d'ajouter une question ou de faire confiance à Jev pour un nouvel usage. Utiliser après la bascule du gateway, une fois par mois, quand un routage semble faux, avant tout changement de seuil ou de question, ou quand Ivan demande "Jev est-il fiable ?", "calibre Jev".
 compatibility: "claude-code, codex"
 metadata:
-  version: "0.2.1"
+  version: "0.3.0"
   famille: system
   manager: system
   risque: lecture
@@ -25,7 +25,21 @@ ne jamais calibrer dessus.
 | `route.urgency.v1` | `/v1/route` | score 0/1/2 conforme à l'urgence déclarée (± 0,25) |
 | `action.permission.v1` | `/v1/evaluate-tool` | hors du script : scénarios dédiés à écrire |
 
-Aucune autre question n'existe (`/v1/classify`, `offre.compatible`, `tache.outil` : non livrés).
+Depuis, `/v1/classify` (10 questions) et `/v1/alerts/select` existent ; voir `jev-decision`.
+
+## Sélection des alertes (jeux figés, déjà mesurés : ne pas les repasser)
+| Jeu | Rôle | État |
+|---|---|---|
+| `skills/rapport-telegram/corpus/calibration-jev-v1` | dev 83 + holdout 11 | v3, v4, v5 mesurés |
+| `skills/rapport-telegram/corpus/controle-v2` | contrôle 12 cas | mesuré une fois (11/12) |
+| `skills/rapport-telegram/benchmark/architecture-v1` | benchmark A–E, 26 cas | mesuré une fois |
+
+Règles : labels fixés avant mesure ; recalculer **hors ligne** avec `selectionOutcome` du runtime
+(`scripts/calibrate-alert-selection.mjs`), jamais avec un calcul maison ; scoreur strict
+(couverture exacte des identifiants, doublons, inconnus et valeurs invalides refusés, erreurs et
+absences comptées). Un jeu mesuré n'est plus neuf : toute nouvelle politique se valide sur un jeu
+nouveau. Repasse seulement si la question, le contexte ou le modèle Jev changent, par une seule
+passe coordonnée avec Codex.
 
 ## Procédure
 1. **Hors réseau** (gratuit) : `node scripts/calibrate-jev-routing.mjs` → `corpus_valid: true`.
