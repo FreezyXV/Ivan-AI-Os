@@ -25,6 +25,26 @@ class SourceError(Exception):
     pass
 
 
+def supports_source(value):
+    try:
+        u = urllib.parse.urlsplit(value)
+        if u.scheme != "https" or u.username or u.password or u.port or u.fragment:
+            return False
+        if u.hostname == "simonwillison.net":
+            return bool(re.fullmatch(r"/\d{4}/[A-Z][a-z]{2}/\d{1,2}/[a-z0-9-]+/", u.path)) and not u.query
+        if u.hostname == "huggingface.co":
+            return u.path.startswith("/blog/") and not u.query
+        if u.hostname == "nextjs.org":
+            return u.path.startswith("/blog/") and not u.query
+        if u.hostname == "www.ecb.europa.eu":
+            return u.path.startswith(("/press/", "//press/")) and u.path.endswith(".html") and not u.query
+        if u.hostname == "news.ycombinator.com":
+            return u.path == "/item" and bool(re.fullmatch(r"id=\d{1,12}", u.query))
+    except ValueError:
+        pass
+    return False
+
+
 def source_url(value):
     u = urllib.parse.urlsplit(value)
     if u.scheme != "https" or u.netloc != "simonwillison.net" or u.query or u.fragment:
@@ -107,6 +127,72 @@ class BlogParser(HTMLParser):
                 self.parts.append(value)
 
 
+class ArticleParser(HTMLParser):
+    """Extract the explicit content container, never the page's navigation."""
+    def __init__(self, host):
+        super().__init__(convert_charrefs=True)
+        self.host, self.title, self.page_date = host, None, None
+        self.stack, self.parts = [], []
+        self.active, self.ignored = False, False
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "meta":
+            if attrs.get("property") == "og:title": self.title = attrs.get("content")
+            if attrs.get("property") == "article:published_time": self.page_date = attrs.get("content")
+        if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}: return
+        self.stack.append((self.active, self.ignored))
+        classes = set(attrs.get("class", "").split())
+        starts = ((self.host == "www.ecb.europa.eu" and tag == "main") or
+                  (self.host in {"huggingface.co", "nextjs.org"} and
+                   ("prose" in classes or "blog-content" in classes)) or
+                  (self.host == "news.ycombinator.com" and "toptext" in classes))
+        self.active = self.active or starts
+        self.ignored = self.ignored or tag in {"script", "style", "nav", "footer", "aside", "noscript"}
+        if self.active and tag in {"p", "li", "h1", "h2", "h3", "blockquote", "div"}: self.parts.append("\n")
+        if self.host == "news.ycombinator.com" and tag == "span" and "age" in classes and self.page_date is None:
+            self.page_date = attrs.get("title", "").split(" ")[0]
+
+    def handle_endtag(self, tag):
+        if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}: return
+        if self.stack: self.active, self.ignored = self.stack.pop()
+
+    def handle_data(self, value):
+        if self.active and not self.ignored: self.parts.append(value)
+
+
+def read_article(url, *, published_at, title, topic, producer, fetcher=fetch_source, now=None):
+    if not supports_source(url): raise SourceError("PUBLIC_SOURCE_UNSUPPORTED")
+    host = urllib.parse.urlsplit(url).hostname
+    if host == "simonwillison.net":
+        return read_source(url, topic=topic, producer=producer, fetcher=fetcher, now=now)
+    try:
+        published = dt.datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+        if published.utcoffset() != dt.timedelta(0): raise ValueError()
+    except (ValueError, AttributeError): raise SourceError("PUBLIC_SOURCE_DATE_INVALID")
+    body = fetcher(url)
+    if not isinstance(body, bytes) or len(body) > MAX_BYTES: raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
+    try:
+        parser = ArticleParser(host)
+        parser.feed(body.decode("utf-8", errors="strict"))
+        text = " ".join("".join(parser.parts).split())
+        if len(text) < 40: raise SourceError("PUBLIC_SOURCE_CONTENT_UNAVAILABLE")
+        page_date = parser.page_date
+        if not page_date:
+            match = re.search(r'"datePublished"\s*:\s*"([^"<]+)"', body.decode("utf-8"))
+            page_date = match[1] if match else None
+        if not page_date or page_date[:10] != published_at[:10]: raise SourceError("PUBLIC_SOURCE_DATE_UNVERIFIED")
+        if not title or len(title) > 200: raise SourceError("PUBLIC_SOURCE_INPUT_INVALID")
+    except (UnicodeError, ValueError): raise SourceError("PUBLIC_SOURCE_CONTENT_UNAVAILABLE")
+    observed = (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    return {"item": {"producer": producer, "url": url, "title": parser.title or title, "topic": topic,
+            "scope": "public", "publishedAt": published_at, "observedAt": observed, "readAt": observed,
+            "sourceStatus": "read", "excerpt": text[:1200]},
+            "sourceReceipt": {"url": url, "readAt": observed, "publicationPrecision": "feed-and-page-day",
+            "publishedDay": published_at[:10], "responseSha256": hashlib.sha256(body).hexdigest(),
+            "bodyBytes": len(body), "extractor": "public-article-v1"}}
+
+
 def read_source(url, *, topic="system", producer="sentinelle-pilot", fetcher=fetch_source, now=None):
     url, day = source_url(url)
     if topic not in {"business", "finance", "engineering", "system", "other"} or not re.fullmatch(r"[a-z][a-z0-9-]{1,31}", producer):
@@ -141,6 +227,8 @@ if __name__ == "__main__":
     args.add_argument("url")
     args.add_argument("--topic", default="system")
     args.add_argument("--producer", default="sentinelle-pilot")
+    args.add_argument("--published-at")
+    args.add_argument("--title")
     value = args.parse_args()
     # Mac/Linux CLI deadline covers DNS and a server dripping response bytes.
     def deadline(_signum, _frame):
@@ -148,7 +236,10 @@ if __name__ == "__main__":
     signal.signal(signal.SIGALRM, deadline)
     signal.alarm(15)
     try:
-        print(json.dumps(read_source(value.url, topic=value.topic, producer=value.producer), ensure_ascii=False))
+        evidence = read_article(value.url, published_at=value.published_at, title=value.title,
+                    topic=value.topic, producer=value.producer) if value.published_at else read_source(
+                    value.url, topic=value.topic, producer=value.producer)
+        print(json.dumps(evidence, ensure_ascii=False))
     except SourceError as exc:
         print(json.dumps({"error": str(exc)}), file=sys.stderr)
         sys.exit(1)

@@ -1,0 +1,8 @@
+{
+  "themes": {
+    "ia": {"flux": ["https://huggingface.co/blog/feed.xml", "https://simonwillison.net/atom/everything/"]},
+    "tech": {"flux": ["https://hnrss.org/frontpage?points=300", "https://nextjs.org/feed.xml"]},
+    "finance": {"flux": ["https://www.ecb.europa.eu/rss/press.html"]},
+    "business": {"flux": ["https://hnrss.org/ask?points=10"]}
+  }
+}

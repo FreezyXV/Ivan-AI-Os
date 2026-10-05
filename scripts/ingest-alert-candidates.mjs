@@ -11,7 +11,8 @@ const run=promisify(execFile);
 const reader=fileURLToPath(new URL('./read-public-alert.py',import.meta.url));
 export async function readPublicSource(item,{signal}={}){
   try{
-    const {stdout}=await run('python3',[reader,item.url,'--topic',item.topic,'--producer',item.producer],
+    const {stdout}=await run('python3',[reader,item.url,'--topic',item.topic,'--producer',item.producer,
+      '--published-at',item.publishedAt,'--title',item.title],
       {signal,timeout:18000,maxBuffer:65536});
     return JSON.parse(stdout);
   }catch(error){
@@ -20,6 +21,13 @@ export async function readPublicSource(item,{signal}={}){
     if(signal?.aborted||error.killed)code='PUBLIC_SOURCE_TIMEOUT';
     fail(code);
   }
+}
+export function supportsPublicSource(url){
+  const u=new URL(url);
+  return /^https:\/\/simonwillison\.net\/\d{4}\/[A-Z][a-z]{2}\/\d{1,2}\/[a-z0-9-]+\/$/.test(url)||
+    (['huggingface.co','nextjs.org'].includes(u.hostname)&&u.pathname.startsWith('/blog/')&&!u.search)||
+    (u.hostname==='www.ecb.europa.eu'&&/^\/{1,2}press\//.test(u.pathname)&&u.pathname.endsWith('.html')&&!u.search)||
+    (u.hostname==='news.ycombinator.com'&&u.pathname==='/item'&&/^\?id=\d{1,12}$/.test(u.search));
 }
 export async function ingestCandidates({ledger,envelope,readSource=readPublicSource,readLimit=3,now=Date.now()}){
   if(envelope?.version!==1||envelope.producer!=='sentinelle'||!Array.isArray(envelope.items)||envelope.items.length>100||
@@ -33,7 +41,7 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
     const row=ledger.ingest(item),prior=ledger.get(row.id);
     summary[row.duplicate?'duplicates':'ingested']++;
     if(prior.item.sourceStatus==='read'||!['pending','review'].includes(prior.state))continue;
-    const supported=/^https:\/\/simonwillison\.net\/\d{4}\/[A-Z][a-z]{2}\/\d{1,2}\/[a-z0-9-]+\/$/.test(item.url);
+    const supported=supportsPublicSource(item.url);
     if(!supported||attempts>=readLimit||prefilter({...item,sourceStatus:'read',readAt:item.observedAt},{now}).decision!=='select'){
       summary.unread++;continue;
     }
@@ -43,7 +51,7 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
       const read=validateItem(evidence.item),receipt=evidence.sourceReceipt;
       if(read.url!==item.url||read.topic!==item.topic||read.producer!==item.producer||read.sourceStatus!=='read'||
          receipt?.url!==read.url||receipt.readAt!==read.readAt||receipt.publishedDay!==read.publishedAt.slice(0,10)||
-         receipt.extractor!=='simon-blog-v1'||!/^[a-f\d]{64}$/.test(receipt.responseSha256??'')||
+         !['simon-blog-v1','public-article-v1'].includes(receipt.extractor)||!/^[a-f\d]{64}$/.test(receipt.responseSha256??'')||
          !Number.isSafeInteger(receipt.bodyBytes)||receipt.bodyBytes<20||receipt.bodyBytes>400000)fail('ALERT_SOURCE_EVIDENCE_INVALID');
       const update=ledger.ingest(read);
       if(update.evidenceUpdated){summary.evidenceUpdated++;summary.read++;summary.sourceReceipts.push({id:row.id,...receipt});}

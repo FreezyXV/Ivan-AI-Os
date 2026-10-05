@@ -41,6 +41,19 @@ class ReaderTests(unittest.TestCase):
             with self.subTest(size=len(page)), self.assertRaises(reader.SourceError):
                 reader.read_source(URL, fetcher=lambda _: page)
 
+    def test_official_article_containers_require_matching_page_publication(self):
+        for url,html in [
+            ("https://www.ecb.europa.eu/press/key/date/2026/html/example.html", '<main><p>Un fait macro public vérifié et daté avec suffisamment de texte.</p></main>'),
+            ("https://huggingface.co/blog/example", '<div class="prose"><p>Un modèle publié avec suffisamment de détails techniques publics.</p></div>'),
+            ("https://news.ycombinator.com/item?id=1234", '<span class="age" title="2026-10-05T08:00:00"></span><div class="toptext">Un problème client public décrit avec suffisamment de détails concrets.</div>')]:
+            page=('<meta property="article:published_time" content="2026-10-05">'+html).encode()
+            with self.subTest(url=url):
+                result=reader.read_article(url,published_at='2026-10-05T08:00:00Z',title='Source publique',topic='business',producer='sentinelle',fetcher=lambda _:page)
+                self.assertEqual(result['sourceReceipt']['extractor'],'public-article-v1')
+                self.assertNotIn('2026-10-05',result['item']['excerpt'])
+                with self.assertRaises(reader.SourceError):
+                    reader.read_article(url,published_at='2026-10-04T08:00:00Z',title='Source publique',topic='business',producer='sentinelle',fetcher=lambda _:page)
+
 
 if __name__ == "__main__":
     unittest.main()

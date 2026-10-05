@@ -17,7 +17,11 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
   db.exec(`PRAGMA busy_timeout=1000; PRAGMA journal_mode=WAL;
     CREATE TABLE IF NOT EXISTS alerts(id TEXT PRIMARY KEY,url TEXT UNIQUE NOT NULL,item TEXT NOT NULL,state TEXT NOT NULL,
       owner TEXT,expires INTEGER,created INTEGER NOT NULL,updated INTEGER NOT NULL,brief TEXT,reason TEXT,receipt TEXT);
-    CREATE INDEX IF NOT EXISTS alert_state ON alerts(state,created);`);
+    CREATE INDEX IF NOT EXISTS alert_state ON alerts(state,created);
+    CREATE TABLE IF NOT EXISTS cycles(key TEXT PRIMARY KEY,name TEXT NOT NULL,status TEXT NOT NULL,
+      owner TEXT,expires INTEGER,attempts INTEGER NOT NULL,updated INTEGER NOT NULL,metrics TEXT);
+    CREATE TABLE IF NOT EXISTS digests(key TEXT PRIMARY KEY,ids TEXT NOT NULL,text TEXT NOT NULL,
+      owner TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER,updated INTEGER NOT NULL,receipt TEXT);`);
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
   const get=id=>{const r=db.prepare('SELECT * FROM alerts WHERE id=?').get(id);return r?{...r,item:JSON.parse(r.item),brief:r.brief?JSON.parse(r.brief):null,receipt:r.receipt?JSON.parse(r.receipt):null}:null;};
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
@@ -52,7 +56,47 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
       const confirmed=receipt?.delivered===true&&typeof receipt.messageId==='string'&&/^[a-zA-Z0-9:_-]{1,120}$/.test(receipt.messageId);
       const state=confirmed?'delivered':'delivery_unknown';
       db.prepare('UPDATE alerts SET state=?,receipt=?,updated=?,expires=NULL WHERE id=?').run(state,confirmed?JSON.stringify({messageId:receipt.messageId,delivered:true}):null,now(),id);return get(id);});},
-    reconcile(){return tx(()=>db.prepare("UPDATE alerts SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now()).changes);},
+    reconcile(){return tx(()=>{
+      db.prepare("UPDATE digests SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now());
+      return db.prepare("UPDATE alerts SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now()).changes;
+    });},
+    list(state,limit=100){if(!['pending','review','ready','delivered','skipped','delivery_unknown'].includes(state)||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_LIST_INVALID');
+      return db.prepare('SELECT id FROM alerts WHERE state=? ORDER BY created,id LIMIT ?').all(state,limit).map(r=>get(r.id));},
+    reserveDigest({key,ids,text}){if(!/^[a-zA-Z0-9:_-]{1,120}$/.test(key)||!Array.isArray(ids)||ids.length<1||ids.length>3||new Set(ids).size!==ids.length||typeof text!=='string'||!text.trim()||text.length>2500)fail('ALERT_DIGEST_INVALID');
+      return tx(()=>{
+        if(db.prepare('SELECT key FROM digests WHERE key=?').get(key))return null;
+        if(ids.some(id=>get(id)?.state!=='ready'))return null;
+        const owner=randomUUID(),at=now();
+        db.prepare("INSERT INTO digests VALUES(?,?,?,?,'sending',?,?,NULL)").run(key,JSON.stringify(ids),text,owner,at+leaseMs,at);
+        for(const id of ids)db.prepare("UPDATE alerts SET state='sending',owner=?,expires=?,updated=? WHERE id=?").run(owner,at+leaseMs,at,id);
+        return {key,ids,text,owner};
+      });},
+    finishDigest(key,owner,receipt){return tx(()=>{
+      const digest=db.prepare('SELECT * FROM digests WHERE key=?').get(key);
+      if(!digest||digest.owner!==owner||digest.state!=='sending')fail('ALERT_LEASE_LOST');
+      const confirmed=receipt?.delivered===true&&typeof receipt.messageId==='string'&&/^[a-zA-Z0-9:_-]{1,120}$/.test(receipt.messageId);
+      const state=confirmed?'delivered':'delivery_unknown',proof=confirmed?JSON.stringify(receipt):null;
+      db.prepare('UPDATE digests SET state=?,receipt=?,updated=?,expires=NULL WHERE key=?').run(state,proof,now(),key);
+      for(const id of JSON.parse(digest.ids)){
+        owned(id,owner,'sending');
+        db.prepare('UPDATE alerts SET state=?,receipt=?,updated=?,expires=NULL WHERE id=?').run(state,proof,now(),id);
+      }
+      return {key,state,count:JSON.parse(digest.ids).length,...(confirmed?{messageId:receipt.messageId}:{})};
+    });},
+    claimCycle(name,key){if(!/^[a-z-]{1,30}$/.test(name)||!key.startsWith(name+':')||key.length>100)fail('ALERT_CYCLE_INVALID');return tx(()=>{
+      const at=now(),row=db.prepare('SELECT * FROM cycles WHERE key=?').get(key);
+      if(row&&(row.status==='done'||row.attempts>=2||(row.status==='running'&&row.expires>at)||(row.status==='failed'&&at-row.updated<900000)))return null;
+      const owner=randomUUID();
+      db.prepare("INSERT INTO cycles VALUES(?,?,'running',?,?,1,?,NULL) ON CONFLICT(key) DO UPDATE SET status='running',owner=excluded.owner,expires=excluded.expires,attempts=cycles.attempts+1,updated=excluded.updated")
+        .run(key,name,owner,at+900000,at);
+      return {name,key,owner,attempt:row?row.attempts+1:1};
+    });},
+    finishCycle(cycle,{ok,metrics={}}){return tx(()=>{
+      const row=db.prepare('SELECT * FROM cycles WHERE key=?').get(cycle.key);
+      if(!row||row.owner!==cycle.owner||row.status!=='running'||row.expires<=now())fail('ALERT_LEASE_LOST');
+      db.prepare('UPDATE cycles SET status=?,metrics=?,updated=?,expires=NULL WHERE key=?').run(ok?'done':'failed',JSON.stringify(metrics),now(),cycle.key);
+    });},
+    cycleStatus(){return db.prepare('SELECT name,key,status,attempts,updated,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all().map(r=>({...r,metrics:r.metrics?JSON.parse(r.metrics):null}));},
     get,
     ownsLease(id,owner){const r=get(id);return !!r&&r.state==='processing'&&r.owner===owner&&r.expires>now();},
     counts(){return Object.fromEntries(db.prepare('SELECT state,count(*) AS n FROM alerts GROUP BY state').all().map(r=>[r.state,r.n]));},

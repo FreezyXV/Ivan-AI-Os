@@ -1,0 +1,67 @@
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {openLedger} from '../services/alerts-runtime/src/ledger.js';
+import {scheduleSlots} from '../services/alerts-runtime/src/schedule.js';
+import {financeCycle,businessCycle} from '../services/alerts-runtime/src/engines.js';
+import {createNativeSynthesis} from '../services/alerts-runtime/src/synthesis.js';
+import {createTelegramDelivery} from '../services/alerts-runtime/src/telegram-delivery.js';
+import {createJevSelector} from '../services/alerts-runtime/src/jev-selector.js';
+import {processNext} from '../services/alerts-runtime/src/pipeline.js';
+import {sendDigest} from '../services/alerts-runtime/src/digest.js';
+import {prefilter} from '../services/alerts-runtime/src/context.js';
+import {ingestCandidates} from './ingest-alert-candidates.mjs';
+const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
+export async function collectFeeds({directory,ledger}){
+ const temp=mkdtempSync(path.join(directory,'feed-'));
+ try{
+  const output=path.join(temp,'candidates.json');
+  await run('python3',[path.join(root,'scripts/collector_export.py'),'--config',path.join(root,'scripts/alert-feeds.json'),'--output',output],{timeout:125000,maxBuffer:65536});
+  const envelope=JSON.parse(readFileSync(output));
+  const result=await ingestCandidates({ledger,envelope,readLimit:8});
+  return {...result,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length};
+ }finally{rmSync(temp,{recursive:true,force:true});}
+}
+export async function runCycle({ledger,settings,now=new Date(),digestNow=false,
+ feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger}),business=()=>businessCycle({ledger}),
+ select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
+ deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
+ const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();
+ const perform=async(name,key,fn)=>{
+  const lease=ledger.claimCycle(name,key);if(!lease)return;
+  const at=Date.now();
+  try{const result=await fn();results[name]=result;ledger.finishCycle(lease,{ok:true,metrics:{durationMs:Date.now()-at,result}});}
+  catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
+ };
+ await perform('feeds',slots.feeds,feeds);
+ if(slots.finance)await perform('finance',slots.finance,finance);
+ if(slots.business)await perform('business',slots.business,business);
+ const processKey=slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours();
+ await perform('process',processKey,async()=>{
+  let decisions=0,generations=0;const states={};
+  for(let i=0;i<100&&decisions<8&&generations<2;i++){
+   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:70000,
+    select:async(...args)=>{decisions++;return select(...args);},
+    synthesize:async(...args)=>{generations++;return synthesize(...args);}});
+   if(result.state==='idle')break;states[result.reason??result.state]=(states[result.reason??result.state]??0)+1;
+  }
+  return {decisions,generations,states};
+ });
+ if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select'))
+  await perform('digest',slots.digest,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
+ return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts()};
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+ let ledger;
+ try{
+  const [settingsPath,...flags]=process.argv.slice(2);
+  if(!settingsPath||flags.some(f=>f!=='--digest-now'))throw Error('ALERT_CYCLE_USAGE');
+  const settings=JSON.parse(readFileSync(settingsPath));ledger=openLedger(path.join(settings.stateDir,'alerts.sqlite'));
+  const result=await runCycle({ledger,settings,digestNow:flags.includes('--digest-now')});
+  // Feed receipts/source hashes stay in private cycle state. No raw source/prompt.
+  console.log(JSON.stringify(result));
+  if(Object.values(result.results).some(r=>r?.error_code))process.exitCode=1;
+ }catch{console.error('MAC_ALERT_CYCLE_FAILED');process.exitCode=1;}finally{ledger?.close();}
+}

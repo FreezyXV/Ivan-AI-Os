@@ -22,6 +22,7 @@ jobs:
       - run: npm test
       - run: node --test ../../scripts/inspect-mac-pilot.test.mjs
       - run: python3 ../../scripts/read-public-alert.test.py
+      - run: python3 ../../scripts/test_collector_export.py
 
   jev-gateway:
     runs-on: ubuntu-latest

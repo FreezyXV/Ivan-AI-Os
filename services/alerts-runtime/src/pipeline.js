@@ -10,7 +10,7 @@ export function renderBrief(item,brief){
     if(!text(fact.summary,350)||!text(fact.quote,600)||!item.excerpt.includes(fact.quote)||
        numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n)))fail('ALERT_FACT_UNSUPPORTED');
   }
-  const paragraphs=[item.title,`Publié le ${item.publishedAt.slice(0,10)}.`,...brief.facts.map(f=>`• ${f.summary}`),
+  const paragraphs=[item.title,`${item.producer==='finance-watch'?'Relevé':'Publié'} le ${item.publishedAt.slice(0,10)}.`,...brief.facts.map(f=>`• ${f.summary}`),
     `\nUtilité pour toi : ${brief.utility}`,`\nÀ faire : ${brief.action}`,
     ...(brief.uncertainty?[`\nLimite : ${brief.uncertainty}`]:[]),`\nSource : ${item.url}`];
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
