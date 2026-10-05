@@ -30,22 +30,34 @@ export function rulesA(item) {
 const ratio = (a, b) => (b ? Math.round((100 * a) / b) : null);
 const pct = (xs, p) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * (s.length - 1) + 0.5))]; };
 
+const DECISIONS = ["keep", "review", "skip"], DELIVERIES = ["silence", "digest", "immediat"];
+// Every labelled id must have exactly one valid output. Missing, duplicated, unknown or invalid
+// rows are reported and counted (missing → its own matrix cell), never silently ignored.
 export function score(labels, outputs) {
-  const byId = new Map(labels.labels.map(l => [l.id, l])), m = {}, ms = [];
+  const byId = new Map(labels.labels.filter(l => l.selection).map(l => [l.id, l])), m = {}, ms = [], seen = new Map();
+  const coverage = { missing: [], duplicates: [], unknown: [], invalid: [] };
   let calls = 0, errors = 0, urgencyOk = 0, urgencyTotal = 0, falseUrgent = 0;
   for (const o of outputs) {
-    const l = byId.get(o.id); if (!l || !l.selection) continue;
+    if (!byId.has(o?.id)) { coverage.unknown.push(o?.id ?? null); continue; }
+    if (seen.has(o.id)) { coverage.duplicates.push(o.id); continue; }
+    seen.set(o.id, o);
+    if (!o.error && (!DECISIONS.includes(o.decision) || (o.delivery !== undefined && !DELIVERIES.includes(o.delivery)))) coverage.invalid.push(o.id);
+  }
+  for (const [id, l] of byId) {
+    const o = seen.get(id);
+    if (!o) { coverage.missing.push(id); m[`${l.selection}>missing`] = (m[`${l.selection}>missing`] ?? 0) + 1; continue; }
     if (o.error) errors++;
-    const decision = o.error ? "review" : o.decision;
+    const decision = o.error || coverage.invalid.includes(id) ? "review" : o.decision;
     m[`${l.selection}>${decision}`] = (m[`${l.selection}>${decision}`] ?? 0) + 1;
     if (Number.isFinite(o.ms)) ms.push(o.ms);
-    calls += o.calls ?? 0;
+    calls += Number.isFinite(o.calls) ? o.calls : 0;
     if (l.livraison === "immediat") { urgencyTotal++; if (o.delivery === "immediat") urgencyOk++; }
     else if (o.delivery === "immediat") falseUrgent++;
   }
-  const g = k => m[k] ?? 0, n = Object.values(m).reduce((a, b) => a + b, 0);
-  const keeps = g("keep>keep") + g("keep>review") + g("keep>skip");
-  return { n, matrix: m, keepFound: `${g("keep>keep")}/${keeps}`, noiseKept: g("skip>keep") + g("review>keep"),
+  coverage.complete = !coverage.missing.length && !coverage.duplicates.length && !coverage.unknown.length && !coverage.invalid.length;
+  const g = k => m[k] ?? 0, n = byId.size;
+  const keeps = ["keep", "review", "skip", "missing"].reduce((s, d) => s + g(`keep>${d}`), 0);
+  return { n, coverage, matrix: m, keepFound: `${g("keep>keep")}/${keeps}`, noiseKept: g("skip>keep") + g("review>keep"),
     usefulDropped: g("keep>skip"), abstentionPct: ratio(g("keep>review") + g("review>review") + g("skip>review"), n),
     exactPct: ratio(g("keep>keep") + g("review>review") + g("skip>skip"), n),
     urgency: urgencyTotal ? `${urgencyOk}/${urgencyTotal}` : "n/a", falseUrgent, msP50: pct(ms, 0.5), msP95: pct(ms, 0.95), calls, errors };
