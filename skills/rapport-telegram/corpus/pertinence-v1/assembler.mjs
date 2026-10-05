@@ -3,7 +3,8 @@
 // without changing the separated sources. Usage: node assembler.mjs > corpus.json
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import path from "node:path";
 
 export function assembler(dir = new URL("./", import.meta.url)) {
   const raw = readFileSync(new URL("fixtures.jsonl", dir));
@@ -20,4 +21,8 @@ export function assembler(dir = new URL("./", import.meta.url)) {
     avertissement: "Assemblé depuis pertinence-v1 ; seuls les champs item sont transmis au sélecteur.", cas };
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) process.stdout.write(JSON.stringify(assembler(), null, 1) + "\n");
+// Optional argument: another corpus directory with the same fixtures/labels layout (e.g. ../controle-v2/).
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const dir = process.argv[2] ? pathToFileURL(path.resolve(process.argv[2]) + "/") : undefined;
+  process.stdout.write(JSON.stringify(assembler(dir), null, 1) + "\n");
+}
