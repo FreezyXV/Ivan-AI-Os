@@ -117,6 +117,9 @@ test("gate mode: guardrail files still need validation (Codex review of #49)", a
     const out = await run(input, { env, fetchImpl: opinion("REQUIRE_HUMAN") });
     assert.equal(out?.hookSpecificOutput.permissionDecision, "ask", JSON.stringify(input.tool_input));
   }
+  const write = file_path => ({ tool_name: "Write", tool_input: { file_path } });
+  for (const decision of ["DENY", "ESCALATE"]) for (const input of [write("/repo/hooks/claude/rules.mjs"), write("/repo/constitution/CONSTITUTION.md"), edit("/repo/.codex/config.toml")])
+    assert.equal((await run(input, { env, fetchImpl: opinion(decision) }))?.hookSpecificOutput.permissionDecision, "ask", `${decision} ${input.tool_input.file_path}`);
   // Fail closed for guardrails: no opinion available means Ivan is asked.
   const down = async () => { throw new Error("ECONNREFUSED"); };
   assert.equal((await run(edit("/repo/AGENTS.md"), { env, fetchImpl: down })).hookSpecificOutput.permissionDecision, "ask");
