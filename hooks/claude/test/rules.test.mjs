@@ -102,3 +102,13 @@ test("quoted prose and heredoc bodies that merely mention a forbidden command ar
   // Secret paths stay protected even when quoted.
   assert.equal(classifyCommand('cat ".env"').verdict, "never");
 });
+
+test("standing merge authorization: foundation only, never PR #1 or main", () => {
+  const env = { IVAN_AGENT_MERGE: "foundation" };
+  assert.equal(classifyCommand("gh pr merge 39 --merge", {}).verdict, "never", "no authorization: refused");
+  assert.equal(classifyCommand("gh pr merge 39 --merge", env).verdict, "autonome");
+  for (const refused of ["gh pr merge 1 --merge", "gh pr merge 39 --merge --admin", "gh pr merge 39 --auto --merge", "gh pr merge 39 --merge && git push origin main"]) {
+    assert.equal(classifyCommand(refused, env).verdict, "never", refused);
+  }
+  assert.equal(classifyCommand("git merge --no-edit origin/foundation/v1", env).verdict, "autonome");
+});
