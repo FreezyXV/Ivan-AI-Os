@@ -78,3 +78,24 @@ test('qualified mode caches the paid decision across a native outage and respect
  assert.equal(cycle.results.process.decisions,2);assert.equal(cycle.results.process.nativeCalls,2);
  assert.equal(cycle.queue.pending,1);assert.equal(cycle.results.process.generations,2);
 });
+test('a later verified item uses the next digest page after the daily cycle completed, without resending the first',async t=>{
+ const {ledger,dir}=fixture(t);const key='digest:2026-10-05';let sends=0;
+ const options={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>({decision:'keep',brief:brief()}),deliver:async()=>({delivered:true,messageId:String(++sends)})};
+ ledger.ingest(item('first-page'));await runCycle(options);assert.equal(sends,1);
+ ledger.ingest(item('late-page'));
+ await runCycle({...options,now:new Date(at+60000)});assert.equal(sends,2);assert.equal(ledger.digestStatus(key+':p2').state,'delivered');
+ await runCycle({...options,now:new Date(at+120000)});assert.equal(sends,2);
+ ledger.ingest(item('third-page'));await runCycle({...options,now:new Date(at+180000)});assert.equal(sends,3);
+ ledger.ingest(item('fourth-page'));await runCycle({...options,now:new Date(at+240000)});assert.equal(sends,3);assert.equal(ledger.counts().ready,1);
+});
+test('an uncertain first page prevents automatic digest continuation for later ready items',async t=>{
+ const {ledger,dir}=fixture(t);let sends=0;
+ const options={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>({decision:'keep',brief:brief()}),deliver:async()=>{sends++;return undefined;}};
+ ledger.ingest(item('uncertain-page'));await runCycle(options);assert.equal(sends,1);
+ ledger.ingest(item('after-uncertain'));await runCycle({...options,now:new Date(at+60000)});assert.equal(sends,1);
+ assert.equal(ledger.counts().ready,1);
+});

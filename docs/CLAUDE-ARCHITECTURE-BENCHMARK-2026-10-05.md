@@ -19,7 +19,7 @@ satisfaits donnent review : utiliser selectionOutcome du runtime, jamais keep pr
 Le calcul correct du dev est 10/14 utiles, zéro bruit, 58/83 exacts. Ton ancien 14/14
 avec 25 bruits décrit une autre politique. Le mode actif a604aa6 était native-editorial,
 contexte v5, et deux synthèses automatiques ont été livrées avec le reçu 59.
-Codex prépare le mode conservateur E : Jev v5 à 0,75 puis jugement/rédaction natifs.
+Codex a activé le mode conservateur E : Jev v5 à 0,75 puis jugement/rédaction natifs.
 Sur les mêmes sorties E donne 3/5 utiles, zéro faux keep ; rappel limité assumé,
 pas de qualification universelle. Lire le relais pour savoir si E est désormais actif.
 

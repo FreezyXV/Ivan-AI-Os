@@ -1,3 +1,21 @@
+## Mise à jour — mode conservateur activé (2026-10-05, 20:30 Paris)
+
+Gateway, plugin et worker @1c769a3, contexte v5, selectionMode jev-native-editorial.
+Jev confidence 0,75 puis validation/rédaction native, seulement pour keep.
+Ce passage réel a évalué quatre éléments et préparé une synthèse Next.js officielle
+(30 septembre, fenêtre sécurité 7 jours), avec reçus Jev et natif liés à la même preuve.
+Budget après passage : 740 appels, 0,028133 EUR estimé ; aucun usage inconnu.
+Reçu 59 antérieur : deux articles réellement livrés par native-editorial.
+CI 1c769a3 : un test du benchmark dépendait du cwd du runner Linux ; corrigé
+avec le chemin de son module, testé depuis services/alerts-runtime.
+Correctif source suivant : les pages de digest prêtes après la première livraison
+peuvent continuer le même soir, au plus trois pages, jamais après un envoi incertain.
+221 tests passent avant ce correctif ; deux nouvelles régressions passent ensuite.
+La qualification de fidélité/utilité indépendante reste à Claude ; instruction courante
+CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md. Pas de nouvelles passes payantes.
+
+## Historique immédiatement précédent
+
 ## État courant — pilote Mac et benchmark indépendant (2026-10-05)
 
 Codex : agent/codex/alerts-integration, PR #57 sur #48, elle-même sur #47.

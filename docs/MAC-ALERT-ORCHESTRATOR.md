@@ -4,8 +4,10 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État actif : worker, plugin System et gateway @a604aa6, contexte v5.
-CI 11/11 ; 212 tests locaux au moment de cette activation. Mode native-editorial.
+État actif : worker, plugin System et gateway @1c769a3, contexte v5.
+Mode jev-native-editorial : sélection Jev à 0,75 puis jugement/rédaction native.
+Mode natif seul conservé pour comparaison ; benchmark neuf : trois faux keep natifs.
+La politique probabiliste en réserve produit un faux keep sur ce contrôle, non activée.
 Deux sources réelles retenues et synthétisées automatiquement, reçu Telegram 59 ;
 aucune sélection simulée, aucun appel Jev supplémentaire. Processus 25 955 ms,
 digest 5 187 ms. Qualité indépendante/usage quotidien restent à mesurer.
@@ -49,7 +51,7 @@ Une réparation opérateur de preuve déjà évaluée archive l'ancien extrait e
 reçu Jev dans SQLite, ne modifie pas le sujet/date, ne rouvre jamais un envoi,
 et n'est permise qu'une fois par version du lecteur. Le planning ne l'appelle pas.
 
-Mode actif native-editorial : après les exclusions locales, une complétion juge
+Mode natif seul (comparaison) : après les exclusions locales, une complétion juge
 l'utilité et produit la synthèse seulement pour keep. Les skips/reviews consomment
 également un créneau natif : deux tentatives maximum par passage, sans rafale.
 Mode Jev conservé pour comparaison : huit sélections et deux générations maximum.
@@ -64,12 +66,15 @@ Le modèle référence des passages numérotés ; le code insère leurs citation
 exactes. L'extrait n'est pas injecté une seconde fois avec les métadonnées.
 Le service l'appelle avec purpose assessment dans le mode actif : jugement et
 rédaction partagent une seule complétion. Les reçus lient contexte, empreinte
-exacte de l'entrée et purpose ; une sortie d'évaluation ne vaut pas production. Contrat `alert-editorial-v1`, repris de la proposition Claude K01/K02,
+exacte de l'entrée et purpose ; une sortie d'évaluation ne vaut pas production. En production conservatrice, cette complétion suit uniquement un keep Jev à 0,75.
+Contrat `alert-editorial-v1`, repris de la proposition Claude K01/K02,
 sans écrire à sa place dans ses skills/contrats.
 
 Le digest réserve au plus trois pages par soir, chacune de 2500 caractères
 maximum et deux éléments maximum. Les clés de page et reçus survivent au restart ;
-une page tentée n'est jamais renvoyée. Une synthèse de 2500 caractères part entière
+une page tentée n'est jamais renvoyée. Les éléments devenus prêts après la
+première page peuvent utiliser la suivante le même soir ; trois pages maximum.
+Une page sans reçu bloque la continuation automatique. Une synthèse de 2500 caractères part entière
 sans titre supplémentaire. Le reliquat reste en file dans l'ordre ; expiration :
 `expired_unsent` et raison comptées, jamais abandon silencieux. Envoi sans reçu :
 inconnu, sans renvoi automatique. Rien de retenu signifie aucun message. Pas

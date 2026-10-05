@@ -18,7 +18,9 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ## Avancement du 5 octobre — intégration des alertes
 
-PR #57 : worker, plugin et gateway @a604aa6, contexte v5, native-editorial actif.
+PR #57 : worker, plugin et gateway @1c769a3, contexte v5, jev-native-editorial actif.
+Benchmark neuf : Jev .75 trouve 4/5 sans faux keep ; natif 4/5 avec trois faux keep.
+Mode conservateur E : 3/5 sans faux keep, rappel limité conservé dans le rapport.
 CI 11/11 à cette activation ; 212 tests locaux. Planning exclusif et file conservés.
 C10 technique : deux vraies sources → jugement natif → synthèse → reçu Telegram 59.
 Appréciation d'Ivan/qualité indépendante restent ouvertes ; aucun KEEP simulé.

@@ -22,11 +22,12 @@ test('scores require every unique labelled case and use production handling of c
 test('a previously claimed live result cannot repeat paid calls or overwrite evidence',async t=>{
  const {mkdtempSync,writeFileSync,readFileSync,rmSync}=await import('node:fs');const{tmpdir}=await import('node:os');
  const{createHash}=await import('node:crypto');const{execFileSync}=await import('node:child_process');
+ const{fileURLToPath}=await import('node:url');const cli=fileURLToPath(new URL('./benchmark-alert-architecture.mjs',import.meta.url));
  const dir=mkdtempSync(tmpdir()+'/ivan-benchmark-once-');t.after(()=>rmSync(dir,{recursive:true,force:true}));
  const bytes=JSON.stringify({id:'ok',item})+'\n';writeFileSync(dir+'/fixtures',bytes);
  writeFileSync(dir+'/labels',JSON.stringify({fixturesSha256:createHash('sha256').update(bytes).digest('hex'),labels:[{id:'ok',selection:'keep'}]}));
  writeFileSync(dir+'/results','existing proof',{mode:0o600});
- assert.throws(()=>execFileSync(process.execPath,['scripts/benchmark-alert-architecture.mjs','--live',dir+'/fixtures',dir+'/labels',dir+'/results'],{encoding:'utf8',stdio:'pipe'}),
+ assert.throws(()=>execFileSync(process.execPath,[cli,'--live',dir+'/fixtures',dir+'/labels',dir+'/results'],{encoding:'utf8',stdio:'pipe'}),
   error=>String(error.stderr).includes('ARCHITECTURE_BENCHMARK_ALREADY_STARTED'));
  assert.equal(readFileSync(dir+'/results','utf8'),'existing proof');
 });

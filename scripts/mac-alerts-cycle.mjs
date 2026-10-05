@@ -78,8 +78,17 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   }
   return {selectionMode,decisions,nativeCalls,generations,states};
  });
- if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select'))
-  await perform('digest',slots.digest,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
+ if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select')){
+  // A source may finish after the day's first page. Reserve the next stable page
+  // without replaying a completed cycle or continuing an uncertain delivery.
+  let cycleKey;
+  for(let page=1;page<=3;page++){
+   const status=ledger.digestStatus(page===1?slots.digest:`${slots.digest}:p${page}`);
+   if(!status){cycleKey=page===1?slots.digest:`${slots.digest}:continuation:p${page}`;break;}
+   if(status.state!=='delivered')break;
+  }
+  if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
+ }
  return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),retention,policyRevisions};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){

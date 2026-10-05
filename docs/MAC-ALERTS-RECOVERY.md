@@ -72,8 +72,12 @@ un reçu Jev ancien n’est pas réutilisé comme décision du contexte actuel. 
 les envois tentés ni les sources périmées ne sont ainsi réouverts. Les pannes
 transitoires natives autorisent un seul nouvel essai après quinze minutes.
 
-Mode conservateur préparé `jev-native-editorial` : sélection à 0,75 puis jugement
+Mode conservateur actif `jev-native-editorial` : sélection à 0,75 puis jugement
 et rédaction natifs uniquement pour keep. Le reçu Jev est conservé pour une
 reprise native sans nouvelle sélection payante. Une sortie non étayée/mal formée
 reste en revue comme erreur de contenu, sans être réessayée comme panne réseau.
 Les tests de ces deux défauts échouaient avant correction, puis passent.
+
+Continuation de digest : un nouvel élément prêt après la page initiale reçoit un
+créneau p2/p3 stable, sans nouveau p1 ; aucune continuation après reçu incertain.
+La quatrième page attend le prochain digest, aucune suppression silencieuse.
