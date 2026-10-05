@@ -18,3 +18,22 @@ test('ordinary prose, French translated institutions and quoted acronym casing r
  assert.doesNotThrow(()=>renderBrief({...item,excerpt:quote},brief('La BCE publie des données sur les services d’IA.',quote)));
  assert.doesNotThrow(()=>renderBrief({...item,excerpt:'SSRf is described.'},brief('Une SSRF est décrite.','SSRf is described.')));
 });
+
+test('model names and protocol versions are matched whole, never as a prefix',()=>{
+ for(const id of ['GPT-6','GLM-5.3','HTTP/2','GPT-6-mini','SSRFs']){
+  const quote=`The ${id} release is available.`;
+  assert.doesNotThrow(()=>renderBrief({...item,excerpt:quote},brief(`${id} est disponible.`,quote)),id);
+ }
+ for(const [id,quoted]of [['GLM-5.3','GLM-5.30'],['GPT-6','GPT-6-mini'],['HTTP/2','HTTP/20']]){
+  const quote=`The ${quoted} release has 2 changes.`;
+  assert.throws(()=>renderBrief({...item,excerpt:quote},brief(`${id} est disponible.`,quote)),{code:'ALERT_FACT_UNSUPPORTED'});
+ }
+});
+test('closed translated economic identifiers keep their own evidence and cannot borrow from another passage',()=>{
+ for(const [fr,en]of [['IPCH','HICP'],['PIB','GDP'],['FMI','IMF'],['UE','EU']]){
+  const quote=`The ${en} report is available.`;
+  assert.doesNotThrow(()=>renderBrief({...item,excerpt:quote},brief(`Le rapport ${fr} est disponible.`,quote)));
+ }
+ const excerpt='HICP inflation is measured. The IMF publishes a separate report.';
+ assert.throws(()=>renderBrief({...item,excerpt},brief('Le FMI mesure l’IPCH.','HICP inflation is measured.')),{code:'ALERT_FACT_UNSUPPORTED'});
+});

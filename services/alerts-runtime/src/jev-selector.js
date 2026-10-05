@@ -1,9 +1,10 @@
+import { CONTACT } from '../../jev-gateway/src/classification.js';
 import { readDecisionToken } from '../../jev-gateway/src/runtime-token.js';
 import { PILOT_CONTEXT, ALERT_SELECTION_QUESTION, fail, validateItem, suspiciousSource, insufficientShortEvidence } from './context.js';
 
 // A read public source may contain a disclosure/contact address. Redact only the
 // transport projection; retain the original excerpt/hash for prose and audit.
-export const redactPublicContacts=text=>text.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[contact public masqué]').slice(0,1200);
+export const redactPublicContacts=text=>text.replace(new RegExp(CONTACT.source,'gi'),'[contact public masqué]').slice(0,1200);
 export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
   token = readDecisionToken(), timeoutMs = 10000, fetchImpl = fetch } = {}) {
   let url;

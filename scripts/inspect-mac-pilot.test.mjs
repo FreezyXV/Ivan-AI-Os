@@ -45,3 +45,13 @@ test('a native editorial backlog cannot be misreported as a stalled Jev calibrat
  const unread=summarizeAlertCycles({selectionMode:'native-editorial',reviewReasons:[{reason:'SELECTION_UNCERTAIN',n:3},{reason:'SOURCE_NOT_READ',n:7}]});
  assert.equal(unread.diagnosis.code,'EXPAND_READERS');
 });
+
+test('content refusals remain visible even beside unread pages, pending work or ready messages',()=>{
+ for(const counts of [[],[{state:'ready',n:1}],[{state:'pending',n:2}]]){
+  const result=summarizeAlertCycles({counts,reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:2},{reason:'NATIVE_ASSESSMENT_INVALID',n:1},{reason:'SOURCE_NOT_READ',n:4}]});
+  assert.deepEqual(result.contentRefusals,{total:3,reasons:{ALERT_FACT_UNSUPPORTED:2,NATIVE_ASSESSMENT_INVALID:1},code:'CHECK_EDITORIAL_REJECTIONS'});
+ }
+ assert.equal(summarizeAlertCycles({reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:1}]}).diagnosis.code,'CHECK_EDITORIAL_REJECTIONS');
+ const uncertain=summarizeAlertCycles({counts:[{state:'delivery_unknown',n:1}],reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:1}]});
+ assert.equal(uncertain.diagnosis.code,'CHECK_DELIVERY_RECEIPT');assert.equal(uncertain.contentRefusals.total,1);
+});

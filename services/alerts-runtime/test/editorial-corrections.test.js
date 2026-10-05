@@ -21,3 +21,25 @@ test('Jev projection removes public contacts before transport while retaining th
  await select(raw);assert.doesNotMatch(body.excerpt,/@/);assert.match(body.excerpt,/contact public masqué/);assert.equal(raw.excerpt,excerpt);
  assert.equal(body.excerpt.length<=1200,true);
 });
+
+test('phone projection follows the gateway contact rule without masking financial observations or credentials',async()=>{
+ const {redactPublicContacts}=await import('../src/jev-selector.js');
+ const {isPublicClassificationText}=await import('../../jev-gateway/src/classification.js');
+ for(const contact of ['+1 415 555 0100','+33 (0)1 23 45 67 89','01 23 45 67 89','security@example.org']){
+  const raw=`The advisory has a concrete mitigation. Public contact: ${contact}.`;
+  assert.equal(isPublicClassificationText(raw,1200),false);
+  assert.equal(isPublicClassificationText(redactPublicContacts(raw),1200),true,contact);
+ }
+ const financial='Annual inflation is 3.8%, the deposit rate is 2.5%, and GDP grew +0.2%.';
+ assert.equal(redactPublicContacts(financial),financial);
+ const credential='Bearer '+'syntheticcredential'.repeat(3);
+ assert.equal(isPublicClassificationText(redactPublicContacts(credential),1200),false,'gateway credential rejection preserved');
+});
+test('short Codex or Claude capacity allegations cost no providers; official resolved notices remain usable',()=>{
+ for(const excerpt of ['Codex is down for everyone right now, status page says fine.','Claude errors with at capacity, anyone else seeing this?'])
+  assert.equal(prefilter({...item,excerpt},{now:Date.parse(item.observedAt)}).reason,'SOURCE_EVIDENCE_INSUFFICIENT');
+ const official={...item,url:'https://status.anthropic.com/incidents/example',excerpt:'We fixed the outage affecting API keys at 10:42 UTC.'};
+ assert.equal(prefilter(official,{now:Date.parse(item.observedAt)}).decision,'select');
+ const ordinary={...item,excerpt:'Codex processes the documented tasks. The database query runs at capacity in this benchmark.'};
+ assert.equal(prefilter(ordinary,{now:Date.parse(item.observedAt)}).decision,'select');
+});

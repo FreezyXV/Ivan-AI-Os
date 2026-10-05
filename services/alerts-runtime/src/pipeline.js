@@ -7,9 +7,11 @@ const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.
   if(/^[+\-]?[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?$/.test(s))return s.replaceAll(',','');
   return s.replaceAll(',','.');
 });
-const factIdentifiers=value=>value.match(/\b(?:CVE-\d{4}-\d+|GHSA-[a-z\d]{4}(?:-[a-z\d]{4}){2}|v\d+(?:\.\d+){1,3}(?:-[a-z\d.-]+)?|[A-Z][A-Z\d]{2,})\b/g)??[];
+const factIdentifiers=value=>value.match(/\b(?:CVE-\d{4}-\d+|GHSA-[a-z\d]{4}(?:-[a-z\d]{4}){2}|v\d+(?:\.\d+){1,3}(?:-[a-z\d.-]+)?|[A-Z][A-Z\d]{2,}(?:(?:-|\/)[A-Za-z\d]+(?:\.\d+)*)*s?|UE|EU)\b/g)??[];
 function hasFactIdentifier(quote,identifier){
- const variants=identifier==='BCE'?['BCE','ECB']:[identifier];
+ const aliases={BCE:['ECB'],IPCH:['HICP'],PIB:['GDP'],FMI:['IMF'],UE:['EU']};
+ const normalized=/^[A-Z]{3,}s$/.test(identifier)?identifier.slice(0,-1):identifier;
+ const variants=[normalized,...(aliases[normalized]??[])];
  return variants.some(token=>{
   const escaped=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const plural=/^[A-Z]{3,}$/.test(token)?'s?':'';

@@ -23,7 +23,10 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],deliv
    ...(Number.isInteger(result.generations)?{generations:result.generations}:{}),
    ...(Number.isInteger(result.nativeCalls)?{nativeCalls:result.nativeCalls}:{})};
  });
+ const contentReasons=Object.fromEntries(Object.entries(reasons).filter(([code])=>['ALERT_FACT_UNSUPPORTED','NATIVE_ASSESSMENT_INVALID','SYNTHESIS_INVALID'].includes(code)));
+ const contentRefusals={total:Object.values(contentReasons).reduce((sum,n)=>sum+n,0),reasons:contentReasons,code:'CHECK_EDITORIAL_REJECTIONS'};
  const diagnosis=(queue.delivery_unknown??0)+(queue.sending??0)>0?{code:'CHECK_DELIVERY_RECEIPT',message:'Envoi incertain : vérifier son reçu avant tout nouvel envoi.'}:
+  contentRefusals.total>0?{code:'CHECK_EDITORIAL_REJECTIONS',message:'Des contenus ont été refusés : vérifier leurs citations et la phase de validation avant une correction ciblée.'}:
   queue.ready>0?{code:'WAIT_DIGEST',message:'Synthèses prêtes pour le prochain digest.'}:
   (queue.pending??0)+(queue.processing??0)>0?{code:'PROCESS_PENDING',message:'Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.'}:
   (reasons.NATIVE_ASSESSMENT_UNAVAILABLE??0)+(reasons.NATIVE_ASSESSMENT_TIMEOUT??0)>0?{code:'CHECK_NATIVE_GENERATION',message:'Vérifier le service de complétion et son unique nouvel essai.'}:
@@ -31,7 +34,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],deliv
   reasons.SOURCE_NOT_READ>0?{code:'EXPAND_READERS',message:'Des sources restent non lues : compléter leur lecture avant la synthèse.'}:
   {code:'NO_SELECTED_NEWS',message:'Aucune nouvelle synthèse retenue ; ce silence ne prouve pas une panne.'};
  return {sourceCommit:/^[a-f\d]{40}$/.test(sourceCommit??'')?sourceCommit:undefined,
-  selectionMode:['jev','native-editorial','jev-native-editorial'].includes(selectionMode)?selectionMode:undefined,queue,reviewReasons:reasons,diagnosis,latest,
+  selectionMode:['jev','native-editorial','jev-native-editorial'].includes(selectionMode)?selectionMode:undefined,queue,reviewReasons:reasons,contentRefusals,diagnosis,latest,
   lastDelivery:delivery?{at:delivery.updated,messageId:delivery.messageId}:null,prose_usage_available:false};
 }
 async function inspectAlertCycles(){

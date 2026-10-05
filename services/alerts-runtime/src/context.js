@@ -48,7 +48,7 @@ export function insufficientShortEvidence(item){
   if(excerpt.length>=200)return false;
   // Length alone is not a quality measure. Hold short incident allegations or
   // rumours lacking named attribution; preserve actual official observations.
-  const allegation=/\b(?:(?:GitHub|OpenAI|service|server|API)\s+(?:is\s+)?down|down\s+again|outage|hacked|breach|rumou?r|unconfirmed|panne|rumeur|pirat[ée]|non confirm[ée])\b/i.test(excerpt);
+  const allegation=/\b(?:(?:GitHub|OpenAI|Codex|Claude|Anthropic|service|server|API)\s+(?:is\s+)?(?:down|unavailable|at capacity)|(?:Codex|Claude|Anthropic)\b[^.!?]{0,40}\bat capacity|down\s+again|outage|hacked|breach|rumou?r|unconfirmed|panne|rumeur|pirat[ée]|non confirm[ée])\b/i.test(excerpt);
   if(!allegation)return false;
   const host=new URL(item.url).hostname;
   if(['www.ecb.europa.eu','nextjs.org','www.githubstatus.com','status.openai.com','status.anthropic.com'].includes(host))return false;
