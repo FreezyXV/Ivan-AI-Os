@@ -1,21 +1,22 @@
 ## État courant — livraison et qualification Mac (2026-10-05)
 
 Codex : agent/codex/alerts-integration, PR #57 sur #48, elle-même sur #47.
-Dernier commit testé en CI : 23cf0be, 11/11 ; aucune fusion de cette session.
+Source qualifiée : 49060ea, CI 11/11 ; aucune fusion de cette session.
 Lire PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
 CLAUDE-NEXT-ACTIONS-2026-10-05.md et ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md.
 Le relais couvre le projet entier ; les sections suivantes sont historiques.
 
-Actifs vérifiés : worker et plugin System 23cf0be, Jev 4311 sur 9136f58,
+Actifs vérifiés : worker 0b098d7, plugin System 23cf0be, Jev 4311 sur 9136f58,
 contexte mac-alerts-20261005-v3. Runner Mac conservé de alerts-59fbd7e.
 File/budget/Trousseau/Secrétaire conservés ; Sentinelle distant arrêté, un planning.
-Source suivante : expiration des reviews anciennes, rétention non bloquante,
-sauvegarde/restauration avec archives et hook Codex ; activation worker à vérifier.
+Worker activé : expiration des reviews anciennes et rétention non bloquante.
+Sauvegarde/restauration avec archives qualifiée ; hook Codex source uniquement.
 Tests affectés : 91 Node alertes/scripts/hook, 60 gateway, 21 managers,
-17 Python, soit 189. CI de cette nouvelle source à confirmer après push.
+17 Python, soit 189. CI Linux verte après correction des permissions de copie.
 
-File vérifiée : 14 review, 3 skipped, aucune livraison de production retenue.
-Jev : 262 appels, 0,005123 EUR estimé, plafond 10 EUR, usage inconnu 0.
+Contrôle du 5 octobre à 18:57 Paris : 18 review, 1 pending, 3 skipped,
+3 expired_unsent, aucune livraison retenue. Premier passage worker : sortie 0.
+Jev : 453 appels, 0,013105 EUR estimé, plafond 10 EUR, usage inconnu 0.
 Next.js réel v3 : keep 0,26 → review ; aucune génération/livraison forcée.
 Référence v2 : 8/12 correctes, dont 3/7 Jev ; ne pas réutiliser comme jeu indépendant.
 Huit sorties natives disponibles : quatre current, quatre compact-v1 éditoriales.

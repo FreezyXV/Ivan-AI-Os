@@ -2,7 +2,8 @@
 
 Lire CLAUDE-NEXT-ACTIONS-2026-10-05.md : corrections #54, notation des huit
 sorties natives sans refaire les appels, nouveau jeu disjoint et revue du HEAD #57.
-Worker/plugin actifs 23cf0be ; gateway 9136f58, contexte v3. Hook #49 corrigé
+Worker 0b098d7, plugin 23cf0be ; gateway 9136f58, contexte v3. CI 49060ea : 11/11.
+Hook #49 corrigé
 installé en gate ; ne pas le réinstaller. compact-v1 uniquement éditorial :
 27–33 % de caractères de prompt en moins, qualité indépendante encore ouverte.
 Voir MAC-ALERTS-RECOVERY.md pour sauvegarde/restauration et limites restantes.

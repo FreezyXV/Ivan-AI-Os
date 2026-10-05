@@ -4,9 +4,10 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État vérifié : worker/plugin actifs 23cf0be, gateway 9136f58, contexte v3.
-CI 23cf0be : 11/11. Livraison suivante : 189 tests affectés, activation worker
-et CI à confirmer dans SESSION_HANDOFF.md. Pas de fusion dans cette session.
+État vérifié : worker 0b098d7, plugin 23cf0be, gateway 9136f58, contexte v3.
+Source 49060ea : 189 tests affectés, CI 11/11. Worker chargé, sortie 0 ;
+18 reviews, 1 pending, 3 skipped et 3 expirations à 18:57 Paris.
+Pas de fusion dans cette session.
 Rétention bornée par passage, capacité hors historique terminal, sauvegarde/WAL
 et restauration avec archives testées : voir MAC-ALERTS-RECOVERY.md.
 Huit sorties natives mesurées ; compact-v1 seulement éditorial, production current.

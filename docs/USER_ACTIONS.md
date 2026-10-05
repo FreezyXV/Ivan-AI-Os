@@ -1,3 +1,11 @@
+## État courant — 5 octobre 2026
+
+Le pilote Mac est actif ; aucune nouvelle clé ou reprovisionnement n'est requis
+pour poursuivre les tâches présentes. Voir SESSION_HANDOFF.md pour les versions
+vérifiées et CLAUDE-NEXT-ACTIONS-2026-10-05.md pour le travail parallèle.
+Career est en pause, OVH différé, Knowledge/Anakalypto finalisé en dernier.
+Les demandes de provisionnement ci-dessous sont historiques ; ne pas les rejouer.
+
 # Human inputs and confirmed decisions
 
 Confirmed on 2026-09-28:

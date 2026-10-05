@@ -18,8 +18,8 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ## Avancement du 5 octobre — intégration des alertes
 
-PR #57 : worker/plugin actifs @23cf0be, gateway @9136f58, contexte v3.
-CI 23cf0be : 11/11. Livraison suivante : 189 tests affectés ; CI à confirmer.
+PR #57 : worker @0b098d7, plugin @23cf0be, gateway @9136f58, contexte v3.
+Source @49060ea : CI 11/11. 189 tests affectés ; reprise qualifiée sur copie.
 Planning exclusif, workflow Sentinelle distant désactivé. Digest paginé, lecture par
 passages, erreurs de releases isolées, reprise/idempotence d'installation vérifiées.
 Jev reçoit les 1200 caractères lus ; confiance de livraison conservée à 0,75.
@@ -29,7 +29,7 @@ C08/K06 : huit sorties natives isolées, quatre par variante ; contrôles Claude
 Prompt compact : 27–33 % de caractères en moins. Qualité indépendante et tokens
 facturés inconnus ; aucune accélération démontrée. Production current conservée.
 C14 : diagnostic enrichi avec les raisons du backlog et la prochaine action.
-C18 : compteur partagé 262 appels / 0,005123 EUR estimé ; coût prose non exposé.
+C18 : à 18:57 Paris, 453 appels / 0,013105 EUR estimé ; coût prose non exposé.
 C15 : plan source respectant runtimes/compatibility, Engineering externe conservé ;
 son agent live reste intact, pas d'usine native prétendument exécutée.
 Claude a proposé #50–#56. Revue détaillée : REVIEW-CODEX-K04-K07-2026-10-05.md.

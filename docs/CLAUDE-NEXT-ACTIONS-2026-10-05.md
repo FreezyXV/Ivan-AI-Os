@@ -17,6 +17,8 @@ SESSION_HANDOFF.md, PROJECT-CHECKLISTS.md, REVIEW-CODEX-K04-K07-2026-10-05.md,
 ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md et MAC-ALERTS-RECOVERY.md.
 Leur état courant prime sur la revue #56 des anciens commits. PR Codex #57 existe
 et ses correctifs de digest, releases, installation et extrait entier sont testés.
+Source qualifiée 49060ea : CI 11/11 ; worker 0b098d7, plugin 23cf0be,
+gateway 9136f58. Vérifier le nouveau HEAD si un commit documentaire suit.
 
 ## 1. K04 — corriger puis terminer #54
 
