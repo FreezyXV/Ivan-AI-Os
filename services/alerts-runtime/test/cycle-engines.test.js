@@ -34,3 +34,10 @@ test('Finance boundary drops the open Kraken candle and uses the new HICP datase
  assert.ok(requested.some(u=>u.includes('/HICP/')&&u.includes('4D0')));
  assert.equal(result.indicateurs.find(i=>i.id==='btc_eur').valeur,131);
 });
+test('partial source outages are visible and reserve a bounded retry instead of a successful day',async t=>{
+ const {dir,ledger}=fixture(t);let calls=0;
+ const options={ledger,settings:{stateDir:dir},now,feeds:async()=>({}),finance:async()=>{calls++;return {indicators:6,sourceErrors:['core inflation unavailable']};},business:async()=>({}),select:async()=>assert.fail(),synthesize:async()=>assert.fail(),deliver:async()=>assert.fail()};
+ const result=await runCycle(options);assert.equal(result.results.finance.degraded,true);
+ assert.equal(ledger.cycleStatus().find(r=>r.name==='finance').status,'failed');
+ await runCycle(options);assert.equal(calls,1);
+});

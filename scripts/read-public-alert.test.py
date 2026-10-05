@@ -44,7 +44,7 @@ class ReaderTests(unittest.TestCase):
     def test_official_article_containers_require_matching_page_publication(self):
         for url,html in [
             ("https://www.ecb.europa.eu/press/key/date/2026/html/example.html", '<main><p>Un fait macro public vérifié et daté avec suffisamment de texte.</p></main>'),
-            ("https://huggingface.co/blog/example", '<div class="prose"><p>Un modèle publié avec suffisamment de détails techniques publics.</p></div>'),
+            ("https://huggingface.co/blog/example", '<div class="blog-content prose"><p>Un modèle publié avec suffisamment de détails techniques publics.</p></div>'),
             ("https://news.ycombinator.com/item?id=1234", '<span class="age" title="2026-10-05T08:00:00"></span><div class="toptext">Un problème client public décrit avec suffisamment de détails concrets.</div>')]:
             page=('<meta property="article:published_time" content="2026-10-05">'+html).encode()
             with self.subTest(url=url):
@@ -53,6 +53,11 @@ class ReaderTests(unittest.TestCase):
                 self.assertNotIn('2026-10-05',result['item']['excerpt'])
                 with self.assertRaises(reader.SourceError):
                     reader.read_article(url,published_at='2026-10-04T08:00:00Z',title='Source publique',topic='business',producer='sentinelle',fetcher=lambda _:page)
+
+    def test_huggingface_interface_is_not_article_evidence(self):
+        page=b'<meta property="article:published_time" content="2026-10-05"><div class="prose"><p>Back to Articles</p><div class="blog-content prose"><div class="not-prose">Follow Upvote author buttons</div><p>A benchmark checks the actual database state left by an agent.</p></div></div>'
+        value=reader.read_article('https://huggingface.co/blog/example',published_at='2026-10-05T08:00:00Z',title='Public benchmark',topic='engineering',producer='sentinelle',fetcher=lambda _:page)
+        self.assertEqual(value['item']['excerpt'],'A benchmark checks the actual database state left by an agent.')
 
 
 if __name__ == "__main__":

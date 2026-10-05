@@ -1,5 +1,32 @@
 # Mission Claude Code — synthèses Telegram utiles à Ivan
 
+## Actualisation du lot — intégration Codex en cours le 5 octobre
+
+Claude n'a pas encore commencé ce lot (attente de quota confirmée par Ivan).
+Le prompt transmis directement à Ivan remplace les états anciens ci-dessous.
+Codex a construit les collecteurs locaux, lecteurs BCE/HF/Next/Ask HN, file
+durable, cycles, génération native et digest sur `agent/codex/alerts-integration`.
+Lire `docs/MAC-ALERT-ORCHESTRATOR.md` sur cette branche lorsqu'elle est publiée.
+L'activation complète et le parcours réel sont encore en vérification : ne pas
+les déduire des tests seuls. Les anciens plannings ne sont pas encore coupés.
+
+K01–K03 restent entièrement à Claude : skill, contrat et évaluation indépendante.
+Ne pas reconstruire le runtime, les collecteurs ou l'authentification. Le contrat
+`coded-brief-v1-provisional` est volontairement provisoire, à contester/revoir.
+Sortie finale : goal, facts[{summary,quote}], utility, action, uncertainty.
+Dans la complétion, `evidence_index` référence un passage de source ; le code
+insère sa citation exacte et vérifie les chiffres avant READY. Ne pas demander
+au modèle de retaper une citation : cette copie a échoué en essai réel.
+Une adaptation de schéma/longueur doit être proposée à Codex, sans changer son
+runtime ni produire une interface parallèle. Aucun seuil abaissé pour forcer
+un résultat. L'extrait est borné à 1200 caractères, un digest à 2500 : signaler
+les limites éditoriales sur des exemples réellement lus.
+
+Le premier lot part de foundation/v1 sur `agent/claude/telegram-syntheses`, dans
+le worktree Claude ; les modifications locales existantes restent intactes.
+PR brouillon, sans fusion ni activation. K04–K07 suivent sur branches distinctes,
+Knowledge/Anakalypto à la fin. AGENTS.md et constitution restent inchangés.
+
 Ivan souhaite que Codex pilote le plan global et que Claude participe sur un
 périmètre distinct. Ce document est une passation, pas une autorisation de fusion,
 de publication externe, d'achat ou de déploiement. Le périmètre est déjà décidé.

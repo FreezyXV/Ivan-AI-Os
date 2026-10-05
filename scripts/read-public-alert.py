@@ -144,11 +144,11 @@ class ArticleParser(HTMLParser):
         self.stack.append((self.active, self.ignored))
         classes = set(attrs.get("class", "").split())
         starts = ((self.host == "www.ecb.europa.eu" and tag == "main") or
-                  (self.host in {"huggingface.co", "nextjs.org"} and
-                   ("prose" in classes or "blog-content" in classes)) or
+                  (self.host == "huggingface.co" and "blog-content" in classes) or
+                  (self.host == "nextjs.org" and "prose" in classes) or
                   (self.host == "news.ycombinator.com" and "toptext" in classes))
         self.active = self.active or starts
-        self.ignored = self.ignored or tag in {"script", "style", "nav", "footer", "aside", "noscript"}
+        self.ignored = self.ignored or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes
         if self.active and tag in {"p", "li", "h1", "h2", "h3", "blockquote", "div"}: self.parts.append("\n")
         if self.host == "news.ycombinator.com" and tag == "span" and "age" in classes and self.page_date is None:
             self.page_date = attrs.get("title", "").split(" ")[0]

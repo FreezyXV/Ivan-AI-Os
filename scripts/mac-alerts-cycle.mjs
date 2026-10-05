@@ -32,7 +32,10 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  const perform=async(name,key,fn)=>{
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
-  try{const result=await fn();results[name]=result;ledger.finishCycle(lease,{ok:true,metrics:{durationMs:Date.now()-at,result}});}
+  try{const result=await fn();
+   const degraded=(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0;
+   results[name]={...result,...(degraded?{degraded:true}:{})};
+   ledger.finishCycle(lease,{ok:!degraded,metrics:{durationMs:Date.now()-at,result:results[name]}});}
   catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
  };
  await perform('feeds',slots.feeds,feeds);
