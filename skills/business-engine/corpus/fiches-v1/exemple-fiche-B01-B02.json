@@ -1,0 +1,44 @@
+{
+ "sujet": "revue-architecturale-code-agents",
+ "probleme": "Les équipes qui produisent beaucoup de code avec des agents disent que la revue humaine devient le goulot : les outils actuels trouvent bugs et style, mais pas la duplication, le couplage ni les mauvais découpages, et l'interface de PR ne tient plus la taille des revues.",
+ "acheteur": {
+  "profil": "équipes logicielles qui utilisent déjà des agents de code et des outils de revue",
+  "statut": "hypothèse"
+ },
+ "preuves": [
+  {
+   "url": "https://news.ycombinator.com/item?id=49321400",
+   "date": "2026-08-16",
+   "type": "offre-existante",
+   "citation": "AI code review tools like coderabbit and copilot, or even pointing claude code at a PR are all generally pretty good at finding bugs and style nits, but less good at finding duplicate code, module cross coupling, bad separation of concerns, and so on, even if prompted to do so."
+  },
+  {
+   "url": "https://news.ycombinator.com/item?id=49321400",
+   "date": "2026-08-16",
+   "type": "douleur",
+   "citation": "I'm finding that github's PR interface is not really cutting it for me, it was janky even when the reviews were small, but now at the size they're at, it is becoming unmanageable."
+  },
+  {
+   "url": "https://news.ycombinator.com/item?id=49378314",
+   "date": "2026-08-20",
+   "type": "douleur",
+   "citation": "Every time you ask a model to review some piece of code, it comes back with different \"findings\"."
+  }
+ ],
+ "sourcesDistinctes": 2,
+ "objections": [
+  "Des outils payants existent déjà (CodeRabbit, Copilot cités) : la différence à prouver est la revue d'architecture, pas la recherche de bugs.",
+  "Deux messages d'un même forum ne mesurent ni la taille du marché ni la disposition à payer pour une nouvelle offre.",
+  "Les plateformes de PR peuvent ajouter la fonction elles-mêmes."
+ ],
+ "hypothese": "Hypothèse, non prouvée : une aide centrée sur la revue d'architecture (duplication, couplage, découpage) des grosses PR d'agents répond à une douleur que les outils actuels laissent ouverte.",
+ "prochainTest": {
+  "description": "Pendant 5 jours, relever dans des discussions publiques déjà en ligne au moins trois autres sources distinctes de cette douleur, et lister ce que les outils existants annoncent sur la revue d'architecture ; aucun message ni inscription.",
+  "dureeJours": 5,
+  "coutEur": 0,
+  "reversible": true,
+  "contactTiers": false
+ },
+ "decision": "a-noter",
+ "limites": "Deux sources d'un seul forum, en anglais ; des outils payants existent mais rien ne prouve qu'une nouvelle offre serait payée ; décision « a-noter » : passer le sujet dans signals.mjs (score codé) avant toute recommandation."
+}
