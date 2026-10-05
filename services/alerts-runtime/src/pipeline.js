@@ -1,21 +1,29 @@
 import { PILOT_CONTEXT, prefilter, fail } from './context.js';
 import { withDeadline } from './deadline.js';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
-const numbers=value=>value.match(/\d+(?:[.,]\d+)*/g)?.map(n=>n.replaceAll(',','.'))??[];
+const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)/g)??[]).map(n=>{
+  const s=n.replace(/[ \u00a0\u202f]/g,'').replace('−','-');
+  if(/^[+\-]?[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?$/.test(s))return s.replaceAll(',','');
+  return s.replaceAll(',','.');
+});
 export function renderBrief(item,brief){
-  if(!brief||!Array.isArray(brief.facts)||brief.facts.length<1||brief.facts.length>4||
+  if(!brief||!Array.isArray(brief.facts)||brief.facts.length<1||brief.facts.length>3||
       !text(brief.utility,500)||!text(brief.action,300)||!PILOT_CONTEXT.active.includes(brief.goal)||
       (brief.uncertainty!==undefined&&!text(brief.uncertainty,300)))fail('ALERT_BRIEF_INVALID');
   for(const fact of brief.facts){
     if(!text(fact.summary,350)||!text(fact.quote,600)||!item.excerpt.includes(fact.quote)||
        numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n)))fail('ALERT_FACT_UNSUPPORTED');
   }
+  const grounded=brief.facts.flatMap(f=>numbers(f.quote));
+  if(numbers(brief.utility+' '+brief.action).some(n=>!grounded.includes(n)))fail('ALERT_FACT_UNSUPPORTED');
+  const partial=item.excerptTruncated!==false||item.excerptMode==='passages';
+  const limits=[...(partial?['Lecture sur extrait partiel ; les passages omis ne sont pas vérifiés.']:[]),...(brief.uncertainty?[brief.uncertainty]:[])].join(' ');
   const paragraphs=[item.title,`${item.producer==='finance-watch'?'Relevé':'Publié'} le ${item.publishedAt.slice(0,10)}.`,...brief.facts.map(f=>`• ${f.summary}`),
     `\nUtilité pour toi : ${brief.utility}`,`\nÀ faire : ${brief.action}`,
-    ...(brief.uncertainty?[`\nLimite : ${brief.uncertainty}`]:[]),`\nSource : ${item.url}`];
+    ...(limits?[`\nLimite : ${limits}`]:[]),`\nSource : ${item.url}`];
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
 }
-export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours=72,stageTimeoutMs=30000}){
+export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours,stageTimeoutMs=30000}){
   if(!Number.isInteger(stageTimeoutMs)||stageTimeoutMs<10||stageTimeoutMs>60000)fail('ALERT_DEADLINE_CONFIG_INVALID');
   const job=ledger.claim();if(!job)return {state:'idle'};
   const complete=(state,reason,brief)=>{

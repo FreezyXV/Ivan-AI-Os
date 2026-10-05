@@ -30,7 +30,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger}),business=()=>businessCycle({ledger}),
  select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
- const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.retryTransient();
+ const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.settleReady(now.getTime());ledger.retryTransient();
  const perform=async(name,key,fn)=>{
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();

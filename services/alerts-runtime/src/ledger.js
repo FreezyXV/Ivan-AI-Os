@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, lstatSync, openSync, closeSync } from 'node:fs';
 import path from 'node:path';
-import { validateItem, fail } from './context.js';
+import { validateItem, prefilter, fail } from './context.js';
 
 // SQLite owns transaction locks: process crashes cannot leave an application
 // lock file blocking all producers. Provider calls occur outside transactions.
@@ -63,7 +63,17 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
       db.prepare("UPDATE digests SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now());
       return db.prepare("UPDATE alerts SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now()).changes;
     });},
-    list(state,limit=100){if(!['pending','review','ready','delivered','skipped','delivery_unknown'].includes(state)||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_LIST_INVALID');
+    settleReady(at=now()){return tx(()=>{
+      let expired=0,reviewed=0;
+      for(const row of db.prepare("SELECT id,item FROM alerts WHERE state='ready'").all()){
+        const result=prefilter(JSON.parse(row.item),{now:at});if(result.decision==='select')continue;
+        const state=result.reason==='SOURCE_STALE'?'expired_unsent':'review';
+        db.prepare('UPDATE alerts SET state=?,reason=?,updated=? WHERE id=?').run(state,result.reason,now(),row.id);
+        if(state==='expired_unsent')expired++;else reviewed++;
+      }
+      return {expired,reviewed};
+    });},
+    list(state,limit=100){if(!['pending','review','ready','delivered','skipped','delivery_unknown','expired_unsent'].includes(state)||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_LIST_INVALID');
       return db.prepare('SELECT id FROM alerts WHERE state=? ORDER BY created,id LIMIT ?').all(state,limit).map(r=>get(r.id));},
     reserveDigest({key,ids,text}){if(!/^[a-zA-Z0-9:_-]{1,120}$/.test(key)||!Array.isArray(ids)||ids.length<1||ids.length>3||new Set(ids).size!==ids.length||typeof text!=='string'||!text.trim()||text.length>2500)fail('ALERT_DIGEST_INVALID');
       return tx(()=>{
@@ -74,6 +84,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
         for(const id of ids)db.prepare("UPDATE alerts SET state='sending',owner=?,expires=?,updated=? WHERE id=?").run(owner,at+leaseMs,at,id);
         return {key,ids,text,owner};
       });},
+    digestStatus(key){return db.prepare('SELECT key,state FROM digests WHERE key=?').get(key)??null;},
     finishDigest(key,owner,receipt){return tx(()=>{
       const digest=db.prepare('SELECT * FROM digests WHERE key=?').get(key);
       if(!digest||digest.owner!==owner||digest.state!=='sending')fail('ALERT_LEASE_LOST');

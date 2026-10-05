@@ -25,6 +25,40 @@ class SourceError(Exception):
     pass
 
 
+def excerpt_evidence(text):
+    """Keep actual substrings, with explicit gaps and honest coverage metadata."""
+    coverage = {"textChars": len(text), "excerptMode": "head", "excerptTruncated": len(text) > 1200}
+    if len(text) <= 1200:
+        return {"excerpt": text, **coverage}
+    cut = text.rfind(" ", 0, 200)
+    cut = cut if cut > 0 else 200
+    head = text[:cut]
+    candidates = []
+    for match in re.finditer(r'.+?(?:[.!?](?=\s|$)|$)', text):
+        sentence = match.group().strip()
+        if match.start() < cut or not sentence:
+            continue
+        score = 3 * bool(re.search(r'\d', sentence)) + 3 * bool(re.search(
+            r'\b(rate|deposit|inflation|decision|increased|reduced|fix|fixed|release|version|budget|cost|vulnerability|security|taux|décision|correctif)\b', sentence, re.I))
+        if score:
+            candidates.append((score, match.start(), sentence))
+    selected = [head]
+    for _, _, sentence in sorted(candidates, key=lambda entry: (-entry[0], entry[1])):
+        if sentence in selected or head.endswith(sentence):
+            continue
+        available = 1200 - len(' […] '.join(selected)) - len(' […] ')
+        if available < 40:
+            break
+        # Never fabricate a connective or join disjoint passages into one quote.
+        if len(sentence) > min(available, 500):
+            end = sentence.rfind(' ', 0, min(available, 500))
+            sentence = sentence[:end] if end > 0 else sentence[:min(available, 500)]
+        selected.append(sentence)
+    if len(selected) == 1:
+        return {"excerpt": text[:1200], **coverage}
+    return {"excerpt": ' […] '.join(selected), **coverage, "excerptMode": "passages"}
+
+
 def supports_source(value):
     try:
         u = urllib.parse.urlsplit(value)
@@ -187,10 +221,10 @@ def read_article(url, *, published_at, title, topic, producer, fetcher=fetch_sou
     observed = (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     return {"item": {"producer": producer, "url": url, "title": parser.title or title, "topic": topic,
             "scope": "public", "publishedAt": published_at, "observedAt": observed, "readAt": observed,
-            "sourceStatus": "read", "excerpt": text[:1200]},
+            "sourceStatus": "read", **excerpt_evidence(text)},
             "sourceReceipt": {"url": url, "readAt": observed, "publicationPrecision": "feed-and-page-day",
             "publishedDay": published_at[:10], "responseSha256": hashlib.sha256(body).hexdigest(),
-            "bodyBytes": len(body), "extractor": "public-article-v1"}}
+            "bodyBytes": len(body), "extractor": "public-article-v1", "coverageVersion": "passages-v2"}}
 
 
 def read_source(url, *, topic="system", producer="sentinelle-pilot", fetcher=fetch_source, now=None):
@@ -216,9 +250,9 @@ def read_source(url, *, topic="system", producer="sentinelle-pilot", fetcher=fet
     observed = (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     item = {"producer": producer, "url": url, "title": parser.title, "topic": topic, "scope": "public",
             "publishedAt": day.isoformat() + "T00:00:00Z", "observedAt": observed, "readAt": observed,
-            "sourceStatus": "read", "excerpt": text[:1200]}
+            "sourceStatus": "read", **excerpt_evidence(text)}
     receipt = {"url": url, "readAt": observed, "publicationPrecision": "day", "publishedDay": day.isoformat(),
-               "responseSha256": hashlib.sha256(body).hexdigest(), "bodyBytes": len(body), "extractor": "simon-blog-v1"}
+               "responseSha256": hashlib.sha256(body).hexdigest(), "bodyBytes": len(body), "extractor": "simon-blog-v1", "coverageVersion": "passages-v2"}
     return {"item": item, "sourceReceipt": receipt}
 
 

@@ -53,11 +53,31 @@ Le service l'appelle après sélection ; le plugin seul n'est pas un juge de
 pertinence. Schéma `coded-brief-v1-provisional`, à relire avec Claude K01/K02,
 sans écrire à sa place dans ses skills/contrats.
 
-Le digest regroupe jusqu'à deux éléments si leurs synthèses tiennent dans
-2500 caractères. Réservation atomique des éléments avant l'unique envoi,
-reçu natif commun à ses éléments. Envoi sans confirmation : inconnu, sans
-renvoi automatique. Rien de retenu signifie aucun message. Pas d'urgence
-automatique sans un contrat d'urgence calibré.
+Le digest réserve au plus trois pages par soir, chacune de 2500 caractères
+maximum et deux éléments maximum. Les clés de page et reçus survivent au restart ;
+une page tentée n'est jamais renvoyée. Une synthèse de 2500 caractères part entière
+sans titre supplémentaire. Le reliquat reste en file dans l'ordre ; expiration :
+`expired_unsent` et raison comptées, jamais abandon silencieux. Envoi sans reçu :
+inconnu, sans renvoi automatique. Rien de retenu signifie aucun message. Pas
+d'urgence automatique sans contrat d'urgence calibré contre l'inventaire actif.
+
+Correctifs source après PR #50 : extrait par passages réellement lus (1200),
+introduction courte et phrases chiffrées/décisions ; longueur totale et couverture
+conservées. Le code ajoute la limite d'extrait partiel, y compris aux anciens
+enregistrements sans couverture. Les nombres de l'utilité/action sont aussi vérifiés ;
+les milliers français/anglais correspondent, les signes restent distincts.
+Le contexte `mac-alerts-20261005-v2` est commun au gateway et au générateur ;
+il ajoute cinq faits publics, aucun profil. Fraîcheur 7 jours pour les discours/
+communiqués BCE et avis officiels de sécurité Next.js, 72 heures ailleurs,
+y compris dans l'export avant lecture. Les instructions manifestes sont mises
+en revue avant Jev. Ce filtre ne garantit pas la détection de toute injection.
+Seuls les aliases de permaliens Next.js perdent leur barre finale ; les chemins
+des autres sites restent distincts (Simon exige notamment cette barre).
+
+Validation du lot : 59 tests alertes/diagnostic, 58 gateway, 7 lecteur et 6 export,
+soit 130 tests. Les neuf tests Node de régression et le cas Python de décision
+après introduction échouaient avant le correctif (le test de reprise ajouté
+ensuite étend la couverture). Ceci est une preuve source, pas une preuve live.
 
 ## Moteurs
 

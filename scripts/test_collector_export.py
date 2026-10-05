@@ -10,6 +10,17 @@ ATOM = b'''<feed xmlns="http://www.w3.org/2005/Atom"><entry><title>Un article an
 
 
 class ExportTests(unittest.TestCase):
+    def test_security_and_central_bank_windows_are_applied_before_feed_exclusion(self):
+        old = RSS.replace(b'05 Oct', b'30 Sep').replace(b'Mon, ', b'Wed, ')
+        config = {'themes': {'tech': {'flux': ['https://example.org/rss']}}}
+        for url, expected in [('https://nextjs.org/blog/september-2026-security-release', 1),
+            ('https://www.ecb.europa.eu/press/key/date/2026/html/example.html', 1),
+            ('https://example.org/security-update', 0)]:
+            with self.subTest(url=url):
+                page = old.replace(b'https://example.org/article?utm_source=feed', url.encode())
+                value = export_candidates(config, fetcher=lambda _: page, now=NOW)
+                self.assertEqual(len(value['items']), expected)
+
     def test_rss_and_atom_preserve_publication_dates_and_canonical_links(self):
         rss = list(parse_feed(RSS))[0]
         self.assertEqual(rss["url"],"https://example.org/article")

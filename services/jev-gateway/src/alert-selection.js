@@ -1,6 +1,6 @@
 import { askTypeSafe, ProviderError } from './provider.js';
 import { validateClassification, ClassificationInputError } from './classification.js';
-import { PILOT_CONTEXT } from '../../alerts-runtime/src/context.js';
+import { PILOT_CONTEXT, suspiciousSource } from '../../alerts-runtime/src/context.js';
 
 export const ALERT_SELECTION_QUESTION = 'alerts.pertinence.mac-v1';
 const fields = ['scope', 'topic', 'title', 'excerpt', 'context_version'];
@@ -43,6 +43,8 @@ export async function selectAlert(payload, { budget, fetchImpl } = {}) {
     question: ALERT_SELECTION_QUESTION, decision: 'skip', confidence: 1,
     provider: 'deterministic-kernel', context_version: PILOT_CONTEXT.version
   };
+  if(suspiciousSource(input.excerpt))return {question:ALERT_SELECTION_QUESTION,decision:'review',confidence:0,
+    provider:'deterministic-kernel',context_version:PILOT_CONTEXT.version};
   if ((process.env.JEV_PROVIDER || 'mock') !== 'jev') throw new ProviderError('JEV_UNAVAILABLE');
   const raw = await askTypeSafe({ source: input, context: PILOT_CONTEXT }, {
     alert_selection: { type: 'choice',

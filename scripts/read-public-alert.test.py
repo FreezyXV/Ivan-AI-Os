@@ -13,6 +13,20 @@ HTML = b'''<meta property="og:title" content="Un article public"><div class="ent
 
 
 class ReaderTests(unittest.TestCase):
+    def test_long_articles_retain_late_decisive_evidence_and_disclose_coverage(self):
+        introduction = 'This speech introduces the current outlook and its context. ' * 25
+        decision = 'The deposit facility rate was increased to 2.5% on 30 September.'
+        page = ('<meta property="article:published_time" content="2026-10-05"><main><p>' + introduction + '</p><p>' + decision + '</p></main>').encode()
+        value = reader.read_article('https://www.ecb.europa.eu/press/key/date/2026/html/example.html',
+            published_at='2026-10-05T08:00:00Z', title='Public speech', topic='finance', producer='sentinelle', fetcher=lambda _: page)
+        source = value['item']
+        self.assertIn(decision, source['excerpt'])
+        self.assertLessEqual(len(source['excerpt']), 1200)
+        self.assertGreater(source['textChars'], 1200)
+        self.assertEqual(source['excerptMode'], 'passages')
+        self.assertTrue(source['excerptTruncated'])
+        self.assertIn('2.5%', source['excerpt'][:500])
+
     def test_extracts_actual_article_with_page_date_and_response_fingerprint(self):
         value = reader.read_source(URL, fetcher=lambda _: HTML)
         self.assertEqual(value["item"]["excerpt"], "Premier fait public avec sa preuve.")

@@ -93,6 +93,15 @@ def parse_feed(data):
             yield {"url":url,"title":title_text,"publishedAt":date.isoformat(timespec="milliseconds").replace("+00:00","Z"),"excerpt":excerpt}
 
 
+def source_max_age_hours(url, ordinary=72):
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.hostname == 'www.ecb.europa.eu' and re.match(r'^/{1,2}press/(key|pr)/', parsed.path):
+        return 168
+    if parsed.hostname == 'nextjs.org' and re.match(r'^/blog/([a-z0-9-]*security-(release|update|advisory)|cve-)', parsed.path):
+        return 168
+    return ordinary
+
+
 def export_candidates(config, *, fetcher=fetch_feed, now=None, max_age_hours=72):
     now = now or datetime.now(timezone.utc)
     result = {"version":1,"producer":"sentinelle","observedAt":now.isoformat(timespec="milliseconds").replace("+00:00","Z"),
@@ -109,7 +118,7 @@ def export_candidates(config, *, fetcher=fetch_feed, now=None, max_age_hours=72)
                         continue
                     published = datetime.fromisoformat(item["publishedAt"].replace("Z","+00:00"))
                     age = (now-published).total_seconds()
-                    if age>max_age_hours*3600:
+                    if age>source_max_age_hours(item['url'], max_age_hours)*3600:
                         result["excluded"]["stale"]+=1
                         continue
                     if age < -300:
