@@ -86,6 +86,12 @@ transmets son emplacement et son mode d'exécution, sans clé ni identifiant pri
 
 ## Livraison et coordination
 
+Ivan demande aussi la répartition jusqu'à la fin du projet : lire
+docs/PROJECT-CHECKLISTS.md sur origin/agent/codex/mac-alerts-pilot.
+K01–K03 constituent ton lot immédiat, les autres lots suivent ses dépendances.
+La file technique candidate est décrite dans docs/ALERTS-RUNTIME.md :
+Codex attend ton contrat avant de figer le schéma et les adaptateurs.
+
 Avancer sans nouvelle demande d'accord sur ce cadrage déjà donné par Ivan.
 Tests utiles, commit/push sur ta branche et PR en brouillon vers foundation/v1 ;
 relecture Codex avant fusion. Pas de fusion ou activation implicite.

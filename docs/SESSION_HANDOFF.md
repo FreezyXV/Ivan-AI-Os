@@ -1,3 +1,17 @@
+## Checklists et file des alertes — Codex (2026-10-05)
+
+Lire docs/PROJECT-CHECKLISTS.md : 25 tâches Codex et 10 tâches Claude avec
+critères de fin, dépendances et zones d'écriture. Codex pilote l'intégration,
+Claude démarre rapport-telegram/contrat/corpus sur sa branche séparée ;
+Knowledge/Anakalypto dernière étape commune, Career suspendu, OVH différé.
+Lire docs/ALERTS-RUNTIME.md : file SQLite candidate, 15 tests synthétiques,
+doublons interbots, baux et crash, envoi incertain retenu sans renvoi automatique.
+Sélection/synthèse/envoi injectés, aucune collecte ou livraison live raccordée.
+Finance : régression prouvée sur judge (0 appels au lieu de 2), valeurs publiques
+formatées désormais acceptées dans le gateway source, sans modifier le moteur
+Claude. Gateway complet 53/53 tests ; file alertes 15/15 tests, CI ajoutée.
+Ce lot ne remplace pas encore le service Jev actif.
+
 ## Priorités Ivan — pilote Mac et alertes utiles (2026-10-05)
 
 Lire docs/MAC-PILOT-PRIORITIES.md et docs/HANDOFF-CLAUDE-ALERTS-2026-10-05.md.
@@ -10,7 +24,7 @@ Sentinelle non identifié dans le dépôt/LaunchAgents examinés ; ne pas annonc
 un raccordement ou des nouvelles alertes actifs avant preuve. Pause Career appliquée : retiré des allowAgents du chef, config native validée,
 restart sain ; workspace Career et reste de config conservés. Préférences USER.md
 ajoutées sans remplacer le contenu existant. Preuve privée :
-~/.ivan-ai-os/pilot-mac-20261005/result.json. Synthèses pas encore implémentées.
+~/.ivan-ai-os/pilot-mac-20261005/result.json. Synthèses live pas encore activées.
 
 ## Reprise Codex — capacités et skills OpenClaw (2026-10-04)
 

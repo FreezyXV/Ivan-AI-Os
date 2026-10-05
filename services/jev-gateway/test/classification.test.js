@@ -92,3 +92,21 @@ test("HTTP client authenticates before parsing, journals metadata only and retur
   assert.equal(JSON.stringify(audit).includes(topic.input.titre), false);
   assert.equal(JSON.stringify(audit).includes("contact@example.org"), false);
 });
+
+test("Finance engine public formatted thresholds reach the registered classification contract", async () => {
+  const { judge } = await import("../../../skills/finance-engine/scripts/veille.mjs");
+  const alerts = [
+    { niveau: "important", id: "bce_taux_depot", ancien: 2.5, nouveau: 2.75, seuil: "tout changement" },
+    { niveau: "important", id: "bitcoin", ancien: "7 jours avant", nouveau: "12 %", seuil: "±10 % sur 7 jours" }
+  ];
+  let calls = 0;
+  await judge(alerts, { classifyImpl: async (question, input) => {
+    validateClassification({ question, input }); calls++;
+    return { decision: 0.9 };
+  } });
+  assert.equal(calls, 2);
+  const input = { indicateur: "eur_usd", ancien: 1.1, nouveau: 1.12, seuil: 2 };
+  assert.equal(validateClassification({ question: "alerte.importante", input }).question, "alerte.importante");
+  for (const nouveau of ["x".repeat(501), "contact@example.org", `apikey_${"x".repeat(30)}`])
+    assert.throws(() => validateClassification({ question: "alerte.importante", input: { ...input, nouveau } }), ClassificationInputError);
+});
