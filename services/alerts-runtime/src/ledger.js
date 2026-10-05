@@ -22,6 +22,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
       owner TEXT,expires INTEGER,attempts INTEGER NOT NULL,updated INTEGER NOT NULL,metrics TEXT);
     CREATE TABLE IF NOT EXISTS digests(key TEXT PRIMARY KEY,ids TEXT NOT NULL,text TEXT NOT NULL,
       owner TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER,updated INTEGER NOT NULL,receipt TEXT);`);
+  if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='retries'))db.exec('ALTER TABLE alerts ADD COLUMN retries INTEGER NOT NULL DEFAULT 0');
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
   const get=id=>{const r=db.prepare('SELECT * FROM alerts WHERE id=?').get(id);return r?{...r,item:JSON.parse(r.item),brief:r.brief?JSON.parse(r.brief):null,receipt:r.receipt?JSON.parse(r.receipt):null}:null;};
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
@@ -97,6 +98,9 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
       db.prepare('UPDATE cycles SET status=?,metrics=?,updated=?,expires=NULL WHERE key=?').run(ok?'done':'failed',JSON.stringify(metrics),now(),cycle.key);
     });},
     cycleStatus(){return db.prepare('SELECT name,key,status,attempts,updated,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all().map(r=>({...r,metrics:r.metrics?JSON.parse(r.metrics):null}));},
+    retryTransient({minDelayMs=900000}={}){if(!Number.isSafeInteger(minDelayMs)||minDelayMs<0)fail('ALERT_RETRY_INVALID');return tx(()=>
+      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT') AND retries<1 AND updated<=?")
+        .run(now(),now()-minDelayMs).changes);},
     get,
     ownsLease(id,owner){const r=get(id);return !!r&&r.state==='processing'&&r.owner===owner&&r.expires>now();},
     counts(){return Object.fromEntries(db.prepare('SELECT state,count(*) AS n FROM alerts GROUP BY state').all().map(r=>[r.state,r.n]));},

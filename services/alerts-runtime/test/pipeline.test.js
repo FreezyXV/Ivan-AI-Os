@@ -207,3 +207,13 @@ test('new source evidence can release an unread review without retrying delivere
   assert.equal(ledger.ingest(item()).state,'delivery_unknown');
   assert.equal(ledger.get(id).state,'delivery_unknown');
 });
+
+test('invalid stage configuration cannot consume a queued source or masquerade as provider failure',async t=>{
+ const {ledger}=fixture(t);const {id}=ledger.ingest(item());
+ await assert.rejects(processNext({ledger,stageTimeoutMs:70000}),{code:'ALERT_DEADLINE_CONFIG_INVALID'});
+ assert.equal(ledger.get(id).state,'pending');
+ await processNext({ledger,now:at,select:async()=>{throw Error();}});
+ assert.equal(ledger.retryTransient({minDelayMs:0}),1);
+ await processNext({ledger,now:at,select:async()=>{throw Error();}});
+ assert.equal(ledger.retryTransient({minDelayMs:0}),0);
+});

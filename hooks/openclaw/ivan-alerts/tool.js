@@ -7,13 +7,15 @@ export function createSynthesisTool(context,subagent){
  return {name:'ivan_alert_synthesize',label:'Public alert synthesis',
   description:'Generate bounded French prose from already selected public read evidence; no tool or private context.',
   parameters:{type:'object',properties:{item:{type:'object'}},required:['item'],additionalProperties:false},
-  async execute(_id,args,signal){try{
+  async execute(_id,args,signal){let stage='VALIDATE';try{
    const item=validateItem(args?.item);
    if(item.sourceStatus!=='read'||!PILOT_CONTEXT.active.includes(item.topic))throw Error();
-   const result=await subagent.complete({agentId:'ivan-system',message:synthesisPrompt(item),
+   stage='COMPLETE';const result=await subagent.complete({agentId:'ivan-system',message:synthesisPrompt(item),
      extraSystemPrompt:'Tu produis uniquement un JSON de synthèse de la source fournie. Aucun outil, contexte privé ou pouvoir d’action.',timeoutMs:60000,signal});
-   const brief=parseBrief(result.text);renderBrief(item,brief);
+   stage='PARSE';const brief=parseBrief(result.text);renderBrief(item,brief);
    return output({status:'READY',execution:'native-isolated-completion',brief});
-  }catch{return output({status:'UNAVAILABLE',error_code:'ALERT_SYNTHESIS_UNAVAILABLE'});}}
+  }catch(error){
+   const reason=String(error?.message??'UNKNOWN').replace(/\bBearer\s+\S+|[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,240);
+   return output({status:'UNAVAILABLE',error_code:'ALERT_SYNTHESIS_UNAVAILABLE',error_stage:stage,reason});}}
  };
 }

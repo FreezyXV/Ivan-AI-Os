@@ -16,6 +16,7 @@ export function renderBrief(item,brief){
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
 }
 export async function processNext({ledger,select,synthesize,now=Date.now(),maxAgeHours=72,stageTimeoutMs=30000}){
+  if(!Number.isInteger(stageTimeoutMs)||stageTimeoutMs<10||stageTimeoutMs>60000)fail('ALERT_DEADLINE_CONFIG_INVALID');
   const job=ledger.claim();if(!job)return {state:'idle'};
   const complete=(state,reason,brief)=>{
     try{return ledger.finish(job.id,job.owner,{state,reason,brief});}

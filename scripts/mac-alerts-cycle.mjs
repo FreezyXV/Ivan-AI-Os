@@ -24,11 +24,11 @@ export async function collectFeeds({directory,ledger}){
   return {...result,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length};
  }finally{rmSync(temp,{recursive:true,force:true});}
 }
-export async function runCycle({ledger,settings,now=new Date(),digestNow=false,
+export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
  feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger}),business=()=>businessCycle({ledger}),
  select=createJevSelector(),synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
- const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();
+ const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.retryTransient();
  const perform=async(name,key,fn)=>{
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
@@ -38,11 +38,12 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,
  await perform('feeds',slots.feeds,feeds);
  if(slots.finance)await perform('finance',slots.finance,finance);
  if(slots.business)await perform('business',slots.business,business);
- const processKey=slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours();
+ const processKey=processNow?'process:verify:'+now.toISOString().slice(0,16).replace(/[T:]/g,'-'):
+  slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours();
  await perform('process',processKey,async()=>{
   let decisions=0,generations=0;const states={};
   for(let i=0;i<100&&decisions<8&&generations<2;i++){
-   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:70000,
+   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,
     select:async(...args)=>{decisions++;return select(...args);},
     synthesize:async(...args)=>{generations++;return synthesize(...args);}});
    if(result.state==='idle')break;states[result.reason??result.state]=(states[result.reason??result.state]??0)+1;
@@ -57,9 +58,9 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  let ledger;
  try{
   const [settingsPath,...flags]=process.argv.slice(2);
-  if(!settingsPath||flags.some(f=>f!=='--digest-now'))throw Error('ALERT_CYCLE_USAGE');
+  if(!settingsPath||flags.some(f=>!['--digest-now','--process-now'].includes(f)))throw Error('ALERT_CYCLE_USAGE');
   const settings=JSON.parse(readFileSync(settingsPath));ledger=openLedger(path.join(settings.stateDir,'alerts.sqlite'));
-  const result=await runCycle({ledger,settings,digestNow:flags.includes('--digest-now')});
+  const result=await runCycle({ledger,settings,digestNow:flags.includes('--digest-now'),processNow:flags.includes('--process-now')});
   // Feed receipts/source hashes stay in private cycle state. No raw source/prompt.
   console.log(JSON.stringify(result));
   if(Object.values(result.results).some(r=>r?.error_code))process.exitCode=1;
