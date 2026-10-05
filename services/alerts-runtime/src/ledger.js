@@ -11,6 +11,15 @@ const terminal="'delivered','skipped','expired_unsent'";
 const fingerprint=item=>item.sourceStatus==='read'?createHash('sha256').update(JSON.stringify([
   item.topic,item.publishedAt.slice(0,10),item.title.normalize('NFKC').replace(/\s+/g,' ').trim(),
   item.excerpt])).digest('hex'):null;
+// v2 (Claude K07-2): the same page read by two producers whose feed titles or topics
+// differ. Host + publication day + normalized excerpt; only for substantial excerpts,
+// so generic chrome ("Subscribe…") is never treated as proof of the same article.
+const normalizedEvidence=text=>text.normalize('NFKC').replace(/[\u2018\u2019\u02bc]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/\s+/g,' ').trim();
+const evidenceKeys=item=>{
+  const v1=fingerprint(item);if(!v1)return [];
+  const text=normalizedEvidence(item.excerpt);
+  return text.length<200?[v1]:[v1,'v2:'+createHash('sha256').update(JSON.stringify([new URL(item.url).hostname,item.publishedAt.slice(0,10),text])).digest('hex')];
+};
 export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000, capacity=10000 } = {}) {
   if (!path.isAbsolute(filename) || !Number.isSafeInteger(leaseMs) || leaseMs < 1000 || !Number.isInteger(capacity)||capacity<1||capacity>10000) fail('ALERT_LEDGER_CONFIG_INVALID');
   const directory=path.dirname(filename);mkdirSync(directory,{recursive:true,mode:0o700});
@@ -46,9 +55,9 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     }catch{fail('ALERT_ARCHIVE_UNAVAILABLE');}
     return {...r,item:JSON.parse(original.item),brief:original.brief?JSON.parse(original.brief):null,receipt:r.receipt?JSON.parse(r.receipt):null,archive};};
   // Backfill only read evidence on upgrade; URL identity and old receipts stay intact.
-  for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all()){
-    const key=fingerprint(JSON.parse(row.item));if(key)db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,row.id);
-  }
+  const equivalentOf=keys=>{for(const key of keys){const row=db.prepare('SELECT id FROM evidence_keys WHERE key=?').get(key);if(row)return row;}return null;};
+  const remember=(keys,id)=>{for(const key of keys)db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,id);};
+  for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all())remember(evidenceKeys(JSON.parse(row.item)),row.id);
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
     ingest(raw){const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');return tx(()=>{
@@ -61,7 +70,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         // Never alter a lease, an evaluated read source or an attempted send.
         if(prior.item.sourceStatus!=='read'&&item.sourceStatus==='read'&&
            (prior.state==='pending'||(prior.state==='review'&&prior.reason==='SOURCE_NOT_READ'))){
-          const key=fingerprint(item),equivalent=db.prepare('SELECT id FROM evidence_keys WHERE key=?').get(key);
+          const keys=evidenceKeys(item),equivalent=equivalentOf(keys);
           if(equivalent&&equivalent.id!==id){
             db.prepare("UPDATE alerts SET item=?,state='skipped',reason='DUPLICATE_EVIDENCE',brief=?,updated=? WHERE id=?")
               .run(JSON.stringify(item),JSON.stringify({duplicateOf:equivalent.id}),now(),id);
@@ -69,17 +78,17 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
           }
           db.prepare("UPDATE alerts SET item=?,state='pending',reason=NULL,brief=NULL,updated=? WHERE id=?")
             .run(JSON.stringify(item),now(),id);
-          db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,id);
+          remember(keys,id);
           return {id,duplicate:true,state:'pending',evidenceUpdated:true};
         }
         return {id,duplicate:true,state:prior.state};
       }
-      const key=fingerprint(item),equivalent=key?db.prepare('SELECT id FROM evidence_keys WHERE key=?').get(key):null;
+      const keys=evidenceKeys(item),equivalent=equivalentOf(keys);
       if(equivalent){const row=db.prepare('SELECT state FROM alerts WHERE id=?').get(equivalent.id);
         if(row)return {id:equivalent.id,duplicate:true,state:row.state,deduplication:'read-evidence'};}
       if(db.prepare(`SELECT count(*) AS n FROM alerts WHERE state NOT IN (${terminal})`).get().n>=capacity)fail('ALERT_QUEUE_FULL');
       const at=now();db.prepare("INSERT INTO alerts(id,url,item,state,created,updated) VALUES(?,?,?,'pending',?,?)").run(id,item.url,JSON.stringify(item),at,at);
-      if(key)db.prepare('INSERT OR IGNORE INTO evidence_keys VALUES(?,?)').run(key,id);
+      remember(keys,id);
       return {id,duplicate:false,state:'pending'};
     });},
     claim(){return tx(()=>{
