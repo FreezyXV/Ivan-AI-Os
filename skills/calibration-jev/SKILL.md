@@ -2,7 +2,7 @@
 name: calibration-jev
 description: Mesurer la qualité des décisions Jev (routage vers les managers, détails manquants, urgence, avis sur action) sur des cas synthétiques étiquetés, avant de régler un seuil, d'ajouter une question ou de faire confiance à Jev pour un nouvel usage. Utiliser après la bascule du gateway, une fois par mois, quand un routage semble faux, avant tout changement de seuil ou de question, ou quand Ivan demande "Jev est-il fiable ?", "calibre Jev".
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
   famille: system
   manager: system
   risque: lecture
@@ -13,7 +13,7 @@ metadata:
 # Calibration Jev
 
 Statut brouillon : corpus et script fusionnés (#7) ; mesure réelle après activation du gateway
-authentifié (port 4311 prévu). L'ancien service de test sur 4310 n'a ni budget ni contrat métadonnées :
+authentifié (port 4311, actif sur le Mac depuis la bascule Codex). L'ancien service de test sur 4310 n'a ni budget ni contrat métadonnées :
 ne jamais calibrer dessus.
 
 ## Les 4 questions calibrables (fixes, versionnées dans le code)
