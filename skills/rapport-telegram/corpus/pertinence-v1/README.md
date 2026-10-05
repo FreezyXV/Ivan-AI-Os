@@ -23,3 +23,9 @@ Protocole (une seule passe payante, par Codex, après correction du classifieur)
 3. Comparer à `labels.json` avec `evaluer.mjs` (PR #55) ; les seuils se valident sur ce jeu, ils
    ne se baissent pas pour obtenir un KEEP. Relancer seulement si fixtures, contexte ou question
    changent (empreinte différente). Aucune calibration parallèle côté Claude.
+
+Format attendu par `scripts/evaluate-alert-corpus.mjs` (Codex) : `node assembler.mjs > corpus.json`
+(vérifie l'empreinte, n'altère pas les sources). Essai hors ligne @23cf0be (0 appel) :
+6 cas tranchés par code dont 5 conformes ; Q02 (interview BCE `/press/inter/`, 5 jours) est
+`SOURCE_STALE` par la règle de 72 h alors que discours et communiqués ont 168 h — silence dans les
+deux cas, mais la règle mérite d'être alignée. Les labels ne sont **pas** modifiés après mesure.
