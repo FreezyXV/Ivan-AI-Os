@@ -31,7 +31,7 @@ export function canonicalUrl(value) {
 }
 export function sourceMaxAgeHours(item){
   const u=new URL(item.url);
-  if(u.hostname==='www.ecb.europa.eu'&&/^\/{1,2}press\/(key|pr)\//.test(u.pathname))return 168;
+  if(u.hostname==='www.ecb.europa.eu'&&/^\/{1,2}press\/(key|pr|inter)\//.test(u.pathname))return 168;
   if(u.hostname==='nextjs.org'&&/^\/blog\/(?:[a-z0-9-]*security-(?:release|update|advisory)|cve-)/.test(u.pathname))return 168;
   return 72;
 }
