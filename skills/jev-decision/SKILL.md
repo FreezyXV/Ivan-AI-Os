@@ -3,7 +3,7 @@ name: jev-decision
 description: Utiliser Jev (TypeSafe System One, via le Jev Gateway d'Ivan-AI-Os) pour les décisions bon marché - routage vers un manager, tri oui/non, notation, choix parmi des options, pré-contrôle d'une action - et concevoir de nouvelles questions Jev. Utiliser dès qu'une tâche demande de classer, trier, noter, filtrer ou router en volume, avant d'appeler un modèle premium pour ça, ou quand Ivan dit "passe par Jev", "fais trier", "note ces éléments".
 compatibility: "claude-code, codex"
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   famille: system
   manager: system
   risque: lecture
@@ -38,6 +38,20 @@ Ne pas inventer de question ni d'endpoint : une nouvelle question demande un con
 `/v1/alerts/select` refuse objectifs, profils et consignes fournis par l'appelant ; Career,
 Knowledge et OVH y sont écartés par code sans appel fournisseur.
 Le compteur mesure les tokens d'entrée (`jev-1.13.0`) et refuse avant le réseau au plafond de 10 €.
+
+## Usage réel des alertes (2026-10-05, runtime Codex `9f7f653` / gateway `1c769a3`)
+- Question `alerts.pertinence.mac-v3`, contexte public `mac-alerts-20261005-v5`, politique
+  `keep ≥ 0,75 / skip ≥ 0,75` sur la confiance ; deux seuils contradictoires → review
+  (`selectionOutcome`). Mode actif **E** : Jev keep, puis jugement et rédaction natifs, digest
+  seulement. Jev ne rédige rien et n'autorise aucune action.
+- Mesuré (labels figés) : 6/14 utiles sur dev et 4/5 sur le benchmark, **0 bruit** ; rappel
+  limité (rate les incidents de sécurité d'agents génériques). Politique P(keep) ≥ 0,10 /
+  P(skip) ≥ 0,20 en réserve (1 faux keep sur le benchmark).
+- **Non qualifiés** (jamais mesurés sur jeu figé) : routage (la table active fait mieux),
+  `signal.pertinent`, `preuve.suffisante`, `alerte.importante`, `source.fiable`, `sujet.*`,
+  `publication.prete`. Ne pas en dépendre pour décider seul ; mesurer d'abord.
+- Une adresse de contact dans un extrait fait refuser l'entrée par le gateway (A10) : c'est voulu.
+  Ne pas contourner ; la correction proposée remplace l'adresse côté client avant l'appel.
 
 ## Cascade (du moins cher au plus cher)
 1. Code déterministe (regex, règle, liste) si la règle s'écrit en 10 lignes.

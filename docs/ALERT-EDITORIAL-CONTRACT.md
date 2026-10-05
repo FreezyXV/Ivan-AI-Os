@@ -59,6 +59,18 @@ Inconnu = absent. Aucun champ n'est déduit du titre, de l'URL ou de la mémoire
   `passages`), si l'utilité repose sur une déduction, ou si la source est une opinion,
   un discours ou une citation d'un texte non lu.
 - Longueurs maximales : summary 350, utility 500, action 300, uncertainty 300.
+- **Un fait = une affirmation prouvée par sa propre citation.** Ne pas y ajouter un élément
+  vrai mais tiré d'un autre passage (A01 « désactivent AVIF », reçu 60 « dont une SSRF »).
+  Les sigles et identifiants (`SSRF`, `AVIF`, `CVE-…`, `GHSA-…`, versions) d'un `summary`
+  figurent dans sa citation (contrôle codé demandé à Codex, comme pour les nombres).
+- **Pas de fait générique ni répété** : un fait qui n'apprend rien (« des API payantes
+  peuvent coûter ») ou qui reprend un autre fait (reçu 59 ThinkingBox, reçu 60) est retiré ;
+  deux faits forts valent mieux que trois.
+- **Ne jamais affirmer ce qu'Ivan utilise** : écrire « si un projet utilise Next.js », pas
+  « les projets d'Ivan utilisent Next.js ». Un composant du pilote n'est déclaré concerné que
+  par l'inventaire codé, jamais par le modèle.
+- **Coûts** : seul Jev/TypeSafe a un plafond dur (le gateway). Une synthèse sur les coûts
+  raisonne sur l'ensemble des postes payants, sans réduire le sujet à Jev.
 
 ## 4. Message rendu (Telegram, texte simple)
 
@@ -92,8 +104,15 @@ Proposition v2 (§ 11, A5), toujours publique et sans profil : ajouter 5 faits s
 ligne, nécessaires pour que l'utilité soit concrète plutôt que générique :
 1. Le pilote tourne sur un Mac, pas encore sur un serveur permanent.
 2. Plusieurs agents (Claude Code, Codex, OpenClaw) partagent un dépôt Git et une mémoire Obsidian.
-3. Les agents appellent des services payants ; le budget Jev commun est plafonné.
-4. La pile web par défaut des projets est Next.js / TypeScript ; les services sont en Node.
+3. Jev (TypeSafe) a un plafond dur mensuel appliqué par le gateway ; les complétions natives et
+   les autres services payants ne sont ni plafonnés ni mesurés par Ivan AI OS.
+4. Les **nouveaux** projets web partent par défaut sur Next.js / TypeScript ; l'inventaire des
+   projets existants et de leurs versions n'est pas connu du système. Les services sont en Node.
+
+Correction du 2026-10-05 (Claude) : mes formulations initiales des points 3 et 4 (« le budget
+Jev commun est plafonné », « la pile web par défaut des projets ») ont été reprises dans le
+contexte v5. Elles ont produit des utilités fausses dans des messages réellement livrés : budget
+réduit à Jev (reçu 59), « les projets d'Ivan utilisent Next.js » (reçu 60).
 5. La veille Finance suit des indicateurs publics (BCE, inflation, taux) sans portefeuille.
 
 Exclus du contexte des synthèses : profil complet, actifs, allocations, objectifs personnels,
@@ -114,6 +133,13 @@ Ne prouvent rien : un titre séduisant, des mots-clés communs (« IA », « age
 de prix ou de performance non chiffrée dans l'extrait, la popularité, deux bots qui proposent
 la même page. `review` = lien possible mais non établi par l'extrait ; `skip` = promotion,
 bruit, répétition, sujet en pause, aucun usage concret.
+
+Compléments mesurés (benchmark architecture-v1) :
+- une rumeur d'une phrase non attribuée et non vérifiée (A18 « GitHub down again? ») = skip ;
+- une **annonce** qui promet des correctifs « plus tard » sans en donner le contenu (A10) =
+  review : la publication effective, quand elle arrive, est l'information à retenir ;
+- un incident de sécurité d'agents, même sans composant du pilote nommé (A02), peut être keep
+  si l'extrait décrit un mécanisme transposable (accès aux secrets, élévation de privilèges).
 
 ## 7. Silence, digest, immédiat
 
