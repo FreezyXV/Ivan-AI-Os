@@ -32,8 +32,12 @@ export function createJevSelector({ gatewayUrl = 'http://127.0.0.1:4311',
           !Number.isFinite(result.confidence) || result.confidence < 0 || result.confidence > 1 ||
           result.context_version !== PILOT_CONTEXT.version ||
           !/^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(result.request_id ?? '')) fail('ALERT_SELECTION_UNAVAILABLE');
+      const p = result.probabilities, keys = ['keep', 'review', 'skip'];
+      const probabilities = p && typeof p === 'object' && Object.keys(p).length === 3 && keys.every(k => Number.isFinite(p[k]) && p[k] >= 0 && p[k] <= 1) &&
+        Math.abs(keys.reduce((sum, k) => sum + p[k], 0) - 1) <= 0.03 ? Object.fromEntries(keys.map(k => [k, p[k]])) : undefined;
       return { decision: result.decision, confidence: result.confidence,
-        provider: result.provider, context_version: result.context_version, request_id: result.request_id };
+        provider: result.provider, context_version: result.context_version, request_id: result.request_id,
+        ...(probabilities ? { probabilities } : {}) };
     } catch { fail('ALERT_SELECTION_UNAVAILABLE'); }
   };
 }
