@@ -1,36 +1,55 @@
-## État courant — livraison et qualification Mac (2026-10-05)
+## État courant — pilote Mac et benchmark indépendant (2026-10-05)
 
 Codex : agent/codex/alerts-integration, PR #57 sur #48, elle-même sur #47.
-Source qualifiée : 49060ea, CI 11/11 ; aucune fusion de cette session.
+Runtime actif : a604aa6, CI 11/11 ; 212 tests locaux au moment de cette activation.
 Lire PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
-CLAUDE-NEXT-ACTIONS-2026-10-05.md et ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md.
-Le relais couvre le projet entier ; les sections suivantes sont historiques.
+CLAUDE-NEXT-ACTIONS-2026-10-05.md, REVIEW-CODEX-JEV-CALIBRATION-2026-10-05.md,
+REVIEW-CODEX-ARCHITECTURE-BENCHMARK-2026-10-05.md et
+ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md. Le relais couvre le projet entier.
 
-Actifs vérifiés : worker 0b098d7, plugin System 23cf0be, Jev 4311 sur 9136f58,
-contexte mac-alerts-20261005-v3. Runner Mac conservé de alerts-59fbd7e.
-File/budget/Trousseau/Secrétaire conservés ; Sentinelle distant arrêté, un planning.
-Worker activé : expiration des reviews anciennes et rétention non bloquante.
-Sauvegarde/restauration avec archives qualifiée ; hook Codex source uniquement.
-Tests affectés : 91 Node alertes/scripts/hook, 60 gateway, 21 managers,
-17 Python, soit 189. CI Linux verte après correction des permissions de copie.
+Worker, plugin System et gateway Jev sont tous épinglés à a604aa6.
+Contexte mac-alerts-20261005-v5 ; sélection active native-editorial.
+Une complétion isolée juge l'utilité et rédige uniquement pour keep ; deux appels
+natifs maximum par passage. Jev n'est obligatoire ni pour les alertes ni pour
+le tri intermédiaire Business/Finance ; les autres API restent disponibles sur 4311.
+Le réglage probabiliste v5 reste en réserve, aucune politique keep prioritaire.
+Budget commun, Trousseau, file, mémoire/personnalité de la Secrétaire conservés.
+Runner Mac inchangé cc1d2a5 ; services sur Node 24.19.0. Planning exclusif,
+workflow Sentinelle distant arrêté. Pas de fusion foundation/main dans cette session.
 
-Contrôle du 5 octobre à 18:57 Paris : 18 review, 1 pending, 3 skipped,
-3 expired_unsent, aucune livraison retenue. Premier passage worker : sortie 0.
-Jev : 453 appels, 0,013105 EUR estimé, plafond 10 EUR, usage inconnu 0.
-Next.js réel v3 : keep 0,26 → review ; aucune génération/livraison forcée.
-Référence v2 : 8/12 correctes, dont 3/7 Jev ; ne pas réutiliser comme jeu indépendant.
-Huit sorties natives disponibles : quatre current, quatre compact-v1 éditoriales.
-Compact : 27–33 % de caractères de prompt en moins ; aucun gain de tokens facturés,
-de rapidité ou de qualité prouvé. Production current conservée ; zéro Telegram/Jev.
+Parcours automatique réel vérifié le 5 octobre, reçu Telegram 59 : deux sources
+publiques effectivement lues, jugement natif, synthèses validées et digest livré.
+Articles : plafonds de dépenses (Simon Willison), ThinkingBox (Hugging Face).
+Processus 25 955 ms pour deux complétions ; digest 5 187 ms. Aucun KEEP simulé.
+Deux autres articles ont été écartés par le même jugement, sans prose livrée.
+Budget avant/après ces vérifications : 715 appels, 0,026624 EUR estimé, inconnus 0,
+plafond 10 EUR. Cela ne mesure pas le coût du modèle natif.
+Preuves privées : ~/.ivan-ai-os/mac-alerts-a604aa6/{coordinated-activation,
+native-editorial-cycle,native-editorial-cycle-followup}.json.
+Qualité indépendante et appréciation d'Ivan encore ouvertes : la synthèse des
+plafonds se focalise trop sur Jev ; son budget ne couvre pas les autres fournisseurs.
 
-Claude #49 corrigée installée en gate, permissions projet conservées, 12 tests.
-#50–#56 relues, pas fusionnées ici. #54 : déduction énergétique à corriger.
-Mission précise Claude dans CLAUDE-NEXT-ACTIONS-2026-10-05.md : noter les huit
-sorties, nouveau jeu disjoint, revue du HEAD #57 ; pas de calibration dupliquée.
-Hook Codex source : interface native découverte, statut untrusted ; pas activé.
-Sauvegarde privée réelle mac-alerts-23cf0be/state-backup-20261005 restaurée
-sur copie ; archives et envoi interrompu testés. Sommeil réel reste à mesurer.
-Career en pause, OVH différé, Knowledge/Anakalypto en dernière étape ensemble.
+Jev v5 : 10/14 utiles dev, zéro bruit, avec gestion des probabilités contradictoires ;
+à confiance 0,75 : 6/14, zéro bruit. Contrôle précédent : 11/12, positifs synthétiques.
+Ni ces résultats ni la stabilité observée ne prouvent une qualification universelle.
+Claude PR #60 : 26 cas nouveaux mesurés une seule fois avec v5 et natif,
+labels exclus des entrées, erreurs conservées et couverture complète obligatoire.
+B à confiance 0,75 : 4/5 utiles, aucun faux keep ; C/D : 4/5 mais trois faux keep.
+Mode conservateur E préparé : sélection Jev 0,75 puis validation/rédaction native,
+3/5 utiles sans faux keep sur ces mêmes sorties ; pas d'urgence automatique.
+22 tentatives par fournisseur, 1 erreur Jev et 5 natives ; zéro livraison de benchmark.
+Budget après passe : 736 appels, 0,027874 EUR estimé ; aucun coût natif inventé.
+Correctifs source : erreur de contenu distincte d'une panne, reprise avec reçu payé,
+scoreur strict/anti-rejeu et diagnostic selon le mode ; 221 tests locaux passent.
+Ne pas refaire les 94 cas, les 83 cas dev, les huit générations ni le contrôle précédent.
+Le benchmark sémantique historique ne prouve pas la fraîcheur des flux actuels.
+
+Career en pause ; OVH différé ; Knowledge/Anakalypto dernière étape commune.
+Claude #49 corrigée installée en gate projet uniquement ; hook Codex source untrusted,
+pas activé. Plans Engineering externes préservés. Business recommandations/notation
+approfondie, inventaire d'urgence, sommeil réel du Mac et usage quotidien restent ouverts.
+Prochaine mission Claude : corriger les calculs de #60 et relire les sorties déjà
+mesurées, les deux messages réels et le contexte actuel ; pas de répétition payante.
 
 ## Historique — sélection active et Sentinelle retrouvé (2026-10-05)
 

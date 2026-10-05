@@ -41,8 +41,9 @@ export function selectionOutcome(selection,policy=DEFAULT_SELECTION_POLICY){
   if(keep)return 'keep';if(skip)return 'skip';
   return 'review';
 }
-export async function processNext({ledger,select,synthesize,assess,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
+export async function processNext({ledger,select,synthesize,assess,assessmentAfterSelection=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
   selectionOutcome({decision:'review',confidence:0},selectionPolicy); // invalid configuration fails before any claim
+  if(typeof assessmentAfterSelection!=='boolean'||(assessmentAfterSelection&&typeof assess!=='function'))fail('ALERT_ASSESSMENT_CONFIG_INVALID');
   if(assess!==undefined&&typeof assess!=='function')fail('ALERT_ASSESSMENT_CONFIG_INVALID');
   if(!Number.isInteger(stageTimeoutMs)||stageTimeoutMs<10||stageTimeoutMs>60000)fail('ALERT_DEADLINE_CONFIG_INVALID');
   const job=ledger.claim();if(!job)return {state:'idle'};
@@ -53,12 +54,14 @@ export async function processNext({ledger,select,synthesize,assess,now=Date.now(
   const local=prefilter(job.item,{now,maxAgeHours});
   if(local.decision!=='select')return complete(local.decision==='skip'?'skipped':'review',local.reason);
   const itemSha256=createHash('sha256').update(JSON.stringify(job.item)).digest('hex');
-  if(assess){
+  if(assess&&!assessmentAfterSelection){
     // Subjective editorial selection is not an obligatory Jev gate. One isolated
     // completion judges usefulness and writes the brief only when useful.
     let result;
     try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
-    catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':'NATIVE_ASSESSMENT_UNAVAILABLE');}
+    catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
+      error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
+      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE');}
     if(!result||!['keep','review','skip'].includes(result.decision)||
        (result.decision!=='keep'&&result.brief!==undefined))return complete('review','NATIVE_ASSESSMENT_INVALID');
     const selection={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256,
@@ -89,6 +92,24 @@ export async function processNext({ledger,select,synthesize,assess,now=Date.now(
   if(outcome==='skip')return complete('skipped','SELECTION_REJECTED',{selection:trace});
   if(outcome!=='keep')return complete('review','SELECTION_UNCERTAIN',{selection:trace});
   if(!ledger.ownsLease(job.id,job.owner))return{id:job.id,state:'lease_lost'};
+  if(assessmentAfterSelection){
+    // Benchmark-qualified conservative mode: uncertain selection never buys prose.
+    // Preserve the paid receipt even if the subsequent native completion fails.
+    let result;
+    try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
+    catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
+      error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
+      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',{selection:trace});}
+    if(!result||!['keep','review','skip'].includes(result.decision)||
+       (result.decision!=='keep'&&result.brief!==undefined))return complete('review','NATIVE_ASSESSMENT_INVALID',{selection:trace});
+    const assessment={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256};
+    if(result.decision==='skip')return complete('skipped','NATIVE_EDITORIAL_REJECTED',{selection:trace,assessment});
+    if(result.decision==='review')return complete('review','NATIVE_EDITORIAL_UNCERTAIN',{selection:trace,assessment});
+    if(!ledger.ownsLease(job.id,job.owner))return{id:job.id,state:'lease_lost'};
+    try{const message=renderBrief(job.item,result.brief);
+      return complete('ready','BRIEF_VERIFIED',{...result.brief,message,contextVersion:PILOT_CONTEXT.version,selection:trace,assessment,generation:result.generation});
+    }catch(error){return complete('review',error?.code==='ALERT_FACT_UNSUPPORTED'?error.code:'NATIVE_ASSESSMENT_INVALID',{selection:trace,assessment});}
+  }
   if(typeof synthesize!=='function')return complete('review','SYNTHESIS_NOT_CONFIGURED',{selection:trace});
   try{
     const brief=await withDeadline(signal=>synthesize(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SYNTHESIS_TIMEOUT');

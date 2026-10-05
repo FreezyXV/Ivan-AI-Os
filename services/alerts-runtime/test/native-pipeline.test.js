@@ -48,3 +48,33 @@ test('a native cycle bounds all model completions, including skipped items, with
  assert.equal(calls,2);assert.equal(result.results.process.nativeCalls,2);assert.equal(result.results.process.decisions,0);
  assert.equal(result.queue.pending,1);assert.equal(result.queue.skipped,2);
 });
+test('an invalid model output is held for review without spending a transient-recovery attempt',async t=>{
+ const {ledger}=fixture(t);ledger.ingest(item('invalid-rpc'));
+ const result=await processNext({ledger,now:at,assess:async()=>{throw Object.assign(Error('private text'),{code:'ALERT_FACT_UNSUPPORTED'});}});
+ assert.equal(result.reason,'ALERT_FACT_UNSUPPORTED');assert.equal(result.state,'review');
+ assert.equal(ledger.retryTransient({minDelayMs:0}),0);
+});
+test('qualified native editorial mode requires the recorded Jev keep before any completion and preserves both decisions',async t=>{
+ const {ledger}=fixture(t);let native=0;const select=async()=>({decision:'keep',confidence:0.9,provider:'jev',context_version:'mac-alerts-20261005-v5',request_id:'00000000-0000-4000-a000-000000000001'});
+ ledger.ingest(item('borderline'));
+ const held=await processNext({ledger,now:at,assessmentAfterSelection:true,select:async()=>({decision:'review',confidence:0.9}),assess:async()=>{native++;assert.fail('uncertain Jev must not invoke prose');}});
+ assert.equal(held.reason,'SELECTION_UNCERTAIN');assert.equal(native,0);
+ ledger.ingest(item('confirmed'));
+ const good=await processNext({ledger,now:at,assessmentAfterSelection:true,select,assess:async()=>{native++;return{decision:'keep',brief:brief()};}});
+ assert.equal(good.state,'ready');assert.equal(good.brief.selection.provider,'jev');assert.equal(good.brief.assessment.decision,'keep');assert.equal(native,1);
+});
+test('qualified mode caches the paid decision across a native outage and respects the cycle model limits',async t=>{
+ const {ledger,dir}=fixture(t);ledger.ingest(item('native-down'));let paid=0;
+ const select=async()=>{paid++;return{decision:'keep',confidence:0.9,provider:'jev',context_version:'mac-alerts-20261005-v5',request_id:'00000000-0000-4000-a000-000000000002'};};
+ const failed=await processNext({ledger,now:at,assessmentAfterSelection:true,select,assess:async()=>{throw Error('temporary outage');}});
+ assert.equal(failed.reason,'NATIVE_ASSESSMENT_UNAVAILABLE');assert.equal(failed.brief.selection.provider,'jev');
+ assert.equal(ledger.retryTransient({minDelayMs:0}),1);
+ const resumed=await processNext({ledger,now:at,assessmentAfterSelection:true,select,assess:async()=>({decision:'keep',brief:brief()})});
+ assert.equal(resumed.state,'ready');assert.equal(resumed.brief.selection.replayed,true);assert.equal(paid,1);
+ for(let i=0;i<3;i++)ledger.ingest(item('cycle-qualified-'+i));
+ const cycle=await runCycle({ledger,settings:{stateDir:dir,selectionMode:'jev-native-editorial'},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,select,
+  assess:async()=>({decision:'keep',brief:brief()}),deliver:async()=>assert.fail('no digest slot')});
+ assert.equal(cycle.results.process.decisions,2);assert.equal(cycle.results.process.nativeCalls,2);
+ assert.equal(cycle.queue.pending,1);assert.equal(cycle.results.process.generations,2);
+});

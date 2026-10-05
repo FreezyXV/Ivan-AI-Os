@@ -1,3 +1,22 @@
+## Production réelle et revue indépendante — actualisation du 5 octobre
+
+Runtime a604aa6, native-editorial : deux sources publiques réellement lues,
+jugement et rédaction en une complétion chacune, digest Telegram reçu 59.
+Plafonds de dépenses (Simon Willison) : 11 886 ms ; ThinkingBox (Hugging Face) :
+14 067 ms. Digest : 5 187 ms. Deux autres articles écartés sans prose livrée.
+Jev avant/après : 715 appels, 0,026624 EUR estimé. Usage/coût natif non disponibles.
+Preuve : ~/.ivan-ai-os/mac-alerts-a604aa6/native-editorial-cycle-followup.json.
+
+Revue indépendante Claude des huit anciens exemples : 27/32 pour chaque variante ;
+fidélité 2/2, utilité 1,25/2, actions 1,5/2, lisibilité 2/2. Aucune supériorité
+compacte démontrée ; production current maintenue. Ne pas régénérer ces exemples.
+La revue des deux messages réels reste ouverte : celui des plafonds rattache trop
+les coûts à Jev ; son plafond TypeSafe ne couvre pas les autres modèles/services.
+Les contrôles de citations/nombres ne prouvent pas l'utilité ni toute la fidélité.
+Le nouveau benchmark #60 mesure les décisions et conserve les briefs, sans livraison.
+
+## Historique des essais éditoriaux
+
 # Mesure Codex — sorties éditoriales natives
 
 Référence current : 9136f58 ; variante compacte : 23cf0be. Contexte v3.

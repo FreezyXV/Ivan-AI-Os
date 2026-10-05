@@ -29,19 +29,19 @@ export async function collectFeeds({directory,ledger}){
  }finally{rmSync(temp,{recursive:true,force:true});}
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
- feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger,useJev:settings.selectionMode!=='native-editorial'}),business=()=>businessCycle({ledger,useJev:settings.selectionMode!=='native-editorial'}),
+ feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger,useJev:(settings.selectionMode??'jev')==='jev'}),business=()=>businessCycle({ledger,useJev:(settings.selectionMode??'jev')==='jev'}),
  hasBusinessEvidence=()=>businessHasPendingEvidence(ledger),
  select,assess,synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
  const selectionPolicy=settings.selectionPolicy??DEFAULT_SELECTION_POLICY;
  const selectionMode=settings.selectionMode??'jev';
- if(!['jev','native-editorial'].includes(selectionMode))throw Error('ALERT_SELECTION_MODE_INVALID');
- if(selectionMode==='jev')select??=createJevSelector();
- else assess??=createNativeAssessment({binary:settings.openclawBinary});
+ if(!['jev','native-editorial','jev-native-editorial'].includes(selectionMode))throw Error('ALERT_SELECTION_MODE_INVALID');
+ if(selectionMode!=='native-editorial')select??=createJevSelector();
+ if(selectionMode!=='jev')assess??=createNativeAssessment({binary:settings.openclawBinary});
  selectionOutcome({decision:'review',confidence:0},selectionPolicy);
  const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.settleReady(now.getTime());ledger.retryTransient();
  let policyRevisions=0;
- if(settings.selectionPolicy&&selectionMode==='jev'){
+ if(settings.selectionPolicy&&selectionMode!=='native-editorial'){
   const revision='policy-'+createHash('sha256').update(JSON.stringify(selectionPolicy)).digest('hex').slice(0,16);
   for(const row of ledger.reviewCandidates({revision})){
     const outcome=selectionOutcome(row.brief?.selection,selectionPolicy);
@@ -66,13 +66,13 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  if(slots.business&&ledger.cycleStatus().some(r=>r.key===slots.business&&r.status==='done')&&
    hasBusinessEvidence())await perform('business',slots.business+':evidence',business);
  const processKey=processNow?'process:verify:'+now.toISOString().slice(0,16).replace(/[T:]/g,'-'):
-  slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours()+(selectionMode==='native-editorial'?':native-editorial':'');
+  slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours()+(selectionMode!=='jev'?':'+selectionMode:'');
  await perform('process',processKey,async()=>{
   let decisions=0,generations=0,nativeCalls=0;const states={};
   for(let i=0;i<100&&decisions<8&&nativeCalls<2;i++){
    const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,selectionPolicy,
     select:async(...args)=>{decisions++;return select(...args);},
-    ...(selectionMode==='native-editorial'?{assess:async(...args)=>{nativeCalls++;const result=await assess(...args);if(result.decision==='keep')generations++;return result;}}:{}),
+    ...(selectionMode!=='jev'?{assessmentAfterSelection:selectionMode==='jev-native-editorial',assess:async(...args)=>{nativeCalls++;const result=await assess(...args);if(result.decision==='keep')generations++;return result;}}:{}),
     synthesize:async(...args)=>{nativeCalls++;generations++;return synthesize(...args);}});
    if(result.state==='idle')break;states[result.reason??result.state]=(states[result.reason??result.state]??0)+1;
   }

@@ -24,6 +24,7 @@ export function createSynthesisTool(context,subagent){
    stage='PARSE';const brief=bindEvidence(item,parseBrief(result.text));renderBrief(item,brief);
    return output({status:'READY',execution:'native-isolated-completion',purpose,promptVariant,brief});
   }catch(error){
-   return output({status:'UNAVAILABLE',error_code:'ALERT_SYNTHESIS_UNAVAILABLE',error_stage:stage});}}
+   const code=stage==='PARSE'&&['ALERT_FACT_UNSUPPORTED','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG','ALERT_ASSESSMENT_INVALID','ALERT_SYNTHESIS_INVALID'].includes(error?.code)?error.code:'ALERT_SYNTHESIS_UNAVAILABLE';
+   return output({status:'UNAVAILABLE',error_code:code,error_stage:stage});}}
  };
 }

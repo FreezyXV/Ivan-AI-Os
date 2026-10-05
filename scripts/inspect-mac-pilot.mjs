@@ -11,7 +11,7 @@ const run = promisify(execFile);
 const knownAgents = new Set(['main','ivan-business','ivan-finance','ivan-engineering','ivan-system','ivan-knowledge','ivan-career']);
 const knownStatuses = new Set(['ok','error','skipped']);
 
-export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],delivery=null,sourceCommit}){
+export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],delivery=null,sourceCommit,selectionMode}){
  const queue=Object.fromEntries(counts.filter(r=>['pending','processing','review','ready','sending','delivered','skipped','delivery_unknown','expired_unsent'].includes(r.state)&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.state,r.n]));
  const reasons=Object.fromEntries(reviewReasons.filter(r=>/^[A-Z_]{1,64}$/.test(r.reason??'')&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.reason,r.n]));
  const latest=cycles.filter(r=>['feeds','finance','business','process','digest'].includes(r.name)).map(r=>{
@@ -20,14 +20,18 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],deliv
   return {name:r.name,status:['running','done','failed'].includes(r.status)?r.status:'unknown',
    degraded:result.degraded===true||sourceErrors>0||result.failedFeeds>0,sourceErrors,
    attempts:r.attempts,durationMs:m.durationMs,...(Number.isInteger(result.decisions)?{decisions:result.decisions}:{}),
-   ...(Number.isInteger(result.generations)?{generations:result.generations}:{})};
+   ...(Number.isInteger(result.generations)?{generations:result.generations}:{}),
+   ...(Number.isInteger(result.nativeCalls)?{nativeCalls:result.nativeCalls}:{})};
  });
  const diagnosis=(queue.delivery_unknown??0)+(queue.sending??0)>0?{code:'CHECK_DELIVERY_RECEIPT',message:'Envoi incertain : vérifier son reçu avant tout nouvel envoi.'}:
   queue.ready>0?{code:'WAIT_DIGEST',message:'Synthèses prêtes pour le prochain digest.'}:
-  reasons.SELECTION_UNCERTAIN>0?{code:'CALIBRATE_RELEVANCE',message:'La sélection retient des cas incertains : améliorer et mesurer la pertinence avant de forcer des messages.'}:
+  (queue.pending??0)+(queue.processing??0)>0?{code:'PROCESS_PENDING',message:'Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.'}:
+  (reasons.NATIVE_ASSESSMENT_UNAVAILABLE??0)+(reasons.NATIVE_ASSESSMENT_TIMEOUT??0)>0?{code:'CHECK_NATIVE_GENERATION',message:'Vérifier le service de complétion et son unique nouvel essai.'}:
+  selectionMode!=='native-editorial'&&reasons.SELECTION_UNCERTAIN>0?{code:'CALIBRATE_RELEVANCE',message:'La sélection retient des cas incertains : améliorer et mesurer la pertinence avant de forcer des messages.'}:
   reasons.SOURCE_NOT_READ>0?{code:'EXPAND_READERS',message:'Des sources restent non lues : compléter leur lecture avant la synthèse.'}:
   {code:'NO_SELECTED_NEWS',message:'Aucune nouvelle synthèse retenue ; ce silence ne prouve pas une panne.'};
- return {sourceCommit:/^[a-f\d]{40}$/.test(sourceCommit??'')?sourceCommit:undefined,queue,reviewReasons:reasons,diagnosis,latest,
+ return {sourceCommit:/^[a-f\d]{40}$/.test(sourceCommit??'')?sourceCommit:undefined,
+  selectionMode:['jev','native-editorial','jev-native-editorial'].includes(selectionMode)?selectionMode:undefined,queue,reviewReasons:reasons,diagnosis,latest,
   lastDelivery:delivery?{at:delivery.updated,messageId:delivery.messageId}:null,prose_usage_available:false};
 }
 async function inspectAlertCycles(){
@@ -42,7 +46,7 @@ async function inspectAlertCycles(){
   const cycles=db.prepare('SELECT name,status,attempts,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all();
   const last=db.prepare("SELECT updated,receipt FROM alerts WHERE state='delivered' ORDER BY updated DESC LIMIT 1").get();
   const delivery=last?{updated:last.updated,messageId:JSON.parse(last.receipt).messageId}:null;
-  const summary=summarizeAlertCycles({counts,cycles,reviewReasons,delivery,sourceCommit:settings.sourceCommit});
+  const summary=summarizeAlertCycles({counts,cycles,reviewReasons,delivery,sourceCommit:settings.sourceCommit,selectionMode:settings.selectionMode??'jev'});
   try{const {stdout:service}=await run('/bin/launchctl',['print',`gui/${process.getuid()}/com.ivan-ai-os.alerts`],{timeout:5000});
    summary.schedule={loaded:true,lastExitCode:Number(service.match(/last exit code = (\d+)/)?.[1]??0),
     running:/^\s*state = running$/m.test(service)};

@@ -94,3 +94,12 @@ test('deferred and injection-like evidence cannot invoke a completion directly t
   assert.equal((await tool.execute('excluded',{item:source,purpose:'assessment'})).details.status,'UNAVAILABLE');
  assert.equal(calls,0);
 });
+test('invalid grounded prose keeps its typed cause across the RPC and is not a transient provider outage',async()=>{
+ const tool=createSynthesisTool({agentId:'ivan-system'},{complete:async()=>({text:JSON.stringify({decision:'keep',brief:{...brief,
+  facts:[{summary:'Le plafond est de 100 euros.',evidence_index:1}]}})})});
+ const details=(await tool.execute('invalid',{item,purpose:'assessment'})).details;
+ assert.equal(details.error_code,'ALERT_FACT_UNSUPPORTED');assert.equal(details.error_stage,'PARSE');
+ await assert.rejects(createNativeAssessment({runImpl:async()=>response(details)})(item),{code:'ALERT_FACT_UNSUPPORTED'});
+ // Existing older plugins already expose the stage; malformed JSON is permanent.
+ await assert.rejects(createNativeAssessment({runImpl:async()=>response({status:'UNAVAILABLE',error_code:'ALERT_SYNTHESIS_UNAVAILABLE',error_stage:'PARSE'})})(item),{code:'ALERT_ASSESSMENT_INVALID'});
+});

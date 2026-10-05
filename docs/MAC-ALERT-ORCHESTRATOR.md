@@ -4,22 +4,20 @@ GO Ivan : collecteurs communs, lecteurs étendus, génération/digest, planning
 unique, cycles Business/Finance, reprise et mesures. Branche Codex séparée,
 aucune modification des fichiers Claude, de la constitution ou d'AGENTS.md.
 
-État vérifié : worker 0b098d7, plugin 23cf0be, gateway 9136f58, contexte v3.
-Source 49060ea : 189 tests affectés, CI 11/11. Worker chargé, sortie 0 ;
-18 reviews, 1 pending, 3 skipped et 3 expirations à 18:57 Paris.
-Pas de fusion dans cette session.
-Rétention bornée par passage, capacité hors historique terminal, sauvegarde/WAL
-et restauration avec archives testées : voir MAC-ALERTS-RECOVERY.md.
-Huit sorties natives mesurées ; compact-v1 seulement éditorial, production current.
-Next.js réel keep 0,26 retenu en review. Aucun parcours complet retenu revendiqué.
-Mesures : ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md.
+État actif : worker, plugin System et gateway @a604aa6, contexte v5.
+CI 11/11 ; 212 tests locaux au moment de cette activation. Mode native-editorial.
+Deux sources réelles retenues et synthétisées automatiquement, reçu Telegram 59 ;
+aucune sélection simulée, aucun appel Jev supplémentaire. Processus 25 955 ms,
+digest 5 187 ms. Qualité indépendante/usage quotidien restent à mesurer.
+La file, les secrets locaux et la personnalité de la Secrétaire sont conservés.
+Pas de fusion foundation/main. Voir le relais courant pour la provenance complète.
 
 ## Chemin technique
 
 `scripts/mac-alerts-cycle.mjs <settings.json>` est un passage borné. Launchd
 l'appelle toutes les cinq minutes ; SQLite décide quels créneaux sont dus :
 flux à chaque tranche de six heures, Finance après 07:30 Europe/Paris,
-Business lundi après 09:00, digest après 19:30. Une sortie de veille exécute
+Business une fois par semaine ISO après 09:00, digest après 19:30. Une sortie de veille exécute
 le créneau courant une seule fois, sans rejouer les jours manqués. Deux
 processus ne peuvent réserver le même cycle. Échec : un seul nouvel essai
 après quinze minutes ; panne/crash : bail de quinze minutes, deux tentatives
@@ -51,9 +49,12 @@ Une réparation opérateur de preuve déjà évaluée archive l'ancien extrait e
 reçu Jev dans SQLite, ne modifie pas le sujet/date, ne rouvre jamais un envoi,
 et n'est permise qu'une fois par version du lecteur. Le planning ne l'appelle pas.
 
-Jev trie seulement les preuves lues, sur le budget commun existant. Maximum
-huit sélections et deux générations par passage de traitement. Confidences
-incertaines, sources anciennes et projets reportés ne produisent pas de message.
+Mode actif native-editorial : après les exclusions locales, une complétion juge
+l'utilité et produit la synthèse seulement pour keep. Les skips/reviews consomment
+également un créneau natif : deux tentatives maximum par passage, sans rafale.
+Mode Jev conservé pour comparaison : huit sélections et deux générations maximum.
+La question mac-v3/context v5 est disponible, sans obligation de passer par elle.
+Les probabilités contradictoires donnent review ; aucun seuil keep prioritaire.
 
 Le plugin `ivan-ai-os-alerts` fournit `ivan_alert_synthesize` à System seulement.
 Il utilise `api.runtime.subagent.complete` : complétion native isolée sans outils,
@@ -61,8 +62,9 @@ bootstrap ou historique. Authentification gérée dans le gateway ; aucune clé
 copiée et aucun override de modèle. Citations et chiffres contrôlés avant READY.
 Le modèle référence des passages numérotés ; le code insère leurs citations
 exactes. L'extrait n'est pas injecté une seconde fois avec les métadonnées.
-Le service l'appelle après sélection ; le plugin seul n'est pas un juge de
-pertinence. Contrat `alert-editorial-v1`, repris de la proposition Claude K01/K02,
+Le service l'appelle avec purpose assessment dans le mode actif : jugement et
+rédaction partagent une seule complétion. Les reçus lient contexte, empreinte
+exacte de l'entrée et purpose ; une sortie d'évaluation ne vaut pas production. Contrat `alert-editorial-v1`, repris de la proposition Claude K01/K02,
 sans écrire à sa place dans ses skills/contrats.
 
 Le digest réserve au plus trois pages par soir, chacune de 2500 caractères
@@ -78,7 +80,7 @@ introduction courte et phrases chiffrées/décisions ; longueur totale et couver
 conservées. Le code ajoute la limite d'extrait partiel, y compris aux anciens
 enregistrements sans couverture. Les nombres de l'utilité/action sont aussi vérifiés ;
 les milliers français/anglais correspondent, les signes restent distincts.
-Le contexte source `mac-alerts-20261005-v3` est commun au gateway et au générateur ;
+Le contexte source `mac-alerts-20261005-v5` est commun au gateway et au générateur ;
 il ajoute cinq faits publics, aucun profil. Fraîcheur 7 jours pour les discours/
 communiqués BCE et avis officiels de sécurité Next.js, 72 heures ailleurs,
 y compris dans l'export avant lecture. Les instructions manifestes sont mises
@@ -88,8 +90,8 @@ des autres sites restent distincts (Simon exige notamment cette barre).
 
 Correctif v3 : l'extrait déjà lu de 1200 caractères atteint désormais Jev entier.
 Le catalogue générique garde 500 caractères ; les rejets de contacts/identifiants
-portent sur tout l'extrait. La confiance de livraison reste 0,75. La mesure v2
-reste une référence historique, jamais une validation de v3.
+portent sur tout l'extrait. Le seuil 0,75 concerne la comparaison Jev, pas le mode éditorial natif actif.
+Les anciennes mesures restent historiques, jamais une validation du nouveau mode.
 `generate-alert-editorial-samples.mjs` mesure quatre fixtures avec le générateur
 isolé, sans sélection ni Telegram. Le prompt annonce ce mode ; son reçu ne peut
 pas être accepté comme une génération de production. Aucun coût natif inventé.
@@ -121,7 +123,9 @@ dans services/alerts-runtime, sans modifier son skill : ICP retiré en février
 2026 remplacé par HICP/4D0 ; dernière bougie Kraken en cours retirée avant
 calcul. Sources : [BCE, changement de dataset](https://www.ecb.europa.eu/stats/inflation/html/index.mt.html),
 [nouvelle série totale](https://data.ecb.europa.eu/data/datasets/HICP/HICP.M.U2.N.000000.4D0.ANR).
-Une variation sans avis Jev disponible n'entre pas dans les synthèses automatiques.
+Les changements dépassant les règles publiques de seuil entrent dans la file commune.
+Le mode natif n'appelle plus alerte.importante, question encore non qualifiée ;
+le jugement éditorial commun décide de la synthèse.
 Une expiration réseau transitoire reçoit un seul nouvel essai ; deux requêtes
 BCE au plus sont simultanées, avec délai démarré après réservation du créneau.
 Erreur permanente HTTP : aucun nouvel essai immédiat. Après ce correctif, les
@@ -133,7 +137,8 @@ d'un même indicateur. Message « Relevé le » distingue relevé et publication
 Aucun portefeuille, allocation personnelle ou transaction dans ce cycle.
 
 Business ajoute seulement les demandes publiques effectivement lues, puis
-utilise signal.pertinent en lot de quatre maximum. Ni score d'opportunité,
+conserve les preuves en lot de quatre maximum. Le mode natif n'appelle plus
+signal.pertinent, question encore non qualifiée ; le jugement commun évalue l'utilité. Ni score d'opportunité,
 preuve de paiement ni recommandation « lancer » ne sont inventés. Des signaux
 insuffisants restent exploratoires et la collecte vide reste silencieuse.
 La notation approfondie du workflow Business demande plusieurs preuves et
@@ -142,7 +147,7 @@ la relecture métier Claude ; un cycle de veille ne la remplace pas.
 ## Preuves à consigner avant activation complète
 
 Tests de créneaux/DST, concurrence, reprise et livraison inconnue, lectures
-et protocole natif de synthèse. Puis source réelle → Jev → génération native
+et protocole natif de synthèse. Puis source réelle → exclusions → jugement/synthèse native
 → reçu Telegram, second passage sans doublon/appel, contrôle des services et
 coût Jev avant/après. Compter les générations, durée et taille des sorties.
 La complétion native expose sa comptabilité interne ; sans usage/tarif disponible

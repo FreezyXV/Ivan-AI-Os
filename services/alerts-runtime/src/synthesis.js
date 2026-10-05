@@ -117,6 +117,10 @@ export function createNativeAssessment({binary='openclaw',timeoutMs=60000,runImp
       if(signal?.aborted)fail('ALERT_ASSESSMENT_UNAVAILABLE');
       let v;try{v=JSON.parse(stdout.slice(stdout.indexOf('{')));}catch{fail('ALERT_ASSESSMENT_INVALID');}
       const details=v.output?.details,expected={keep:'READY',skip:'SKIPPED',review:'REVIEW'};
+      if(v.ok===true&&details?.status==='UNAVAILABLE'&&details.error_stage==='PARSE'){
+        if(details.error_code==='ALERT_FACT_UNSUPPORTED')fail('ALERT_FACT_UNSUPPORTED');
+        fail('ALERT_ASSESSMENT_INVALID');
+      }
       if(v.ok!==true||details?.execution!=='native-isolated-completion'||details.purpose!=='assessment'||
         details.promptVariant!=='current'||details.context_version!==PILOT_CONTEXT.version||
         details.itemSha256!==assessmentItemSha256(item)||!Object.hasOwn(expected,details.decision)||details.status!==expected[details.decision])

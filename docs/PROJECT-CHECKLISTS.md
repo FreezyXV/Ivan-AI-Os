@@ -18,24 +18,21 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 
 ## Avancement du 5 octobre — intégration des alertes
 
-PR #57 : worker @0b098d7, plugin @23cf0be, gateway @9136f58, contexte v3.
-Source @49060ea : CI 11/11. 189 tests affectés ; reprise qualifiée sur copie.
-Planning exclusif, workflow Sentinelle distant désactivé. Digest paginé, lecture par
-passages, erreurs de releases isolées, reprise/idempotence d'installation vérifiées.
-Jev reçoit les 1200 caractères lus ; confiance de livraison conservée à 0,75.
-C10 reste ouvert : source réelle → vrai Jev keep 0,26 → review, aucun message forcé.
-Le reçu 58 antérieur est un test de transport avec tri simulé ; ce n'est pas C10.
-C08/K06 : huit sorties natives isolées, quatre par variante ; contrôles Claude OK.
-Prompt compact : 27–33 % de caractères en moins. Qualité indépendante et tokens
-facturés inconnus ; aucune accélération démontrée. Production current conservée.
-C14 : diagnostic enrichi avec les raisons du backlog et la prochaine action.
-C18 : à 18:57 Paris, 453 appels / 0,013105 EUR estimé ; coût prose non exposé.
-C15 : plan source respectant runtimes/compatibility, Engineering externe conservé ;
-son agent live reste intact, pas d'usine native prétendument exécutée.
-Claude a proposé #50–#56. Revue détaillée : REVIEW-CODEX-K04-K07-2026-10-05.md.
-#49 corrigée et installée en gate (12/12), permissions conservées. Exemple #54 à corriger.
-Les cases finales restent ouvertes lorsqu'une preuve source/test ne remplit pas
-le critère de qualité ou d'usage réel défini ci-dessous.
+PR #57 : worker, plugin et gateway @a604aa6, contexte v5, native-editorial actif.
+CI 11/11 à cette activation ; 212 tests locaux. Planning exclusif et file conservés.
+C10 technique : deux vraies sources → jugement natif → synthèse → reçu Telegram 59.
+Appréciation d'Ivan/qualité indépendante restent ouvertes ; aucun KEEP simulé.
+C07 : Jev reste consultatif et facultatif ; probabilités contradictoires → review.
+C08 : une seule complétion pour utilité et prose ; au plus deux par passage.
+C08/K06 : huit sorties antérieures notées 27/32 par Claude ; utilité insuffisante.
+Production current conservée ; les deux messages réels demandent une revue neuve.
+C14 : diagnostic tient compte du mode actif, distingue backlog natif et anciennes reviews Jev.
+C18 : après deux livraisons, 715 appels / 0,026624 EUR Jev estimé ; prose non facturée ici.
+C15 : Engineering Codex/Claude conservé ; pas d'usine native prétendument exécutée.
+#50–#55/#58/#59 intégrées avec provenance sur la branche Codex, sans fusion foundation/main.
+#49 installée en gate (12/12), permissions conservées. #60 : benchmark indépendant en cours.
+Business collecte/tri public et Finance snapshots fonctionnent ; opportunités approfondies,
+une vraie nuit de veille, qualité quotidienne et inventaire d'urgence restent à qualifier.
 
 ## Checklist Codex — responsable de la réalisation et de l'intégration
 
@@ -81,8 +78,8 @@ le critère de qualité ou d'usage réel défini ci-dessous.
   Fin : requêtes du vrai client acceptées et budget commun conservé.
   API `/v1/alerts/select` active sur 4311, reçu Jev réel vérifié ; vrai client
   Finance contre ce gateway : les deux formats acceptés. Budget conservé.
-  Référence indépendante v2 mesurée et insuffisante (3/7 Jev) ; v3 à améliorer
-  puis mesurer sur un nouveau jeu, en gardant les exclusions locales séparées.
+  Jev facultatif : contexte v5 mesuré, contrôle antérieur insuffisant pour une
+  qualification universelle ; #60 compare les architectures sur un jeu neuf.
 - [ ] **C08** : synthèse après sélection, consommant le contrat Claude K01/K02.
   Fin : faits étayés, utilité liée à une priorité active, action ou rien à faire,
   limites et lien final ; pas de génération pour les éléments écartés.
@@ -96,8 +93,8 @@ le critère de qualité ou d'usage réel défini ci-dessous.
 - [ ] **C10** : parcours réel source → filtre → synthèse → Telegram pour
   Sentinelle puis Secrétaire, avec K03. Fin : reçu et appréciation d'Ivan ;
   distinguer test synthétique, source réelle et test Telegram.
-  Article réellement lu → vrai Jev keep 0,26 → review en v3. Pas de génération
-  ni reçu forcés ; la chaîne réelle retenue reste à prouver. Le contrat est intégré.
+  Parcours technique réel vérifié : deux articles publics, jugement natif et reçu 59.
+  La case reste ouverte jusqu’à la revue de qualité et l’appréciation d’Ivan.
 
 ### 3. Moteurs Business / Finance et cycle Mac
 
