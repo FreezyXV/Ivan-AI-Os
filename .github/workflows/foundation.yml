@@ -21,6 +21,7 @@ jobs:
           node-version: 22
       - run: npm test
       - run: node --test ../../scripts/inspect-mac-pilot.test.mjs
+      - run: python3 ../../scripts/read-public-alert.test.py
 
   jev-gateway:
     runs-on: ubuntu-latest

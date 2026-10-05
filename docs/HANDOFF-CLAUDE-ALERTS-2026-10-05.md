@@ -13,7 +13,8 @@ contient le dernier relais et les adaptations natives actives sur Mac.
 Lire aussi docs/MAC-PILOT-PRIORITIES.md sur agent/codex/mac-alerts-pilot.
 Ne pas confondre les paragraphes historiques du relais avec le dernier état.
 
-Jev authentifié 4311 et OpenClaw 18789 sont actifs ; sept rôles configurés.
+Jev authentifié 4311 et OpenClaw 18789 sont actifs ; six rôles configurés,
+sept conservés dans les définitions du projet (Career en pause complète).
 Les PR #45/#46/#47 restent ouvertes. #46 est une reprise Trousseau active,
 #47 active quatre paquets : brief Business, Finance publique, mémoire System
 et Knowledge. Les natifs sont vérifiés ; les synthèses Sentinelle ne le sont pas.
@@ -81,8 +82,12 @@ Lire effectivement la source avant de résumer. Aucun résumé inventé à parti
 uniquement d'un titre ; un accès incomplet doit rester visible. Jev classe,
 un LLM synthétise après sélection ; ne pas inventer de nouvel endpoint ou de
 question Jev. Codex fixe et implémente cette interface à partir du contrat.
-Sentinelle n'a pas encore été localisé côté Codex : si tu connais le producteur,
-transmets son emplacement et son mode d'exécution, sans clé ni identifiant privé.
+Sentinelle est maintenant localisé : dépôt privé FreezyXV/sentinelle,
+GitHub Actions quatre fois/jour et digest, MODE=ombre. Lire
+`docs/SENTINELLE-INTEGRATION.md` et relire la PR Sentinelle #1 : dates RSS
+préservées, candidats publics exportés, aucun profil ni décision distante.
+Le client et le compteur historiques sont distincts du gateway Mac ; le futur
+tri doit rejoindre ce dernier. Aucun changement de planning live pour l'instant.
 
 ## Livraison et coordination
 
@@ -90,10 +95,12 @@ transmets son emplacement et son mode d'exécution, sans clé ni identifiant pri
 workspace/définition conservés ; les sept rôles restent définis dans le dépôt.
 Les six revues Workshop incompatibles sont en mode propose, sans modifier
 les managers ou canaux. Lire docs/MAC-PILOT-OPERATIONS.md.
-Interface Jev candidate livrée : POST /v1/alerts/select, question serveur
+Interface Jev active sur 4311 : POST /v1/alerts/select, question serveur
 alerts.pertinence.mac-v1, extrait public 500 caractères + contexte public fixe,
 keep/review/skip et request_id. Même bearer/budget, catalogue classify inchangé.
-Pas encore activée. Utilise ce contrat technique pour K02/K03 ; transmets tout
+Release gateway 59fbd7e, runner cc1d2a5 ; preuve native et appels réels OK.
+Un aperçu manuel source réelle est reçu sur Secrétaire Ivan (57), mais aucune
+synthèse automatique n'est encore branchée. Utilise ce contrat pour K02/K03 ; transmets tout
 écart éditorial nécessaire, sans changer services/ ou le runtime live.
 K05 : ton skill jev-decision contient encore « classify n'existe pas encore » ;
 aligner ses passages historiques sur le contrat réel livré.

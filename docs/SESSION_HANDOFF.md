@@ -1,4 +1,54 @@
-## Continuation — pauses durables et sélection des alertes (2026-10-05)
+## État courant — sélection active et Sentinelle retrouvé (2026-10-05)
+
+Cette section remplace les états historiques ci-dessous « endpoint non activé »
+et « producteur inconnu ». Branche agent/codex/mac-alerts-pilot, PR #48 sur #47.
+Lire docs/MAC-PILOT-OPERATIONS.md, docs/SENTINELLE-INTEGRATION.md et
+docs/ALERTS-RUNTIME.md ; poursuivre docs/PROJECT-CHECKLISTS.md.
+
+Jev /v1/alerts/select est actif sur 4311, LaunchAgent épinglé à la release
+alerts-59fbd7e : gateway 59fbd7e, runner Mac cc1d2a5. Token, Trousseau et
+compteur préservés ; zéro appel fournisseur à la bascule. Health et refus
+Career vérifiés. Deux cas Finance synthétiques atteignent le vrai Jev via le
+client du moteur ; aucun seuil réel ou conseil financier n'est revendiqué.
+Preuves privées : ~/.ivan-ai-os/background-alerts-59fbd7e/{activation,live-probe,finance-probe}.json.
+
+Sentinelle @sentinelleenginebot est produit par FreezyXV/sentinelle sur GitHub
+Actions, quatre passages par jour et digest hebdomadaire, MODE=ombre confirmé.
+Sa perte des dates RSS et l'absence de lecture des pages sont reproduites.
+PR Sentinelle #1, codex/collector-export : export public sans profil, décision
+ni message. Passage réel : 40 candidats récents, 139 anciens écartés, huit
+flux accessibles. Aucun changement du workflow existant, de main ou des secrets.
+
+Consommateur Mac : 40 ingestions, une première page réellement lue et une
+sélection Jev review, sans génération ni livraison automatique. Deux refus de
+date sont reproduits puis corrigés (classe HTML des notes courtes) ; un passage
+sans sélection met à jour ces deux doublons : trois pages lues au total,
+37 sources non supportées non lues, zéro appel Jev supplémentaire.
+Premier lecteur limité aux
+permaliens datés du blog Simon Willison ; date de la page et empreinte vérifiées.
+La file accepte maintenant une preuve de lecture pour un doublon RSS encore
+pending ou review/SOURCE_NOT_READ, sans rouvrir une tentative d'envoi.
+
+Une prévisualisation manuelle, rédigée et relue par Codex sur cette source,
+est reçue sur Secrétaire Ivan : reçu natif 57 et contrôle visuel Telegram.
+Elle annonce explicitement l'essai manuel et laisse la sélection en revue.
+Preuves privées : ~/.ivan-ai-os/alert-source-pilot-20261005/.
+Pour naviguer dans Telegram : Cmd+K, recherche, Entrée ; Cmd+flèche droite
+ouvre le profil. Les clics AX défaillants ne doivent plus être répétés.
+
+Tests : gateway 58, managers 18, file/adaptateurs 29, diagnostic 2, lecteur
+Python 4 : 111 passent. Export Sentinelle : 5 tests distincts passent.
+Les tests HTTP nécessitent une permission réseau locale ; le premier lancement
+sandbox a échoué sur listen EPERM, puis le relancement autorisé passe entièrement.
+
+Reste à livrer : contrat/corpus Claude K01/K02, lecteurs supplémentaires,
+récupération des exports et planning unique, générateur de synthèse, digest,
+test automatique avec reçu avant de couper l'ancien mode de Sentinelle.
+Career reste en pause, Workshop en propose ; Knowledge/Anakalypto à la fin,
+OVH reporté. Ne pas toucher au worktree Claude ni à ses trois hooks non commités.
+La prévisualisation manuelle ne constitue pas une preuve de ce parcours complet.
+
+## Historique — pauses durables et sélection préparée (2026-10-05)
 
 Lire docs/MAC-PILOT-OPERATIONS.md. Le registre natif révèle huit tâches après
 pause complète Career : six revues Workshop sont désormais désactivées en

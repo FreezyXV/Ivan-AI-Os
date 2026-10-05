@@ -36,28 +36,42 @@ le sommeil du Mac sans en avoir mesuré le comportement.
 - [ ] **C04** : identifier les producteurs, dossiers, horaires et canaux réels
   de Sentinelle et de la Secrétaire. Fin : carte source → producteur → bot et
   point d'intégration confirmé ; aucune seconde collecte du même moteur.
+  Sentinelle identifié : dépôt FreezyXV/sentinelle, GitHub Actions, MODE=ombre,
+  quatre passages/jour + digest. Carte et export PR #1 dans
+  `SENTINELLE-INTEGRATION.md` ; Secrétaire/collectes finales restent à consolider.
 - [ ] **C05** : brancher la collecte et la lecture effective des sources.
   Fin : dates et extrait vérifiés, accès incomplet visible, source inaccessible
   jamais transformée en résumé supposé.
+  Lecture réelle d'un article Sentinelle et preuve de date/empreinte conservées ;
+  premier adaptateur blog et consommateur `ingest-alert-candidates.mjs` testés.
+  Autres sites et consommation planifiée de l'artifact encore à réaliser.
 - [ ] **C06** : file durable commune, dédoublonnage entre bots, filtre de
   fraîcheur/périmètre, reprise après panne et réservation des tâches.
   Fin : preuves de concurrence, de redémarrage et de doublon interproducteur.
   Source testée en #48 ; sélection/synthèse/envoi bornés, reçus Jev conservés.
   Intégration aux producteurs réels et rétention encore ouvertes.
+  Régression corrigée : une entrée RSS non lue acquiert sa preuve de page sans
+  perdre le dédoublonnage ni rouvrir un envoi incertain.
 - [ ] **C07** : sélection Jev sur un contexte public compact ; pas de Jev pour
   les exclusions évidentes. Corriger les contrats cassés des moteurs, dont
   les valeurs Finance « 12 % » / « ±10 % sur 7 jours ».
   Fin : requêtes du vrai client acceptées et budget commun conservé.
-  API candidate `/v1/alerts/select` et client loopback testés ; non activés.
+  API `/v1/alerts/select` active sur 4311, reçu Jev réel vérifié ; vrai client
+  Finance contre ce gateway : les deux formats acceptés. Budget conservé.
+  Calibration indépendante de la pertinence encore requise.
 - [ ] **C08** : synthèse après sélection, consommant le contrat Claude K01/K02.
   Fin : faits étayés, utilité liée à une priorité active, action ou rien à faire,
   limites et lien final ; pas de génération pour les éléments écartés.
 - [ ] **C09** : digest pour l'ordinaire, urgence justifiée pour l'immédiat,
   reçu Telegram, absence de renvoi automatique après un envoi incertain.
   Fin : un même élément livré une fois, même si les deux bots le proposent.
+  Adaptateur natif livré, reçu réel 57 et contrôle visuel. Digest et bascule
+  vers la file commune restent à terminer ; aperçu manuel distinct du tri.
 - [ ] **C10** : parcours réel source → filtre → synthèse → Telegram pour
   Sentinelle puis Secrétaire, avec K03. Fin : reçu et appréciation d'Ivan ;
   distinguer test synthétique, source réelle et test Telegram.
+  Article réellement lu → aperçu manuel Codex → Secrétaire Ivan reçu ;
+  chaîne automatique Sentinelle et contrat Claude K01/K02 encore ouverts.
 
 ### 3. Moteurs Business / Finance et cycle Mac
 

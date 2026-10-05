@@ -194,3 +194,16 @@ test('a resumed old worker reports lease loss without overwriting the new owner'
   assert.equal((await old).state,'lease_lost');assert.equal(ledger.get(id).reason,'NEW_OWNER_RESULT');
   assert.equal(syntheses,0);
 });
+
+test('new source evidence can release an unread review without retrying delivered or uncertain sends',async t=>{
+  const {ledger}=fixture(t);
+  const unread=item({sourceStatus:'title-only',excerpt:'Un extrait RSS incomplet.'});
+  const {id}=ledger.ingest(unread);
+  assert.equal((await processNext({ledger,now:at})).reason,'SOURCE_NOT_READ');
+  const updated=ledger.ingest(item());
+  assert.equal(updated.evidenceUpdated,true);assert.equal(ledger.get(id).state,'pending');
+  await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()});
+  await deliverReady({ledger,id,deliver:async()=>{throw Error('uncertain');}});
+  assert.equal(ledger.ingest(item()).state,'delivery_unknown');
+  assert.equal(ledger.get(id).state,'delivery_unknown');
+});

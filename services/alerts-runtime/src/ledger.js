@@ -23,7 +23,17 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000 
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
     ingest(raw){const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');return tx(()=>{
-      const prior=get(id);if(prior)return {id,duplicate:true,state:prior.state};
+      const prior=get(id);if(prior){
+        // A feed-only record must be able to acquire actual page evidence later.
+        // Never alter a lease, an evaluated read source or an attempted send.
+        if(prior.item.sourceStatus!=='read'&&item.sourceStatus==='read'&&
+           (prior.state==='pending'||(prior.state==='review'&&prior.reason==='SOURCE_NOT_READ'))){
+          db.prepare("UPDATE alerts SET item=?,state='pending',reason=NULL,brief=NULL,updated=? WHERE id=?")
+            .run(JSON.stringify(item),now(),id);
+          return {id,duplicate:true,state:'pending',evidenceUpdated:true};
+        }
+        return {id,duplicate:true,state:prior.state};
+      }
       if(db.prepare('SELECT count(*) AS n FROM alerts').get().n>=10000)fail('ALERT_QUEUE_FULL');
       const at=now();db.prepare("INSERT INTO alerts(id,url,item,state,created,updated) VALUES(?,?,?,'pending',?,?)").run(id,item.url,JSON.stringify(item),at,at);
       return {id,duplicate:false,state:'pending'};

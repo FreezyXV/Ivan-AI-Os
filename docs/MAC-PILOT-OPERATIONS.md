@@ -65,8 +65,24 @@ restent distinctes de la maintenance Workshop et sont encore à raccorder.
 
 ## Sentinelle
 
-La lecture Telegram a confirmé un mode calibrage avec liens et scores de
-mots-clés. Ce n'est pas une synthèse éditoriale. Son producteur n'est toujours
-pas identifié dans le dépôt, les LaunchAgents examinés ou les tâches natives.
-Le Mac s'est verrouillé durant l'inspection ; aucune alerte Sentinelle ni son
-horaire n'a été modifié. L'identification et le raccordement restent C04/C10.
+Producteur retrouvé : dépôt privé FreezyXV/sentinelle, GitHub Actions,
+quatre passages quotidiens et digest hebdomadaire, MODE=ombre confirmé.
+Les dates RSS sont perdues dans l'ancien moteur ; le client Jev est indépendant.
+Lire `SENTINELLE-INTEGRATION.md` : preuve, export candidat PR Sentinelle #1,
+navigation Telegram au clavier et bascule sans collecteur concurrent.
+
+## Gateway remplacé et première livraison d'essai
+
+Release `alerts-59fbd7e` active sur 4311 : gateway 59fbd7e, runner Mac
+cc1d2a5. LaunchAgent épinglé, health/auth et pause Career vérifiés ; jeton et
+budget inchangés au démarrage, ancien plist conservé pour retour.
+Preuve `~/.ivan-ai-os/background-alerts-59fbd7e/activation.json`.
+Sélection réelle Jev et vrai client Finance vérifiés (quatre appels au total
+pour ces probes). Compteur commun conservé ; pas de reprovisionnement.
+
+Un article réellement proposé par Sentinelle a été téléchargé, daté et
+empreinté. Jev renvoie review, confiance 0,73 ; la file reste en revue.
+Un aperçu distinct, rédigé et relu par Codex, a été livré via Secrétaire Ivan :
+reçu natif 57 et contrôle visuel Telegram. Ce n'est pas une alerte automatique
+ni une modification du seuil Jev. Preuves privées dans
+`~/.ivan-ai-os/alert-source-pilot-20261005/`.
