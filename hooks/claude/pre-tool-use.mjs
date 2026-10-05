@@ -4,7 +4,7 @@
 //   ask              — a DENY/REQUIRE_HUMAN/ESCALATE opinion asks Ivan to confirm the call.
 //   gate             — level-0 rules first (rules.mjs): "never" is refused with its reason (no
 //                      network), "autonome" skips the gateway, the rest goes to the gateway (kernel
-//                      + Jev) and only a negative opinion asks Ivan.
+//                      + Jev) for audit only: Ivan delegated autonomy (2026-09-29), so gate never asks.
 // No mode ever returns "allow": the runtime's own permission system stays in charge.
 // Any failure (no token, gateway down, timeout, bad response) leaves Claude Code unaffected.
 import { existsSync, realpathSync } from "node:fs";
@@ -93,7 +93,7 @@ export async function run(input, { env = process.env, fetchImpl = fetch, readTok
   if (!token) return null;
   try {
     const result = await evaluate(call, { gatewayUrl: env.IVAN_GATEWAY_URL, token, fetchImpl, timeoutMs: Number(env.IVAN_CLAUDE_HOOK_TIMEOUT_MS) || 3000 });
-    return hookOutput(result, mode === "shadow" ? "shadow" : "ask");
+    return hookOutput(result, mode === "ask" ? "ask" : "shadow");
   } catch { return null; }
 }
 

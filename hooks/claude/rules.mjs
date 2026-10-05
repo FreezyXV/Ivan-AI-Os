@@ -2,7 +2,7 @@
 // neutral: Claude Code uses it in pre-tool-use.mjs; Codex can import it for its own hook.
 //   never     → refuse, with the reason, without any network call (constitution, secrets, shared repo)
 //   autonome  → reversible or read-only work Ivan already delegated: no question, no gateway call
-//   evaluer   → the gateway (kernel + Jev) gives an opinion; only a negative one asks Ivan
+//   evaluer   → the gateway (kernel + Jev) gives an audited opinion; in gate mode it never asks Ivan
 // No rule ever grants permission: the runtime's own permission system stays in charge.
 
 const NEVER = [

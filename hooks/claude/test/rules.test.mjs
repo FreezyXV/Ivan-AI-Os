@@ -70,7 +70,7 @@ test("paths: secrets are never written, guardrails need an opinion", () => {
   assert.match(classifyPath("/repo/constitution/CONSTITUTION.md").raison, /garde-fou/);
 });
 
-test("gate mode: never is refused without network, autonome skips the gateway, never 'allow'", async () => {
+test("gate mode: never is refused without network, the rest never asks, never 'allow'", async () => {
   let calls = 0;
   const fetchImpl = async () => { calls++; return { ok: true, json: async () => ({ decision: "REQUIRE_HUMAN", reason_code: "SHELL_REQUIRES_REVIEW", executable: false }) }; };
   const env = { IVAN_CLAUDE_HOOK_MODE: "gate", IVAN_DECISION_TOKEN: "t".repeat(40), IVAN_GATEWAY_URL: "http://127.0.0.1:4311" };
@@ -80,9 +80,11 @@ test("gate mode: never is refused without network, autonome skips the gateway, n
   assert.match(denied.hookSpecificOutput.permissionDecisionReason, /niveau 0.*git stash/);
   assert.equal(await run(bash("git status"), { env, fetchImpl }), null);
   assert.equal(calls, 0, "no gateway call for never/autonome");
-  const asked = await run(bash("npm install left-pad"), { env, fetchImpl });
-  assert.equal(asked.hookSpecificOutput.permissionDecision, "ask");
+  // Gate never asks Ivan: a negative gateway opinion is audited, not a prompt (autonomy, 2026-09-29).
+  assert.equal(await run(bash("npm install left-pad"), { env, fetchImpl }), null);
   assert.equal(calls, 1);
+  const asked = await run(bash("npm install left-pad"), { env: { ...env, IVAN_CLAUDE_HOOK_MODE: "ask" }, fetchImpl });
+  assert.equal(asked.hookSpecificOutput.permissionDecision, "ask");
   const shadow = await run(bash("git stash"), { env: { ...env, IVAN_CLAUDE_HOOK_MODE: "shadow" }, fetchImpl });
   assert.equal(shadow, null, "shadow never influences, even for a never rule");
   for (const out of [denied, asked]) assert.notEqual(out.hookSpecificOutput.permissionDecision, "allow");
