@@ -1,4 +1,56 @@
-## État courant vérifié — après #62, 6 octobre 2026
+## État courant vérifié — après #63 et reprise des lecteurs, 6 octobre 2026
+
+Code actif d35963e (worker/gateway/plugin), contexte v6 et mode E .75/.75
+inchangés. Branche Codex/PR #57 ; aucune fusion foundation/main. Claude #63
+84d92d7 repris en 1425e86. CI 11/11 ; 241 tests Node concernés, 22 Python.
+Lire CURRENT-RUNTIME-INVENTORY.md pour les autres plugins réellement épinglés,
+les producteurs, les PR empilées et leurs limites : ce relais couvre tout le projet.
+
+Livré et activé : lecteurs officiels Mistral/Cloudflare, date primaire plutôt
+que repost RSS, HTML class vide accepté, commandes/nav exclues ; reprise de
+candidats non lus après disparition RSS, dans le budget de lecture commun.
+Tests rouges puis verts. Aucun refus éditorial ni envoi tenté n'est ainsi réouvert.
+Diagnostic : toutes les actions et codes de flux/lecteur ; nouveaux refus factuels
+identifient citation/chiffre/identifiant/utilité/action, sans contenu de draft.
+
+Business v3-business-market : utilité sur le marché, hypothèse acheteur/besoin,
+test de recherche de preuves publiques distinctes avant prototype. Les deux
+avertissements Claude sont non bloquants et persistés dans businessEditorialWarnings.
+Finance : valeurs citées sans conversion, attribution générique si intervenant
+non nommé ; aucune exception de citation fondée seulement sur l'hôte éditeur.
+Revue et désaccords motivés : REVIEW-CODEX-PR63-2026-10-06.md.
+
+Deux passages réels : cinq pages lues (trois Simon, annonce Mistral, Cloudflare).
+Mistral reste review Jev ; Cloudflare primaire du 2 octobre devient stale sans
+appel. Deux autres lecteurs refusent date non vérifiée/corps trop volumineux.
+Quatre nouveaux Jev, 0,000254 EUR estimé ; aucun natif, aucune nouvelle livraison.
+Repassages idempotents : zéro appel supplémentaire et zéro message. Ne pas forcer
+un keep ni rejouer un corpus pour fabriquer une preuve de livraison fraîche.
+
+Santé finale : Jev/OpenClaw/outil sains, planning chargé, Career absent, source
+d35963e ; 3 delivered / 33 review / 9 skipped / 5 expired_unsent, zéro ready.
+758 Jev / 0,029308 EUR estimé / plafond 10 EUR / inconnus zéro. Catalogue Business
+prod zéro. Ancien Sentinelle disabled_manually ; export distant manuel, sans schedule.
+La Secrétaire, les autres rôles, la file, le budget et Obsidian sont conservés.
+
+Sauvegarde/restauration réelle sur copie : trois reçus conservés, rien réouvert,
+zéro appel/envoi. Catalogue Business WAL couvert par test. Journaux Mac consultés :
+aucune longue veille récente qualifiable ; nuit réelle, coût natif et utilité
+quotidienne restent ouverts. B03/reçu 61 est un test historique insuffisant selon
+Claude, pas une opportunité qualifiée. Ses huit générations/B01/B03 ne sont pas rejoués.
+
+Preuves : CURRENT-RUNTIME-INVENTORY.md et dossiers privés mac-alerts-e2446e5,
+mac-alerts-0066e49, mac-alerts-d35963e sous ~/.ivan-ai-os/. Dernier lot Claude ciblé
+préparé dans CLAUDE-NEXT-PR63-2026-10-06.md, pas envoyé comme message extérieur.
+Défaut d'import stdin dans son skill classify.mjs laissé à son périmètre ; la
+restauration a été vérifiée avec un fichier mjs, sans masquer l'erreur initiale.
+
+Reste Codex : couverture de sources utile (19 non lues), cas de refus futurs
+précis, qualité d'une vraie synthèse actuelle/fiche Business, coût natif si
+interface disponible, nuit/reprise réelle, puis parcours final Knowledge/Anakalypto.
+Career en pause, OVH reporté. Ne pas annoncer le pilote entièrement terminé.
+
+## Historique vérifié — après #62, 6 octobre 2026
 
 Branche agent/codex/alerts-integration, PR #57 ; aucune fusion foundation/main.
 Claude #62 repris avec provenance : 48a4611 → f91bcdf, 8a958a0 → 3861850.

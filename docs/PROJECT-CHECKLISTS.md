@@ -16,6 +16,20 @@ la dernière étape de cette livraison. La pause Career et le report OVH ne
 bloquent pas cette définition. Ne pas annoncer un service permanent pendant
 le sommeil du Mac sans en avoir mesuré le comportement.
 
+## Intégration #63 et lecteurs — 6 octobre
+
+- [x] **Activé d35963e** : Mistral et Cloudflare lus, date primaire conservée,
+  reprise après disparition RSS, refus de lecteur/faits explicités, avertissements
+  Business durables et prompt centré sur une demande de marché.
+- [x] **Reprise réelle** : cinq pages lues, quatre Jev ; contrôles suivants sans
+  dépense ni renvoi. Sauvegarde et restauration sur copie, trois reçus préservés.
+- [ ] **Qualification éditoriale fraîche** : aucune nouvelle synthèse native dans
+  ce lot. Mistral incertain et Cloudflare ancien ne sont pas forcés en alertes.
+
+241 tests Node, 22 Python et CI 11/11. Inventaire actuel complet et limites dans
+CURRENT-RUNTIME-INVENTORY.md ; Claude #63 reprise avec provenance, aucune fusion
+foundation/main. Mission suivante : CLAUDE-NEXT-PR63-2026-10-06.md.
+
 ## Intégration #62 — 6 octobre
 
 - [x] **Activé 33480ee** : fiches Business exploratoires, même appel natif,
@@ -89,19 +103,24 @@ une vraie nuit de veille, qualité quotidienne et inventaire d'urgence restent �
   voir `MAC-PILOT-OPERATIONS.md` et les tests de non-réactivation.
 - [x] **C02 — consigné** : OVH reporté, Knowledge/Anakalypto finalisé en dernier ;
   mémoire System maintenue. Voir `MAC-PILOT-PRIORITIES.md`.
-- [ ] **C03** : consolider les versions réellement actives et les PR encore
+- [x] **C03 — consolidé** : consolider les versions réellement actives et les PR encore
   ouvertes (#21, #45, #46, #47 notamment), vérifier les écarts source/runtime
   et préparer leur intégration après revue. Fin : provenance de chaque release,
   CI et état de fusion enregistrés ; aucune activation attribuée à une PR seule.
+  CURRENT-RUNTIME-INVENTORY.md : marqueurs des releases, quatre plugins, runner,
+  six rôles actifs, source d35963e CI verte et ordre des PR. Fusions encore ouvertes
+  explicitement distinguées de l'activation ; leur GO n'est pas présumé.
 
 ### 2. Alertes Telegram — première priorité
 
-- [ ] **C04** : identifier les producteurs, dossiers, horaires et canaux réels
+- [x] **C04 — cartographie vérifiée** : identifier les producteurs, dossiers, horaires et canaux réels
   de Sentinelle et de la Secrétaire. Fin : carte source → producteur → bot et
   point d'intégration confirmé ; aucune seconde collecte du même moteur.
   Sentinelle identifié : dépôt FreezyXV/sentinelle, GitHub Actions, MODE=ombre,
   quatre passages/jour + digest. Carte et export PR #1 dans
-  `SENTINELLE-INTEGRATION.md` ; Secrétaire/collectes finales restent à consolider.
+  `SENTINELLE-INTEGRATION.md` ; état final dans CURRENT-RUNTIME-INVENTORY.md :
+  Mac → file commune → digest Secrétaire ; ancien Sentinelle désactivé, export
+  distant uniquement manuel vérifié, heartbeat/mémoire distincts de la veille.
 - [ ] **C05** : brancher la collecte et la lecture effective des sources.
   Fin : dates et extrait vérifiés, accès incomplet visible, source inaccessible
   jamais transformée en résumé supposé.
