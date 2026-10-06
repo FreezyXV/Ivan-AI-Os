@@ -1,14 +1,14 @@
 # Inventaire vérifié du pilote Mac — 6 octobre 2026
 
-Source Codex : branche agent/codex/alerts-integration ; worker actif ab8d294,
+Source Codex : branche agent/codex/alerts-integration ; worker actif 9faaadb,
 gateway/plugin d35963e conservés. Le correctif lecteur ne les modifie pas.
 Référence distante foundation/v1 : 454b21e. Aucune fusion de ce lot.
-CI d35963e : 11/11 succès. Dernier lot : 261 tests Node concernés passent.
+CI d35963e : 11/11 succès. Dernier lot : 264 tests Node et 15 tests Python du lecteur passent.
 
 | Composant | Release réellement configurée | Provenance |
 |---|---|---|
 | Gateway Jev 4311 | orchestrator-d35963e | gateway d35963e, runner Mac cc1d2a5 conservé |
-| Worker alertes, toutes les 5 minutes | orchestrator-ab8d294 | ab8d294, file/réglages/créneaux conservés |
+| Worker alertes, toutes les 5 minutes | orchestrator-9faaadb | 9faaadb, file/réglages/créneaux conservés |
 | Plugin ivan-ai-os-alerts | orchestrator-d35963e | d35963e ; sonde réelle avant complétion |
 | Plugin ivan-ai-os-route | fd2ea04 | fd2ea0447ba0b5cd18980704138d6483d0b677a4 |
 | Plugin ivan-ai-os-memory | 8151c01-memory | 8151c01192add035fb8523e8375d6105753962cb |
@@ -108,3 +108,21 @@ sains, planning chargé, dernier exit 0. File toujours 3 livrés/33 en revue/9 �
 5 expirés. Aucune nouvelle synthèse v3 prétendument qualifiée.
 Preuves privées mac-alerts-ab8d294/{worker-activation,reader-retry-qualification,
 live-reader-retry-proof,health-after-reader-proof}.json et sauvegardes vérifiées.
+
+## Dernière qualification — #66, 7 octobre 2026
+
+La revue Claude 640e2ec est reprise en 5015a28. Worker 9faaadb actif ; Jev,
+OpenClaw et réglages Claude inchangés. Next.js 16.4 est désormais lu :
+498 948 octets / 17 652 caractères extraits, date primaire concordante.
+Une variante Mistral // retirée de la file non lue, identité et duplicateOf conservés.
+Un Jev réel, 0,000067 EUR estimé : keep avec confiance 0,47, donc review sous
+la politique .75/.75 inchangée. Aucun appel natif ni Telegram. Repassage sans
+lecture ni modification de la décision. Aucun message v3 frais revendiqué.
+
+Santé/outil/worker sains ; dernier cycle de flux encore dégradé FEED_UNAVAILABLE.
+File : 3 delivered, 34 review, 11 skipped, 5 expired_unsent ; 18 non lues,
+14 sélections incertaines et deux refus factuels. Un refus de date Simon persiste.
+Jev : 761 appels, 0,029489 EUR estimé, inconnus zéro. Preuves privées et snapshot
+final VERIFIED intact dans mac-alerts-9faaadb ; le snapshot initial a servi aux
+essais isolés, utiliser state-backup-after-next-reader pour une reprise.
+Les sections de mesure antérieures ci-dessus sont historiques.

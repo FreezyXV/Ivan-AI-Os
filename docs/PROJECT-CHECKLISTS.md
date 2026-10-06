@@ -1,3 +1,12 @@
+## Avancement du 7 octobre — source Next.js et doublon Mistral
+
+- [x] #66 reprise avec provenance ; lot source-quality clos.
+- [x] Worker 9faaadb activé ; Next.js réellement lu dans la file et reçu vérifié.
+- [x] Un alias Mistral non lu résolu, trois reçus inchangés ; repassage idempotent.
+- [x] 264 tests Node et 15 Python passent ; sauvegarde finale VERIFIED.
+- [ ] Nouvelle synthèse actuelle : Next.js reste en review (.47 < .75), zéro
+  natif/envoi ; C10/C12 ne sont pas cochés par cette lecture seule.
+
 # Checklists Codex et Claude — jusqu'à la livraison du pilote Mac
 
 Décision Ivan du 5 octobre 2026. Codex pilote l'ensemble et l'intégration ;

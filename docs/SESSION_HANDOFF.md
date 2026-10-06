@@ -1,3 +1,37 @@
+## État courant vérifié — revue #66 et lecture Next.js, 7 octobre 2026
+
+Worker 9faaadb actif ; gateway/plugin d35963e conservés. #66 640e2ec repris
+avec provenance en 5015a28. Lot CLAUDE-NEXT-SOURCE-QUALITY clos.
+Next.js : téléchargement plafonné à 600 000 octets, texte extrait à 100 000
+caractères, extrait à 1 200. Autres hôtes : téléchargement toujours 400 000.
+URL Mistral /news/<slug> normalisée à un slash final ; un ancien doublon non lu
+résolu avec duplicateOf, sans réévaluer la source canonique ni modifier ses reçus.
+264 tests Node concernés et 15 tests Python du lecteur passent.
+
+Lecture réelle Next.js 16.4 : 498 948 octets, 17 652 caractères extraits,
+publication primaire concordante au 6 octobre. Une sélection Jev : keep/confidence
+0,47 (probabilités keep 0,64/review 0,20/skip 0,16), donc SELECTION_UNCERTAIN
+avec la règle qualifiée .75/.75. Aucun natif ni envoi, aucun seuil changé.
+Nouveau passage : zéro lecture, aucun changement de ligne, zéro appel/envoi.
+Simon le-chonk reste non lu ; ne pas confondre absence de lecture et inutilité.
+
+Services, outil et planning sains, exit 0 ; 3 delivered, 34 review, 11 skipped,
+5 expired_unsent. Reviews : 18 SOURCE_NOT_READ, 14 SELECTION_UNCERTAIN, deux
+refus factuels. Un échec lecteur persiste (date Simon) ; le dernier cycle de flux
+signale aussi FEED_UNAVAILABLE, sans bloquer les autres producteurs.
+Jev 761 appels / 0,029489 EUR estimé, inconnus zéro ; cette qualification :
+un appel / 0,000067 EUR estimé. Les trois reçus de livraison restent inchangés.
+Sauvegarde avant activation ; snapshot initial utilisé pour qualification isolée,
+puis snapshot final VERIFIED distinct, laissé intact pour reprise.
+
+Preuves privées ~/.ivan-ai-os/mac-alerts-9faaadb/{worker-activation,
+next-source-qualification,next-idempotency,health-after-next-reader}.json ;
+snapshot de reprise state-backup-after-next-reader. Aucune fusion foundation/main.
+Le pilote reste à qualifier sur utilité réelle, fiche Business actuelle,
+coût natif et nuit Mac. Career/OVH différés ; Knowledge/Anakalypto étape finale.
+
+## Historique — reprise durable des lecteurs
+
 ## État courant vérifié — #64/#65 et reprise durable des lecteurs, 7 octobre 2026
 
 Worker ab8d294 actif ; gateway/plugin d35963e conservés, contexte v6/mode E .75/.75
