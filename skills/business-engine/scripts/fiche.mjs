@@ -21,8 +21,14 @@ const amountValue = a => {
   const n = Number(m[1].replace(/,(?=\d{3}\b)/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", "."));
   return Number.isFinite(n) ? n * (m[2] === "M" ? 1e6 : m[2] ? 1e3 : 1) : null;
 };
+// Heuristiques (revue de la sortie native B03) : avec une seule source, le prochain test doit
+// chercher d'autres preuves ; l'hypothèse doit parler d'un marché (besoin, acheteur, paiement).
+const EVIDENCE_TEST = /\b(?:sources?|discussions?|témoignages?|preuves?|mentions?|avis|fils?|forums?|messages? publics?|demandes?|plaintes?)\b/i;
+const MARKET = /\b(?:paie(?:nt|rait|raient)?|payer|paierai(?:en)?t|achet\w*|clients?|utilisateurs?|équipes?|besoins?|demandes?|douleurs?|marchés?|offres?|acheteurs?)\b/i;
 const text = (v, min) => typeof v === "string" && v.trim().length >= min;
 const obj = v => v !== null && typeof v === "object" && !Array.isArray(v);
+
+const distinctesPreuves = preuves => new Set(preuves.filter(obj).map(p => p.url)).size;
 
 export function verifierFiche(fiche, sources = []) {
   if (!obj(fiche)) return ["FICHE_INVALIDE"];
@@ -93,10 +99,23 @@ export function verifierFiche(fiche, sources = []) {
   return e;
 }
 
+// Avertissements éditoriaux NON bloquants (le runtime appelle verifierFiche pour refuser ; ceux-ci
+// se journalisent d'abord, puis deviennent bloquants seulement après mesure, par décision de Codex).
+export function qualiteFiche(fiche) {
+  if (!obj(fiche)) return [];
+  const w = [], t = obj(fiche.prochainTest) ? fiche.prochainTest : {};
+  const preuves = Array.isArray(fiche.preuves) ? fiche.preuves : [];
+  if (distinctesPreuves(preuves) < 2 && typeof t.description === "string" && !EVIDENCE_TEST.test(t.description)) w.push("TEST_SANS_RECHERCHE_DE_PREUVE");
+  if (typeof fiche.hypothese === "string" && !MARKET.test(fiche.hypothese)) w.push("HYPOTHESE_SANS_MARCHE");
+  return w;
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [fichePath, fixturesPath] = process.argv.slice(2);
   const sources = readFileSync(fixturesPath, "utf8").trim().split("\n").map(l => JSON.parse(l).item);
   const erreurs = verifierFiche(JSON.parse(readFileSync(fichePath, "utf8")), sources);
   console.log(erreurs.length ? erreurs.join("\n") : "fiche conforme (contrôles codés seulement)");
+  const avertissements = qualiteFiche(JSON.parse(readFileSync(fichePath, "utf8")));
+  if (avertissements.length) console.log("avertissements éditoriaux : " + avertissements.join(", "));
   process.exit(erreurs.length ? 1 : 0);
 }
