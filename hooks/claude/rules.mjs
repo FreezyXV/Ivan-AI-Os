@@ -62,10 +62,35 @@ function stripData(command) {
       return executed ? `'' ${executed.join(" ")}` : "''";
     });
 }
-// git global options placed before the subcommand (-C <dir>, -c k=v, --git-dir=…, --no-pager…)
-// must not hide the subcommand from the rules below (found live on 2026-10-06).
-const GIT_GLOBAL = /\bgit((?:\s+(?:-C\s+\S+|-c\s+\S+|--(?:git-dir|work-tree|namespace|exec-path|super-prefix|config-env)(?:=\S+|\s+\S+)|--no-pager|--paginate|--bare|--no-replace-objects|--literal-pathspecs|-p|-P))+)(?=\s)/g;
-export const normalizeGit = text => text.replace(GIT_GLOBAL, "git");
+// git global options placed before the subcommand must not hide it from the rules below
+// (found live on 2026-10-06; completed after Codex review REVIEW-CODEX-PR65). Closed list of
+// Git 2.42 global options: flags without value, options taking a value (separate or "="),
+// and "=value only" options. An option outside this list is not understood: the command is
+// left as is and ends up evaluer (never a silent pass).
+const GIT_FLAGS = new Set(["-p", "-P", "--paginate", "--no-pager", "--bare", "--no-replace-objects", "--no-lazy-fetch",
+  "--no-optional-locks", "--literal-pathspecs", "--glob-pathspecs", "--noglob-pathspecs", "--icase-pathspecs", "--exec-path"]);
+const GIT_WITH_VALUE = new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace", "--super-prefix", "--config-env", "--attr-source"]);
+const GIT_EQUALS_ONLY = new Set(["--exec-path", "--list-cmds"]);
+function skipGitOptions(tokens) {
+  let i = 0;
+  while (i < tokens.length && tokens[i].startsWith("-")) {
+    const t = tokens[i], name = t.split("=")[0];
+    if (t.includes("=") && (GIT_WITH_VALUE.has(name) || GIT_EQUALS_ONLY.has(name))) { i += 1; continue; }
+    if (GIT_WITH_VALUE.has(t)) { i += 2; continue; }
+    if (GIT_FLAGS.has(t)) { i += 1; continue; }
+    return null; // unknown option: do not guess
+  }
+  return i;
+}
+export function normalizeGit(text) {
+  return text.replace(/\bgit((?:\s+-\S+(?:\s+(?!-)\S+)?)+)(?=\s)/g, (whole, opts) => {
+    const tokens = opts.trim().split(/\s+/);
+    // Re-scan token by token: a value token following -C/-c must not be read as the subcommand.
+    const n = skipGitOptions(tokens);
+    if (n === null) return whole;
+    return ["git", ...tokens.slice(n)].join(" ");
+  });
+}
 export function commandWords(command) {
   const stripped = normalizeGit(stripData(command));
   if (INTERPRETER.test(stripped)) return normalizeGit(command);

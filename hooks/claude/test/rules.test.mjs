@@ -147,3 +147,20 @@ test("escaped backticks and escaped $( in double-quoted prose are data", () => {
   assert.equal(classifyCommand('gh pr comment 65 --body "Vérifié : \\`git -C … stash\\` refusé, \\$(sudo ls) cité"').verdict, "autonome");
   assert.equal(classifyCommand('gh pr comment 65 --body "exécuté : `sudo ls`"').verdict, "never", "an unescaped substitution is still executed");
 });
+
+// Codex review REVIEW-CODEX-PR65 (78fd8c1): four valid Git 2.42 global options still let
+// "git <option> stash" fall to evaluer instead of never (0/4).
+test("every documented Git global option is normalised before the level-0 rules", () => {
+  const options = ["--no-optional-locks", "--glob-pathspecs", "--noglob-pathspecs", "--icase-pathspecs",
+    "--literal-pathspecs", "--no-replace-objects", "--no-lazy-fetch", "--bare", "-p", "-P", "--no-pager", "--paginate",
+    "--git-dir=/tmp/r/.git", "--work-tree /tmp/r", "--namespace=x", "--exec-path=/usr/lib/git-core", "--config-env=a.b=ENV",
+    "--attr-source=HEAD", "-C /tmp/r", "-c core.pager=cat"];
+  const forbidden = ["stash list", "push --force origin agent/claude/x", "push origin main", "reset --hard origin/main", "clean -fd"];
+  for (const o of options) for (const f of forbidden) assert.equal(classifyCommand(`git ${o} ${f}`).verdict, "never", `git ${o} ${f}`);
+  for (const o of ["--no-optional-locks", "--icase-pathspecs", "-C /tmp/r --no-pager"]) {
+    assert.equal(classifyCommand(`git ${o} status --short`).verdict, "autonome", `git ${o} status`);
+    assert.equal(classifyCommand(`git ${o} log --oneline -3`).verdict, "autonome", `git ${o} log`);
+  }
+  assert.equal(classifyCommand("git commit -qm 'documenter git --no-optional-locks stash sans le lancer'").verdict, "autonome", "quoted data stays data");
+  assert.equal(classifyCommand("git --frobnicate stash list").verdict, "evaluer", "an unknown option is not understood: evaluer, never a silent pass");
+});
