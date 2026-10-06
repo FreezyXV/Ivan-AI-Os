@@ -1,10 +1,11 @@
 // Skills and configuration auditor: what every agent pays in context, duplicated rules, bloated or
 // under-used skills, instruction files that grow. Read-only, deterministic, 0 token.
 // Usage: node audit.mjs [--json]
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SKILLS_ROOT, buildRegistry, parseSkill } from "../../tools/registry.mjs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 const REPO = path.resolve(SKILLS_ROOT, "..");
 export const LIMITS = { description_chars: 600, body_lines: 120, instruction_lines: 60, duplicate_min_chars: 70 };
@@ -54,7 +55,7 @@ export function report(a) {
   return lines.join("\n");
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const a = audit();
   console.log(process.argv.includes("--json") ? JSON.stringify(a, null, 2) : report(a));
 }

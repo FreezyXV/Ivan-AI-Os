@@ -7,6 +7,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { classify, pool } from "../../jev-decision/scripts/classify.mjs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 const ECB = key => `https://data-api.ecb.europa.eu/service/data/${key}?lastNObservations=1&format=jsondata`;
 // Cadence decides staleness: daily data older than 7 days, monthly older than 70 days;
@@ -146,7 +147,7 @@ export function report(current, previous, judged) {
   return lines.join("\n");
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [command] = process.argv.slice(2);
   try {
     const dir = privateDir();

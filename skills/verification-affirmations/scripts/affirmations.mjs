@@ -5,8 +5,9 @@
 //   node affirmations.mjs verifier <fichier.json>   status per claim + summary (exit 1 if blocking)
 //   node affirmations.mjs faits <fichier.json>      "Faits clés" + "Sources" Markdown (confirmed only)
 //   node affirmations.mjs visuels <fichier.json>    suggested visual formats for the article
-import { readFileSync, realpathSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 // Reliability tiers from the domain, deterministic: A institutions/primary, B reference/serious
 // press, C everything else. Unknown ≠ false: tier C can support context, not numbers or dates.
@@ -109,7 +110,7 @@ export function visuals(ledger) {
   return out;
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [command, file] = process.argv.slice(2);
   try {
     if (!file) fail("USAGE: verifier | faits | visuels <fichier.json>");
