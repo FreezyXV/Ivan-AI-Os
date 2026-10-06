@@ -26,14 +26,52 @@ test("the real example fiche passes the coded checks", () => {
 test("the verifier rejects the classic failures", () => {
   const cases = [
     [f => { f.preuves[0].citation = "Revue d'architecture indispensable"; }, "PREUVE_0_CITATION_INEXACTE"],
-    [f => { f.hypothese = "Hypothèse : 5 000 € de MRR en trois mois avec une offre dédiée."; }, "MONTANT_INVENTE_HYPOTHESE"],
+    [f => { f.hypothese = "Hypothèse : 5 000 € de MRR en trois mois avec une offre dédiée."; }, "MONTANT_NON_ETAYE_HYPOTHESE"],
+    [f => { f.hypothese = "Hypothèse : cette offre générerait un revenu récurrent rapide."; }, "REVENU_INVENTE_HYPOTHESE"],
     [f => { f.prochainTest.description = "Contacter dix équipes sur LinkedIn pour présenter l'offre cette semaine."; }, "TEST_IRREVERSIBLE_OU_CONTACT"],
     [f => { f.prochainTest.coutEur = 49; }, "TEST_COUT_NON_NUL"],
-    [f => { f.decision = "lancer"; }, "DECISION_SANS_SCORE_CODE"],
+    [f => { f.decision = "lancer"; }, "DECISION_SANS_RESULTAT_MOTEUR"],
     [f => { f.acheteur.statut = "établi"; }, "ACHETEUR_ETABLI_SANS_PAIEMENT"],
     [f => { f.decision = "exploratoire"; }, "A_NOTER_PAR_SIGNALS"],
     [f => { f.sourcesDistinctes = 3; }, "SOURCES_DISTINCTES_FAUSSES"],
     [f => { f.objections = []; }, "OBJECTIONS_ABSENTES"]
   ];
   for (const [mutate, code] of cases) { const f = copie(exemple); mutate(f); assert.ok(verifierFiche(f, sources).includes(code), code); }
+});
+
+// Codex review of #61 (f3f0861): four counter-examples the verifier accepted, plus malformed input.
+test("regression: empty citation, irreversible test, unsupported amount, arbitrary score", () => {
+  const empty = copie(exemple); empty.preuves[0].citation = "";
+  assert.ok(verifierFiche(empty, sources).includes("PREUVE_0_CITATION_VIDE"));
+  const irreversible = copie(exemple); irreversible.prochainTest.reversible = false;
+  assert.ok(verifierFiche(irreversible, sources).includes("TEST_NON_REVERSIBLE"));
+  const money = copie(exemple), withFive = sources.map(s => s.url === money.preuves[0].url ? { ...s, excerpt: `${s.excerpt} It costs $5 per seat.` } : s);
+  money.preuves.push({ url: money.preuves[0].url, date: money.preuves[0].date, type: "offre-existante", citation: "It costs $5 per seat." });
+  money.hypothese = "Hypothèse : une offre à 999999 € par an trouverait preneur.";
+  assert.ok(verifierFiche(money, withFive).includes("MONTANT_NON_ETAYE_HYPOTHESE"), "a currency in a quote does not support another amount");
+  money.hypothese = "Hypothèse : les équipes paient déjà $5 par siège pour un outil de revue.";
+  assert.ok(!verifierFiche(money, withFive).some(e => e.startsWith("MONTANT_")), "the exact quoted amount is allowed");
+  const arbitrary = copie(exemple); arbitrary.decision = "lancer"; arbitrary.scoreCode = 1;
+  const errs = verifierFiche(arbitrary, sources);
+  assert.ok(errs.includes("DECISION_SANS_RESULTAT_MOTEUR"), "a declared scoreCode is not engine provenance");
+});
+test("engine provenance: the recommendation must equal scoreOpportunity on the embedded input", () => {
+  const url = exemple.preuves[0].url, url2 = exemple.preuves[2].url;
+  const entree = { sujet: "revue-architecturale-code-agents", cible: "équipes utilisant des agents de code", douleur: "revue d'architecture des grosses PR",
+    jours_premier_euro: 45, criteres: { demande: { note: 3, preuve: url2 }, paiement: { note: 2, preuve: url }, concurrence: { note: 2, preuve: url },
+      fit: { note: 3, preuve: "profil" }, delai_mvp: { note: 3, preuve: "profil" }, cout_acquisition: { note: 2, preuve: url2 } } };
+  const ok = copie(exemple); ok.moteur = { source: "signals.mjs#scoreOpportunity", entree }; ok.decision = "abandon"; ok.scoreCode = 15;
+  assert.deepEqual(verifierFiche(ok, sources), [], "15/30 → abandonner, consistent");
+  const wrong = copie(ok); wrong.decision = "creuser";
+  assert.ok(verifierFiche(wrong, sources).includes("DECISION_DIFFERENTE_DU_MOTEUR"));
+  const total = copie(ok); total.scoreCode = 25;
+  assert.ok(verifierFiche(total, sources).includes("SCORE_DIFFERENT_DU_MOTEUR"));
+  const foreign = copie(ok); foreign.moteur.entree.criteres.demande.preuve = "https://example.org/autre";
+  assert.ok(verifierFiche(foreign, sources).includes("MOTEUR_PREUVE_NON_CITEE_DEMANDE"));
+  const invalid = copie(ok); delete invalid.moteur.entree.criteres.paiement;
+  assert.ok(verifierFiche(invalid, sources).some(e => e.startsWith("MOTEUR_INVALIDE")));
+});
+test("malformed or incomplete JSON returns errors, never throws", () => {
+  for (const bad of [null, undefined, {}, [], "x", { preuves: [null, 3, {}] }, { prochainTest: null, acheteur: null, objections: "x" }, { moteur: { entree: null }, decision: "lancer" }])
+    assert.ok(Array.isArray(verifierFiche(bad, sources)) && verifierFiche(bad, sources).length > 0, JSON.stringify(bad));
 });
