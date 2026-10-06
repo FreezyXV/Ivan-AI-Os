@@ -25,7 +25,7 @@ export function renderBrief(item,brief){
       (brief.uncertainty!==undefined&&!text(brief.uncertainty,300)))fail('ALERT_BRIEF_INVALID');
   if(brief.goal==='business'&&!brief.business_fiche)fail('ALERT_BUSINESS_FICHE_INVALID');
   if(brief.business_fiche!==undefined&&(brief.goal!=='business'||
-    brief.business_fiche.probleme!==brief.facts.map(f=>f.summary).join(' ')))fail('ALERT_BUSINESS_FICHE_INVALID');
+    brief.business_fiche.probleme!==brief.facts[0]?.summary))fail('ALERT_BUSINESS_FICHE_INVALID');
   for(const fact of brief.facts){
     if(!text(fact.summary,350)||!text(fact.quote,600)||!item.excerpt.includes(fact.quote)||
        numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n))||
@@ -59,7 +59,8 @@ export function selectionOutcome(selection,policy=DEFAULT_SELECTION_POLICY){
 }
 const nativeFailure=error=>({nativeFailure:{
   code:/^(?:ALERT_|NATIVE_)[A-Z_]+$/.test(error?.code??'')?error.code:'NATIVE_ASSESSMENT_UNAVAILABLE',
-  ...(['COMPLETE','PARSE','VALIDATE'].includes(error?.failureStage)?{stage:error.failureStage}:{})
+  ...(['COMPLETE','PARSE','VALIDATE'].includes(error?.failureStage)?{stage:error.failureStage}:{}),
+  ...(Array.isArray(error?.validationChecks)?{checks:error.validationChecks.filter(c=>/^[A-Z_0-9]{1,64}$/.test(c)).slice(0,8)}:{})
 }});
 export async function processNext({ledger,select,synthesize,assess,assessmentAfterSelection=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
   selectionOutcome({decision:'review',confidence:0},selectionPolicy); // invalid configuration fails before any claim

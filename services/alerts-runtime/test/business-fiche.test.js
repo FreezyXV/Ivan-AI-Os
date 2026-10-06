@@ -45,13 +45,15 @@ test('one Business completion reaches the common digest with a validated fiche a
 
 test('Business content cannot fabricate proof, private fit, payment or a recommendation',async()=>{
  for(const mutate of [f=>f.preuves[0].evidence_index=99,f=>f.preuves[0].url='https://example.org/foreign',
-  f=>f.prochainTest.reversible=false,f=>f.decision='lancer',f=>f.probleme='Une offre à 999999 euros disponible.',
+  f=>f.prochainTest.reversible=false,f=>f.decision='lancer',f=>f.hypothese='Une offre à 999999 euros disponible.',
   f=>f.preuves[0].citation='']){
   const f=structuredClone(fiche);mutate(f);
   // A literal empty quote must not be silently replaced by an index.
   if(f.preuves[0].citation==='')delete f.preuves[0].evidence_index;
   const tool=createSynthesisTool({agentId:'ivan-system'},{complete:async()=>({text:JSON.stringify({decision:'keep',brief:{...brief,business_fiche:f}})})});
-  assert.equal((await tool.execute('bad',{item,purpose:'assessment'})).details.status,'UNAVAILABLE');
+  const rejected=(await tool.execute('bad',{item,purpose:'assessment'})).details;
+  assert.equal(rejected.status,'UNAVAILABLE');
+  if(f.decision==='lancer')assert.ok(rejected.validation_checks.includes('DECISION_SANS_RESULTAT_MOTEUR'));
  }
 });
 

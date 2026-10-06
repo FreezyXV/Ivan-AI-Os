@@ -27,6 +27,7 @@ export function createSynthesisTool(context,subagent){
    return output({status:'READY',execution:'native-isolated-completion',purpose,promptVariant,brief});
   }catch(error){
    const code=['PARSE','VALIDATE'].includes(stage)&&['ALERT_FACT_UNSUPPORTED','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG','ALERT_ASSESSMENT_INVALID','ALERT_SYNTHESIS_INVALID'].includes(error?.code)?error.code:'ALERT_SYNTHESIS_UNAVAILABLE';
-   return output({status:'UNAVAILABLE',error_code:code,error_stage:stage});}}
+   return output({status:'UNAVAILABLE',error_code:code,error_stage:stage,
+    ...(Array.isArray(error.validationChecks)?{validation_checks:error.validationChecks.filter(c=>/^[A-Z_0-9]{1,64}$/.test(c)).slice(0,8)}:{})});}}
  };
 }

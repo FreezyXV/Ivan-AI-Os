@@ -18,7 +18,9 @@ export function bindBusinessFiche(item,raw,spans){
 }
 export function validateBusinessFiche(item,fiche){
  const source={url:item.url,title:item.title,excerpt:item.excerpt};
- if(verifierFiche(fiche,[source]).length)fail('ALERT_BUSINESS_FICHE_INVALID');
+ const checks=verifierFiche(fiche,[source]);
+ if(checks.length)throw Object.assign(new Error('ALERT_BUSINESS_FICHE_INVALID'),{code:'ALERT_BUSINESS_FICHE_INVALID',
+  validationChecks:[...new Set(checks.map(c=>c.split(':')[0]).filter(c=>/^[A-Z_0-9]{1,64}$/.test(c)))].slice(0,8)});
  const bounded=(v,max)=>typeof v==='string'&&v.trim().length>0&&v.length<=max&&!/[\x00-\x1f]/.test(v);
  if(!/^[a-z0-9][a-z0-9-]{9,60}$/.test(fiche.sujet)||!bounded(fiche.probleme,350)||!bounded(fiche.acheteur.profil,160)||
   !bounded(fiche.hypothese,350)||!bounded(fiche.limites,250)||!bounded(fiche.prochainTest.description,250)||
@@ -37,7 +39,7 @@ export function validateBusinessFiche(item,fiche){
 }
 export function businessParagraphs(item,fiche){
  const {score}=validateBusinessFiche(item,fiche);
- return [`Problème : ${fiche.probleme}`,`Acheteur envisagé (${fiche.acheteur.statut}) : ${fiche.acheteur.profil}`,
+ return [`Acheteur envisagé (${fiche.acheteur.statut}) : ${fiche.acheteur.profil}`,
   fiche.hypothese,`Objections : ${fiche.objections.join(' ')}`,
   `Test proposé (${fiche.prochainTest.dureeJours} jours, gratuit, local) : ${fiche.prochainTest.description}`,
   `Statut : ${fiche.decision}${score?` — score recalculé ${score.total}/30`:' — aucune recommandation de lancement'}.`,
@@ -45,5 +47,6 @@ export function businessParagraphs(item,fiche){
 }
 
 export const BUSINESS_PROMPT=`Si goal vaut business, ajoute à brief un champ business_fiche. Même appel, pas de recherche ni d'action.
-Format : {"sujet":"slug-du-probleme-au-moins-10-caracteres","probleme":"recopie exacte des facts.summary joints par un espace, ≤350 caractères","acheteur":{"profil":"acheteur envisagé ≤160","statut":"hypothèse"},"preuves":[{"type":"douleur ou demande ou offre-existante","evidence_index":0}],"objections":["objection ou hypothèse ≤160"],"hypothese":"Hypothèse : solution à tester ≤350","prochainTest":{"description":"comparaison ou prototype local ≤250","dureeJours":3,"coutEur":0,"reversible":true,"contactTiers":false},"decision":"exploratoire","limites":"limite ≤250"}.
+Format : {"sujet":"slug-du-probleme-au-moins-10-caracteres","acheteur":{"profil":"acheteur envisagé ≤160","statut":"hypothèse"},"preuves":[{"type":"douleur ou demande ou offre-existante","evidence_index":0}],"objections":["objection ou hypothèse ≤160"],"hypothese":"Hypothèse : solution à tester ≤350","prochainTest":{"description":"comparaison ou prototype local ≤250","dureeJours":3,"coutEur":0,"reversible":true,"contactTiers":false},"decision":"exploratoire","limites":"limite ≤250"}.
+Le code fournit aussi probleme à partir du premier fait vérifié. Ne duplique pas ce fait dans l'hypothèse. N'utilise pas les mots revenu/MRR/ARR dans les champs, même pour dire qu'ils sont inconnus, sans citation qui en parle ; écris plutôt « aucun paiement observé ».
 1–3 preuves numérotées du même extrait, pas de titre seul. Le code fournit URL, date, citation et nombre de sources. Offre existante ≠ paiement observé. Ne crée ni moteur ni scoreCode : les critères nécessaires au score sont inconnus. Aucun revenu, montant, client privé, contact, achat ou lancement. Le test reste local, gratuit, réversible, 1 à 7 jours. Une seule source prouve au plus un signal, pas un marché. Pour les autres objectifs, pas de business_fiche.`;

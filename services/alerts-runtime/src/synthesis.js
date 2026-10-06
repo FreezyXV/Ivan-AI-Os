@@ -21,11 +21,12 @@ export function evidenceSpans(excerpt){
 export function bindEvidence(item,brief){
   if(!Array.isArray(brief?.facts))fail('ALERT_BRIEF_INVALID');
   const spans=evidenceSpans(item.excerpt);
-  return {...brief,...(brief.business_fiche!==undefined?{business_fiche:bindBusinessFiche(item,brief.business_fiche,spans)}:{}),facts:brief.facts.map(f=>{
+  const facts=brief.facts.map(f=>{
     if(f.evidence_index===undefined)return f;
     if(!Number.isInteger(f.evidence_index)||f.evidence_index<0||f.evidence_index>=spans.length)fail('ALERT_FACT_UNSUPPORTED');
     return {summary:f.summary,quote:spans[f.evidence_index]};
-  })};
+  });
+  return {...brief,facts,...(brief.business_fiche!==undefined?{business_fiche:bindBusinessFiche(item,{...brief.business_fiche,probleme:facts[0]?.summary},spans)}:{})};
 }
 export function validatePromptVariant(purpose,promptVariant){
   if(!['selected','editorial-evaluation','assessment'].includes(purpose)||!['current','compact-v1'].includes(promptVariant)||
@@ -101,6 +102,7 @@ export function createNativeSynthesis({binary='openclaw',timeoutMs=60000,runImpl
       const details=v.output?.details;
       if(v.ok===true&&details?.status==='UNAVAILABLE'&&['COMPLETE','PARSE','VALIDATE'].includes(details.error_stage)){
         failureStage=details.error_stage;
+        if(details.validation_checks?.length)throw Object.assign(new Error('ALERT_SYNTHESIS_INVALID'),{code:'ALERT_SYNTHESIS_INVALID',validationChecks:details.validation_checks});
         if(details.error_code==='ALERT_FACT_UNSUPPORTED')fail('ALERT_FACT_UNSUPPORTED');
         fail(failureStage==='COMPLETE'?'ALERT_SYNTHESIS_UNAVAILABLE':'ALERT_SYNTHESIS_INVALID');
       }
@@ -132,6 +134,7 @@ export function createNativeAssessment({binary='openclaw',timeoutMs=60000,runImp
       const details=v.output?.details,expected={keep:'READY',skip:'SKIPPED',review:'REVIEW'};
       if(v.ok===true&&details?.status==='UNAVAILABLE'&&['COMPLETE','PARSE','VALIDATE'].includes(details.error_stage)){
         failureStage=details.error_stage;
+        if(details.validation_checks?.length)throw Object.assign(new Error('ALERT_ASSESSMENT_INVALID'),{code:'ALERT_ASSESSMENT_INVALID',validationChecks:details.validation_checks});
         if(failureStage==='COMPLETE')fail('ALERT_ASSESSMENT_UNAVAILABLE');
         if(details.error_code==='ALERT_FACT_UNSUPPORTED')fail('ALERT_FACT_UNSUPPORTED');
         fail('ALERT_ASSESSMENT_INVALID');
