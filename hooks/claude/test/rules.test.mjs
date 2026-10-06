@@ -132,3 +132,12 @@ test("executed interpreters, substitutions and heredocs stay fully analysed", ()
   for (const c of never) assert.equal(classifyCommand(c).verdict, "never", c);
   assert.equal(classifyCommand("python3 script.py --flag").verdict, "evaluer", "unknown command stays evaluer");
 });
+
+// Found live on 2026-10-06 right after installing e40b866: git global options placed before the
+// subcommand (-C <dir>, -c key=value, --git-dir=…) bypassed every git level-0 rule.
+test("git global options before the subcommand do not bypass level-0 rules", () => {
+  for (const c of ["git -C /Users/x/repo stash list", "git -c core.pager=cat stash", "git --git-dir=/tmp/r/.git --work-tree=/tmp/r stash pop",
+    "git -C ~/repo push --force origin agent/claude/x", "git -C ~/repo push origin main", "git -C ~/repo reset --hard origin/main", "git -C ~/repo clean -fd"])
+    assert.equal(classifyCommand(c).verdict, "never", c);
+  assert.equal(classifyCommand("git -C /Users/x/repo status --short").verdict, "autonome", "read-only git with -C stays autonomous");
+});
