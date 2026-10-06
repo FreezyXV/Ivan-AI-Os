@@ -2,6 +2,7 @@ import { PILOT_CONTEXT, prefilter, fail, AlertError } from './context.js';
 import { withDeadline } from './deadline.js';
 import {createHash} from 'node:crypto';
 import {businessParagraphs} from './business-fiche.js';
+import {validateVerification,briefBinding} from './verification.js';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
 const unsupported=check=>{throw Object.assign(new AlertError('ALERT_FACT_UNSUPPORTED'),{validationChecks:[check]});};
 const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)/g)??[]).map(n=>{
@@ -66,10 +67,11 @@ const nativeFailure=error=>({nativeFailure:{
   ...(['COMPLETE','PARSE','VALIDATE'].includes(error?.failureStage)?{stage:error.failureStage}:{}),
   ...(Array.isArray(error?.validationChecks)?{checks:error.validationChecks.filter(c=>/^[A-Z_0-9]{1,64}$/.test(c)).slice(0,8)}:{})
 }});
-export async function processNext({ledger,select,synthesize,assess,assessmentAfterSelection=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
+export async function processNext({ledger,select,synthesize,assess,verify,assessmentAfterSelection=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
   selectionOutcome({decision:'review',confidence:0},selectionPolicy); // invalid configuration fails before any claim
   if(typeof assessmentAfterSelection!=='boolean'||(assessmentAfterSelection&&typeof assess!=='function'))fail('ALERT_ASSESSMENT_CONFIG_INVALID');
   if(assess!==undefined&&typeof assess!=='function')fail('ALERT_ASSESSMENT_CONFIG_INVALID');
+  if(verify!==undefined&&(typeof verify!=='function'||!assess||assessmentAfterSelection))fail('ALERT_VERIFICATION_CONFIG_INVALID');
   if(!Number.isInteger(stageTimeoutMs)||stageTimeoutMs<10||stageTimeoutMs>60000)fail('ALERT_DEADLINE_CONFIG_INVALID');
   const job=ledger.claim();if(!job)return {state:'idle'};
   const complete=(state,reason,brief)=>{
@@ -96,7 +98,22 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     if(!ledger.ownsLease(job.id,job.owner))return{id:job.id,state:'lease_lost'};
     try{
       const message=renderBrief(job.item,result.brief);
-      return complete('ready','BRIEF_VERIFIED',{...result.brief,message,generation:result.generation,contextVersion:PILOT_CONTEXT.version,selection});
+      let verification;
+      if(verify){
+        try{
+          verification=await withDeadline(signal=>verify(job.item,result.brief,PILOT_CONTEXT,{signal}),
+            Math.min(stageTimeoutMs,30000),'NATIVE_VERIFICATION_TIMEOUT');
+          validateVerification({decision:verification?.decision,issues:verification?.issues});
+          if(verification.binding!==briefBinding(job.item,result.brief))fail('ALERT_VERIFICATION_INVALID');
+        }catch(error){return complete('review',error.code==='NATIVE_VERIFICATION_TIMEOUT'?error.code:
+          error.code==='ALERT_VERIFICATION_INVALID'?'NATIVE_VERIFICATION_INVALID':'NATIVE_VERIFICATION_UNAVAILABLE',
+          {selection,...nativeFailure(error)});}
+        if(verification.decision!=='approve')return complete(
+          verification.decision==='reject'&&verification.issues.every(v=>v==='NOT_RELEVANT')?'skipped':'review',
+          'NATIVE_VERIFICATION_REJECTED',{selection,verification});
+      }
+      return complete('ready','BRIEF_VERIFIED',{...result.brief,message,generation:result.generation,contextVersion:PILOT_CONTEXT.version,selection,
+        ...(verification?{verification}:{})});
     }catch(error){return complete('review',error?.code==='ALERT_FACT_UNSUPPORTED'?error.code:'NATIVE_ASSESSMENT_INVALID',{selection});}
   }
   const recorded=(job.brief?.selectionReplay?.itemSha256===itemSha256||job.brief?.selection?.itemSha256===itemSha256)&&

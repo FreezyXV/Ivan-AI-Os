@@ -32,7 +32,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
    ...(Number.isInteger(result.businessFichesCreated)?{businessFichesCreated:result.businessFichesCreated}:{}),
    ...(Number.isInteger(result.opportunityScoresCreated)?{opportunityScoresCreated:result.opportunityScoresCreated}:{})};
  });
- const contentReasons=Object.fromEntries(Object.entries(reasons).filter(([code])=>['ALERT_FACT_UNSUPPORTED','NATIVE_ASSESSMENT_INVALID','SYNTHESIS_INVALID'].includes(code)));
+ const contentReasons=Object.fromEntries(Object.entries(reasons).filter(([code])=>['ALERT_FACT_UNSUPPORTED','NATIVE_ASSESSMENT_INVALID','SYNTHESIS_INVALID','NATIVE_VERIFICATION_REJECTED','NATIVE_VERIFICATION_INVALID'].includes(code)));
  const contentRefusals={total:Object.values(contentReasons).reduce((sum,n)=>sum+n,0),reasons:contentReasons,code:'CHECK_EDITORIAL_REJECTIONS'};
  const checks=Object.fromEntries(rejectionChecks.filter(r=>/^(?:FACT_[1-3]_|UTILITY_|ACTION_)[A-Z_]{1,50}$/.test(r.code??'')&&Number.isSafeInteger(r.n)&&r.n>0).map(r=>[r.code,r.n]));
  if(Object.keys(checks).length)contentRefusals.checks=checks;
@@ -46,7 +46,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  add(contentRefusals.total>0,'CHECK_EDITORIAL_REJECTIONS','Des contenus ont été refusés : vérifier leurs citations et la phase de validation avant une correction ciblée.');
  add(queue.ready>0,'WAIT_DIGEST','Synthèses prêtes pour le prochain digest.');
  add((queue.pending??0)+(queue.processing??0)>0,'PROCESS_PENDING','Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.');
- add((reasons.NATIVE_ASSESSMENT_UNAVAILABLE??0)+(reasons.NATIVE_ASSESSMENT_TIMEOUT??0)>0,'CHECK_NATIVE_GENERATION','Vérifier le service de complétion et son unique nouvel essai.');
+ add(['NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT','NATIVE_VERIFICATION_UNAVAILABLE','NATIVE_VERIFICATION_TIMEOUT'].some(code=>reasons[code]>0),'CHECK_NATIVE_GENERATION','Vérifier le service de complétion et son unique nouvel essai.');
  add(selectionMode!=='native-editorial'&&reasons.SELECTION_UNCERTAIN>0,'CALIBRATE_RELEVANCE','La sélection retient des cas incertains : améliorer et mesurer la pertinence avant de forcer des messages.');
  add(reasons.SOURCE_NOT_READ>0,'EXPAND_READERS','Des sources restent non lues : compléter leur lecture avant la synthèse.');
  if(!diagnoses.length)diagnoses.push({code:'NO_SELECTED_NEWS',message:'Aucune nouvelle synthèse retenue ; ce silence ne prouve pas une panne.'});

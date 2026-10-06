@@ -49,7 +49,8 @@ export function insufficientShortEvidence(item){
   if(excerpt.length>=200)return false;
   // Length alone is not a quality measure. Hold short incident allegations or
   // rumours lacking named attribution; preserve actual official observations.
-  const allegation=/\b(?:(?:GitHub|OpenAI|Codex|Claude|Anthropic|service|server|API)\s+(?:is\s+)?(?:down|unavailable|at capacity)|(?:Codex|Claude|Anthropic)\b[^.!?]{0,40}\bat capacity|down\s+again|outage|hacked|breach|rumou?r|unconfirmed|panne|rumeur|pirat[ée]|non confirm[ée])\b/i.test(excerpt);
+  const titleIncident=/\b(?:GitHub|OpenAI|Codex|Claude|Anthropic)\s+(?:is\s+)?(?:down|unavailable|at capacity)\b/i.test(item.title);
+  const allegation=titleIncident||/\b(?:(?:GitHub|OpenAI|Codex|Claude|Anthropic|service|server|API)\s+(?:is\s+)?(?:down|unavailable|at capacity)|(?:Codex|Claude|Anthropic)\b[^.!?]{0,40}\bat capacity|down\s+again|outage|hacked|breach|rumou?r|unconfirmed|panne|rumeur|pirat[ée]|non confirm[ée])\b/i.test(excerpt);
   if(!allegation)return false;
   const host=new URL(item.url).hostname;
   if(['www.ecb.europa.eu','nextjs.org','www.githubstatus.com','status.openai.com','status.anthropic.com'].includes(host))return false;
@@ -89,5 +90,9 @@ export function prefilter(item, { now = Date.now(), maxAgeHours = sourceMaxAgeHo
   if (item.sourceStatus !== 'read') return { decision:'review', reason:'SOURCE_NOT_READ' };
   if(suspiciousSource(item.excerpt))return {decision:'review',reason:'INJECTION_SUSPECTE'};
   if(insufficientShortEvidence(item))return {decision:'review',reason:'SOURCE_EVIDENCE_INSUFFICIENT'};
+  if(new URL(item.url).hostname==='nextjs.org'&&
+      /\b(?:we plan to publish|we will publish|upcoming security release)\b/i.test(item.excerpt)&&
+      !/\b(?:updates are now available|patched versions are available|we have released)\b/i.test(item.excerpt))
+    return {decision:'review',reason:'SOURCE_RELEASE_PREVIEW'};
   return { decision:'select', reason:'SELECTION_REQUIRED' };
 }

@@ -245,9 +245,32 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     });},
     cycleStatus(){return db.prepare('SELECT name,key,status,attempts,updated,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all().map(r=>({...r,metrics:r.metrics?JSON.parse(r.metrics):null}));},
     retryTransient({minDelayMs=900000}={}){if(!Number.isSafeInteger(minDelayMs)||minDelayMs<0)fail('ALERT_RETRY_INVALID');return tx(()=>
-      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT','NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT') AND retries<1 AND updated<=?")
+      db.prepare("UPDATE alerts SET state='pending',reason=NULL,retries=retries+1,updated=? WHERE state='review' AND reason IN ('SELECTION_UNAVAILABLE','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT','NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT','NATIVE_VERIFICATION_UNAVAILABLE','NATIVE_VERIFICATION_TIMEOUT') AND retries<1 AND updated<=?")
         .run(now(),now()-minDelayMs).changes);},
     get,
+    reassessJevAbstentions({limit=2}={}){
+      if(!Number.isInteger(limit)||limit<1||limit>2)fail('ALERT_REVISION_INVALID');
+      const revision='native-'+createHash('sha256').update(JSON.stringify(PILOT_CONTEXT)).digest('hex').slice(0,16);
+      return tx(()=>{
+        const rows=db.prepare(`SELECT id FROM alerts WHERE archive IS NULL AND state='review'
+          AND reason='SELECTION_UNCERTAIN' AND json_extract(brief,'$.selection.provider')='jev'
+          AND NOT EXISTS(SELECT 1 FROM evidence_revisions WHERE evidence_revisions.id=alerts.id AND revision=?)
+          ORDER BY json_extract(item,'$.publishedAt') DESC,id LIMIT 100`).all(revision);
+        const ids=[];
+        for(const row of rows){
+          const old=get(row.id);
+          if(prefilter(old.item,{now:now()}).decision!=='select')continue;
+          // This is a new independent judgment, never a forced keep or a replay
+          // of an old confidence. Preserve the original paid decision in history.
+          db.prepare('INSERT INTO evidence_revisions VALUES(?,?,?,?,?,?)')
+            .run(old.id,revision,JSON.stringify(old.item),JSON.stringify(old.brief),old.reason,now());
+          db.prepare("UPDATE alerts SET state='pending',reason='EDITORIAL_MODE_CHANGED',brief=NULL,updated=? WHERE id=?")
+            .run(now(),old.id);
+          ids.push(old.id);if(ids.length===limit)break;
+        }
+        return {revision,requeued:ids.length,ids};
+      });
+    },
     reviewCandidates({revision,limit=100}={}){
       if(!/^policy-[a-f\d]{16}$/.test(revision??'')||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_REVISION_INVALID');
       return db.prepare("SELECT id FROM alerts WHERE state='review' AND reason='SELECTION_UNCERTAIN' AND NOT EXISTS (SELECT 1 FROM evidence_revisions WHERE evidence_revisions.id=alerts.id AND revision=?) ORDER BY created,id LIMIT ?")

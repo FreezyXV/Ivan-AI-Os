@@ -13,6 +13,50 @@ const item=n=>({producer:'sentinelle',scope:'public',topic:'system',url:`https:/
  excerpt:`Le service conserve le compteur après un redémarrage. Le reçu confirme la fin de la tâche. Cas distinct ${n}.`});
 const brief=()=>({goal:'system',facts:[{summary:'Le compteur est conservé après redémarrage.',quote:'Le service conserve le compteur après un redémarrage.'}],
  utility:'Vérifier la reprise des agents avec leurs résultats enregistrés.',action:'Comparer le compteur avant et après la reprise.'});
+
+test('switching to native triage revisits Jev abstentions once without reopening native decisions or receipts',async t=>{
+ const {ledger,dir}=fixture(t),ids=[];
+ for(let i=0;i<3;i++){
+  ids.push(ledger.ingest(item('held-'+i)).id);
+  await processNext({ledger,now:at,select:async()=>({decision:'keep',confidence:.47,provider:'jev',
+   context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000001'})});
+ }
+ const deliveredId=ledger.ingest(item('already-delivered')).id,claimed=ledger.claim();
+ ledger.finish(claimed.id,claimed.owner,{state:'ready',reason:'VERIFIED',brief:{message:'A verified message'}});
+ const delivery=ledger.beginDelivery(deliveredId);ledger.finishDelivery(deliveredId,delivery.owner,{delivered:true,messageId:'old-receipt'});
+ const before=ledger.get(deliveredId);let calls=0;
+ const opts={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  select:async()=>assert.fail('Jev is no longer the editorial gate'),
+  assess:async()=>{calls++;return{decision:'review'};},deliver:async()=>assert.fail('no publishable result')};
+ const first=await runCycle(opts);assert.equal(calls,2);assert.equal(first.editorialRevisions,2);
+ const second=await runCycle({...opts,now:new Date(at+60000)});assert.equal(calls,3);assert.equal(second.editorialRevisions,1);
+ await runCycle({...opts,now:new Date(at+120000)});assert.equal(calls,3);
+ assert.deepEqual(ledger.get(deliveredId),before);
+ for(const id of ids){assert.equal(ledger.get(id).reason,'NATIVE_EDITORIAL_UNCERTAIN');
+  assert.equal(ledger.get(id).brief.selection.provider,'native-editorial');}
+});
+
+test('official security release previews wait for released fixes without model spend',async t=>{
+ const {ledger}=fixture(t);ledger.ingest({...item('preview'),topic:'engineering',url:'https://nextjs.org/blog/preview-security-release',
+  excerpt:'Later today, we will publish the patched versions alongside full advisory details, including impact and upgrade instructions.'});
+ const result=await processNext({ledger,now:at,assess:async()=>assert.fail('preview needs actual release evidence')});
+ assert.equal(result.reason,'SOURCE_RELEASE_PREVIEW');assert.equal(result.state,'review');
+ ledger.ingest({...item('released'),topic:'engineering',url:'https://nextjs.org/blog/actual-security-release',
+  excerpt:'Last week we announced an upcoming security release. Updates are now available with the patched versions.'});
+ const released=await processNext({ledger,now:at,assess:async()=>({decision:'skip'})});
+ assert.equal(released.reason,'NATIVE_EDITORIAL_REJECTED');
+});
+
+test('normal native processing advances each five-minute slot and cannot replay the same slot',async t=>{
+ const {ledger,dir}=fixture(t);for(let i=0;i<4;i++)ledger.ingest(item('scheduled-'+i));let calls=0;
+ const options={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>{calls++;return{decision:'skip'};},select:async()=>assert.fail('no Jev'),deliver:async()=>assert.fail()};
+ await runCycle(options);assert.equal(calls,2);
+ await runCycle({...options,now:new Date(at+60000)});assert.equal(calls,2);
+ await runCycle({...options,now:new Date(at+300000)});assert.equal(calls,4);
+});
 function fixture(t){const dir=mkdtempSync(path.join(tmpdir(),'ivan-native-pipeline-')),ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>at});
  t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return{ledger,dir};}
 test('native editorial assessment is one completion and never depends on Jev or a second prose call',async t=>{
@@ -121,4 +165,8 @@ test('a short unverified incident is held without either provider call',async t=
  const result=await processNext({ledger,now:at,assessmentAfterSelection:true,
   select:async()=>assert.fail('no Jev spend'),assess:async()=>assert.fail('no native spend')});
  assert.equal(result.reason,'SOURCE_EVIDENCE_INSUFFICIENT');assert.equal(result.state,'review');
+ ledger.ingest({...item('title-rumour'),topic:'business',url:'https://news.ycombinator.com/item?id=49330632',
+  title:'GitHub down again? no PR access',excerpt:"Githubstatus.com currently says everything is working, but it isn't"});
+ const titleRumour=await processNext({ledger,now:at,assess:async()=>assert.fail('an unsupported title is not incident evidence')});
+ assert.equal(titleRumour.reason,'SOURCE_EVIDENCE_INSUFFICIENT');
 });

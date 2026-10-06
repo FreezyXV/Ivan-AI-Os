@@ -3,7 +3,7 @@ export function createSynthesisTool(context,subagent){
  if(context?.agentId!=='ivan-system')return null;
  return {name:'ivan_alert_synthesize',label:'Public alert synthesis',
   description:'Assess public read evidence and draft only useful information in one isolated completion, or synthesize an already selected item; no tools or private context.',
-  parameters:{type:'object',properties:{item:{type:'object'},purpose:{type:'string',enum:['selected','editorial-evaluation','assessment']},promptVariant:{type:'string',enum:['current','compact-v1']}},required:['item'],additionalProperties:false},
+  parameters:{type:'object',properties:{item:{type:'object'},brief:{type:'object'},purpose:{type:'string',enum:['selected','editorial-evaluation','assessment','verification']},promptVariant:{type:'string',enum:['current','compact-v1']}},required:['item'],additionalProperties:false},
   async execute(_id,args,signal){let stage='VALIDATE';try{
    // OpenClaw loads this factory synchronously. Engine CLIs contain top-level
    // await, so load the ESM graph only inside the asynchronous invocation.
@@ -12,6 +12,19 @@ export function createSynthesisTool(context,subagent){
    const {renderBrief}=await import('../../../services/alerts-runtime/src/pipeline.js');
    const item=validateItem(args?.item);
    const purpose=args?.purpose??'selected';
+   if(purpose==='verification'){
+    if((args.promptVariant??'current')!=='current'||item.sourceStatus!=='read'||!PILOT_CONTEXT.active.includes(item.topic)||
+      suspiciousSource(item.excerpt)||insufficientShortEvidence(item)||signal?.aborted)throw Error();
+    const {verificationPrompt,validateVerification,briefBinding,VERIFICATION_VERSION}=await import('../../../services/alerts-runtime/src/verification.js');
+    const prompt=verificationPrompt(item,args.brief);
+    stage='COMPLETE';const result=await subagent.complete({agentId:'ivan-system',message:prompt,
+     extraSystemPrompt:'Relecture indépendante uniquement : JSON documentaire, aucun outil ni contexte privé.',timeoutMs:30000,signal});
+    if(signal?.aborted)throw Error();
+    stage='PARSE';const parsed=parseBrief(result.text);stage='VALIDATE';const verification=validateVerification(parsed);
+    return output({status:'VERIFIED',execution:'native-isolated-completion',purpose,version:VERIFICATION_VERSION,
+     context_version:PILOT_CONTEXT.version,binding:briefBinding(item,args.brief),...verification});
+   }
+   if(args.brief!==undefined)throw Error();
    const promptVariant=args?.promptVariant??'current';validatePromptVariant(purpose,promptVariant);
    if(item.sourceStatus!=='read'||!PILOT_CONTEXT.active.includes(item.topic)||suspiciousSource(item.excerpt)||insufficientShortEvidence(item)||signal?.aborted)throw Error();
    stage='COMPLETE';const result=await subagent.complete({agentId:'ivan-system',message:synthesisPrompt(item,{purpose,promptVariant}),
@@ -26,7 +39,7 @@ export function createSynthesisTool(context,subagent){
    stage='PARSE';const parsed=parseBrief(result.text);stage='VALIDATE';const brief=bindEvidence(item,parsed);renderBrief(item,brief);
    return output({status:'READY',execution:'native-isolated-completion',purpose,promptVariant,brief});
   }catch(error){
-   const code=['PARSE','VALIDATE'].includes(stage)&&['ALERT_FACT_UNSUPPORTED','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG','ALERT_ASSESSMENT_INVALID','ALERT_SYNTHESIS_INVALID'].includes(error?.code)?error.code:'ALERT_SYNTHESIS_UNAVAILABLE';
+   const code=['PARSE','VALIDATE'].includes(stage)&&['ALERT_FACT_UNSUPPORTED','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG','ALERT_ASSESSMENT_INVALID','ALERT_SYNTHESIS_INVALID','ALERT_VERIFICATION_INVALID'].includes(error?.code)?error.code:'ALERT_SYNTHESIS_UNAVAILABLE';
    return output({status:'UNAVAILABLE',error_code:code,error_stage:stage,
     ...(Array.isArray(error.validationChecks)?{validation_checks:error.validationChecks.filter(c=>/^[A-Z_0-9]{1,64}$/.test(c)).slice(0,8)}:{})});}}
  };
