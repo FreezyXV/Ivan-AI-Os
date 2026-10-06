@@ -1,18 +1,19 @@
 # Inventaire vérifié du pilote Mac — 6 octobre 2026
 
-Source Codex : branche agent/codex/alerts-integration, code actif d35963e.
+Source Codex : branche agent/codex/alerts-integration ; worker actif ab8d294,
+gateway/plugin d35963e conservés. Le correctif lecteur ne les modifie pas.
 Référence distante foundation/v1 : 454b21e. Aucune fusion de ce lot.
-CI code actif : 11/11 succès ; 241 tests Node ciblés et 22 Python.
+CI d35963e : 11/11 succès. Dernier lot : 261 tests Node concernés passent.
 
 | Composant | Release réellement configurée | Provenance |
 |---|---|---|
 | Gateway Jev 4311 | orchestrator-d35963e | gateway d35963e, runner Mac cc1d2a5 conservé |
-| Worker alertes, toutes les 5 minutes | orchestrator-d35963e | d35963e, file et créneaux conservés |
+| Worker alertes, toutes les 5 minutes | orchestrator-ab8d294 | ab8d294, file/réglages/créneaux conservés |
 | Plugin ivan-ai-os-alerts | orchestrator-d35963e | d35963e ; sonde réelle avant complétion |
 | Plugin ivan-ai-os-route | fd2ea04 | fd2ea0447ba0b5cd18980704138d6483d0b677a4 |
 | Plugin ivan-ai-os-memory | 8151c01-memory | 8151c01192add035fb8523e8375d6105753962cb |
 | Plugin ivan-ai-os-engine-briefs | engine-briefs-5224721 | 5224721e2c88d635ecb7419b3afff582437c3d7e |
-| Hook Claude, projet uniquement | claude-hook/1c91ce3 | #65 ; installé par Claude, empreinte vérifiée par Codex |
+| Hook Claude, projet uniquement | claude-hook/c6ead2c | #65 ; installé par Claude, rules.mjs vérifié identique |
 
 Inventaire lu depuis la configuration et les marqueurs des releases, sans copier
 jeton, profil, destinataire ou paramètres privés. La version des autres plugins
@@ -48,9 +49,12 @@ attendre un artifact et sans second responsable de livraison.
   Les PR GitHub restent ouvertes : cherry-pick source n'est pas fusion de PR.
   Dernière reprise : #63 84d92d7 → 1425e86 ; correctif runtime d35963e.
 - #65 : trois commits repris en 54c61c9, 0264ea9 et ad23aa2 ; 19 tests hook/adaptateur passent.
-  Copie privée 1c91ce3 déjà active, mode gate et gateway 4311 conservés.
-  Normalisation Git encore partielle : quatre options valides restent à corriger selon
-  REVIEW-CODEX-PR65-2026-10-06.md.
+  Complément c6ead2c repris en 063d402 ; copie privée c6ead2c active,
+  mode gate et gateway 4311 conservés ; les quatre options signalées sont corrigées.
+  Une option inconnue reste evaluer ; pas de promesse sur toutes les syntaxes shell.
+- #64 : 2ab7694/e369e16/4b1e2fd repris en 7f0efd4/a2f2be4/8127e41.
+  Onze imports CLI par stdin corrigés et contre-revue K09/K10 conservée.
+  Le défaut de famine des lecteurs est corrigé et activé en ab8d294.
 - #1 vers main, #17 table de routage, #40 autorisation de fusion et les propositions
   métier hors pilote ne sont pas activées par ce lot.
 
@@ -85,3 +89,22 @@ d'un réveil : une nuit réelle et l'utilité quotidienne restent à qualifier.
 Preuves privées : mac-alerts-e2446e5/reader-qualification/result.json,
 mac-alerts-0066e49/backlog-qualification/result.json et state-restore-proof.json,
 mac-alerts-d35963e/coordinated-activation.json sous ~/.ivan-ai-os/.
+
+## Dernier lot : reprise durable des lecteurs
+
+ab8d294 : erreurs structurelles bloquées jusqu'à une nouvelle empreinte du lecteur ;
+pannes temporaires espacées de 30 minutes puis deux heures, trois tentatives max.
+Le filtre précède la limite de cent candidats. Lire SOURCE-READER-RECOVERY.md.
+Sur copie puis en production : les deux pages en échec sont tentées une fois,
+puis zéro lecture au deuxième passage après réouverture. Sur copie, leur état est
+également conservé après sauvegarde/restauration ; les trois reçus sont préservés.
+Zéro Jev, zéro natif, zéro envoi dans ces vérifications. Compteur Jev inchangé.
+Le diagnostic expose deux erreurs persistantes sous CHECK_SOURCE_READS ; elles
+n'empêchent pas les autres sources de prendre les places de lecture.
+
+Activation du seul worker, avec sauvegarde/rollback ; fichiers du gateway Jev,
+d'OpenClaw et du hook Claude vérifiés inchangés. Santé finale : services et outil
+sains, planning chargé, dernier exit 0. File toujours 3 livrés/33 en revue/9 écartés/
+5 expirés. Aucune nouvelle synthèse v3 prétendument qualifiée.
+Preuves privées mac-alerts-ab8d294/{worker-activation,reader-retry-qualification,
+live-reader-retry-proof,health-after-reader-proof}.json et sauvegardes vérifiées.

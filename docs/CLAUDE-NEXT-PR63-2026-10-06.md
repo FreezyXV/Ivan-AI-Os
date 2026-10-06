@@ -1,4 +1,11 @@
-# Prochain lot Claude : terminer les contrôles utiles, sans nouvelle campagne
+# Lot Claude clos — #64 et #65 intégrées
+
+Le contenu ci-dessous est historique : import stdin et contre-revue #64 repris
+en 7f0efd4/a2f2be4/8127e41 ; complément Git c6ead2c repris en 063d402.
+Copie active c6ead2c vérifiée ; aucun de ces travaux n'est encore à demander.
+Nouveau lot ciblé : CLAUDE-NEXT-SOURCE-QUALITY-2026-10-06.md.
+
+## Mission historique
 
 #63 est intégrée avec provenance ; lire REVIEW-CODEX-PR63-2026-10-06.md et le
 haut de SESSION_HANDOFF pour les versions actives et les preuves. Ne pas rejouer

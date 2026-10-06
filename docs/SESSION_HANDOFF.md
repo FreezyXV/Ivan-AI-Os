@@ -1,4 +1,35 @@
-## État courant vérifié — après #63 et reprise des lecteurs, 6 octobre 2026
+## État courant vérifié — #64/#65 et reprise durable des lecteurs, 7 octobre 2026
+
+Worker ab8d294 actif ; gateway/plugin d35963e conservés, contexte v6/mode E .75/.75
+inchangés. Branche agent/codex/alerts-integration, PR #57 ; aucune fusion foundation/main.
+#64 repris avec provenance : 2ab7694/e369e16/4b1e2fd → 7f0efd4/a2f2be4/8127e41.
+Complément #65 c6ead2c → 063d402 ; copie Claude c6ead2c active, rules.mjs identique
+à la source, gate/gateway 4311 conservés. Le lot CLAUDE-NEXT-PR63 est entièrement clos.
+
+Défaut de budget de lecture corrigé : état durable par source/code/empreinte,
+erreurs structurelles suspendues jusqu'au changement du lecteur, erreurs temporaires
+espacées (30 min puis 2 h), trois tentatives max. Filtre avant LIMIT : cent pages
+bloquées ne masquent pas la suivante. Diagnostic CHECK_SOURCE_READS persistant,
+sans texte de brouillon et sans masquer WAIT_DIGEST. 261 tests Node concernés passent.
+Lire SOURCE-READER-RECOVERY.md et REVIEW-CLAUDE-PILOT-FINAL.md.
+
+Preuve sur copie puis file réelle : deux pages échouent, zéro lecture au passage
+suivant après réouverture ; état d'échec restauré sur copie, trois reçus conservés.
+Zéro appel Jev/natif et zéro message dans ces vérifications. Activation du seul worker
+avec sauvegarde/rollback ; Jev, OpenClaw et réglages Claude inchangés.
+Santé finale : services/outil sains, planning chargé, exit 0 ; file 3 delivered,
+33 review, 9 skipped, 5 expired_unsent. Deux erreurs de lecture persistées visibles.
+Jev toujours 758 appels / 0,029308 EUR estimé / plafond 10 EUR, inconnus zéro.
+
+Preuves privées ~/.ivan-ai-os/mac-alerts-ab8d294/{worker-activation,
+reader-retry-qualification,live-reader-retry-proof,health-after-reader-proof}.json.
+Nouveau lot Claude : CLAUDE-NEXT-SOURCE-QUALITY-2026-10-06.md (revue ciblée,
+preuves de lecture de deux pages bloquées, état K09/K10), pas envoyé à l'extérieur.
+Reste Codex : couverture utile, qualité d'une vraie synthèse/fiche actuelle,
+coût natif si l'interface l'expose, nuit/reprise réelle ; usage quotidien et dix
+abstentions annotées par Ivan, puis Knowledge/Anakalypto. Career/OVH restent différés.
+
+## Historique — après #63 et reprise des lecteurs, 6 octobre 2026
 
 Code actif d35963e (worker/gateway/plugin), contexte v6 et mode E .75/.75
 inchangés. Branche Codex/PR #57 ; aucune fusion foundation/main. Claude #63

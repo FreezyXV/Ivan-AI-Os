@@ -16,7 +16,24 @@ la dernière étape de cette livraison. La pause Career et le report OVH ne
 bloquent pas cette définition. Ne pas annoncer un service permanent pendant
 le sommeil du Mac sans en avoir mesuré le comportement.
 
-## Intégration #63 et lecteurs — 6 octobre
+## Intégration #64/#65 et reprise durable — 7 octobre
+
+- [x] **Intégré** : onze gardes CLI par stdin, contre-revue K09/K10, dernier
+  complément Git ; copie Claude c6ead2c active et vérifiée. Ancien lot Claude clos.
+- [x] **Activé ab8d294, worker seul** : les pages en échec ne monopolisent plus
+  le budget ; état durable, délais bornés, filtre avant les cent candidats,
+  codes persistants dans le diagnostic. Gateway/plugin d35963e conservés.
+- [x] **Preuve sur copie puis en production** : deux échecs, puis zéro nouvelle
+  lecture après réouverture ; sauvegarde/restauration des échecs et trois reçus
+  préservés. Zéro Jev/natif/envoi de qualification ; 261 tests concernés passent.
+- [ ] **Qualification produit** : vraie synthèse actuelle, fiche Business utile,
+  coût natif disponible, nuit réelle et retours d'usage quotidien restent ouverts.
+
+Inventaire : CURRENT-RUNTIME-INVENTORY.md. Nouveau lot Claude :
+CLAUDE-NEXT-SOURCE-QUALITY-2026-10-06.md ; revue ciblée et deux sources bloquées,
+sans répéter les campagnes. Aucune fusion foundation/main.
+
+## Historique : intégration #63 et lecteurs — 6 octobre
 
 - [x] **Activé d35963e** : Mistral et Cloudflare lus, date primaire conservée,
   reprise après disparition RSS, refus de lecteur/faits explicités, avertissements
