@@ -40,3 +40,31 @@ Tests : verification.test.js (liaison exacte, décisions contradictoires, refus,
 panne contre contenu invalide, plafond des deux étapes) et native-pipeline.test.js
 (migration unique, créneaux, rumeurs et annonces futures). Activation et preuves
 réelles seront consignées dans SESSION_HANDOFF et CURRENT-RUNTIME-INVENTORY.
+
+## Usage vérifié
+
+Le worker démarre avec la session Mac et traite la file toutes les cinq minutes.
+Le digest ordinaire reste à 19:30 Paris. Rien de retenu signifie aucun message.
+Le premier digest de qualification a été déclenché manuellement : Next.js 16.4,
+reçu 62, après génération automatique et relecture. Le second passage n'a rien
+renvoyé. Les deux contre-exemples de contexte inventé/hors périmètre sont refusés.
+
+Diagnostic en lecture seule depuis le dépôt :
+
+```sh
+/Users/yoanpetrov/.openclaw/tools/node-v24.19.0/bin/node scripts/inspect-mac-pilot.mjs
+```
+
+Le diagnostic liste toutes les actions : une page non lue n'arrête pas les autres.
+La file peut encore contenir les abstentions Jev en cours de migration ; elles ne
+doivent pas être forcées à keep. Les refus factuels restent à examiner séparément.
+
+Pour évaluer l'utilité, donner le numéro du message et utile/inutile/trop vague,
+avec ce qui manquait. Cette appréciation n'est pas encore enregistrée automatiquement
+par un outil Telegram ; la seconde lecture ne remplace pas cette mesure produit.
+
+Un retour de version conserve la file actuelle. Après la livraison 62, préférer
+le snapshot VERIFIED state-backup-after-native-delivery ; restaurer aveuglément
+le snapshot antérieur ferait perdre ce reçu et pourrait permettre un doublon.
+Les messages reçus après n'importe quel snapshot doivent être rapprochés avant
+une restauration d'état. La reprise après une vraie nuit Mac reste à mesurer.

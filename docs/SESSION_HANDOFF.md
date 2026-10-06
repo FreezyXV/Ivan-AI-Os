@@ -1,3 +1,49 @@
+## État courant — tri natif activé et vraie livraison, 7 octobre 2026
+
+Décision explicite d'Ivan : ne pas utiliser Jev là où il n'est pas fiable.
+Worker et plugin alertes 8364b9f actifs ; gateway Jev d35963e et hook Claude
+c6ead2c conservés. Mode native-editorial, verifyNativeBrief=true ; Jev n'est plus
+appelé pour trier les alertes. Contexte public v6 inchangé, relecture v1.
+Lire NATIVE-ALERT-TRIAGE.md pour le parcours et les limites.
+
+Source lue → filtres locaux → jugement/rédaction isolés → preuves contrôlées
+→ relecture indépendante liée au contenu exact → digest durable. Traitement
+natif par créneau de cinq minutes, quatre complétions max (les deux étapes
+comptées). Abstentions Jev réexaminées une fois, deux par passage ; décisions
+anciennes conservées dans evidence_revisions. Aucun envoi tenté n'est réouvert.
+Rumeurs courtes et annonces Next.js de correctifs à venir : review sans modèle.
+276 tests Node concernés passent, dont bascule OpenClaw et vérification.
+
+Première preuve actuelle : le worker automatique traite deux sources en 21,526 s,
+zéro Jev, trois complétions natives ; discours BCE sans intérêt macro écarté,
+Next.js 16.4 retenu puis approuvé par le relecteur (12,761 s + 4,626 s).
+Citations et conditions d'applicabilité relues manuellement. Digest déclenché
+manuellement pour qualification, message Telegram 62 réellement reçu ; ce n'est
+ni une fixture ni une livraison automatique du soir revendiquée. Trois anciens
+reçus conservés ; repassage de la même page sans renvoi.
+
+Contrôle isolé historique : deux utiles retenus, trois cas non livrés ; un bruit
+bloqué par validation, pas une réussite du seul jugement natif. Relecteur réel :
+refus du contexte installé inventé et du bricolage hors périmètre, deux appels.
+Ces cinq cas connus et deux contre-exemples ne constituent pas un benchmark neuf.
+Coût natif non exposé ; ne pas le présenter comme gratuit ni parfaitement fiable.
+Jev reste 761 appels / 0,029489 EUR estimé, aucun ajout dans cette qualification.
+
+Activation coordonnée OpenClaw/worker avec rollback et sauvegarde VERIFIED intacte.
+Mémoire, destinataire, autres plugins, réglages Claude et service Jev conservés.
+Preuves privées ~/.ivan-ai-os/mac-alerts-8364b9f/{native-triage-activation,
+first-native-production-digest,independent-verifier-counterexamples,
+native-digest-idempotency,native-final-health}.json. Sauvegarde intacte :
+state-backup-before-native ; snapshot après livraison : state-backup-after-native-delivery. Branche Codex/PR #57, aucune fusion foundation/main.
+
+Suite Claude : CLAUDE-NEXT-NATIVE-EDITORIAL-2026-10-07.md, revue du vrai reçu 62
+et alignement des documents/skills qu'il possède ; pas de nouvelle campagne payante.
+Reste global : qualification Business/Finance actuels, coûts natifs accessibles,
+reprise après nuit Mac, Engineering/mémoire et consolidation des PR ; puis
+Knowledge/Anakalypto en étape finale commune. Career en pause, OVH différé.
+
+## Historique — lecture Next.js initialement bloquée par Jev
+
 ## État courant vérifié — revue #66 et lecture Next.js, 7 octobre 2026
 
 Worker 9faaadb actif ; gateway/plugin d35963e conservés. #66 640e2ec repris

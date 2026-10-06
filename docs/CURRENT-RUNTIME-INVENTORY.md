@@ -1,15 +1,15 @@
 # Inventaire vérifié du pilote Mac — 6 octobre 2026
 
-Source Codex : branche agent/codex/alerts-integration ; worker actif 9faaadb,
-gateway/plugin d35963e conservés. Le correctif lecteur ne les modifie pas.
+Source Codex : branche agent/codex/alerts-integration ; worker et plugin alertes actifs 8364b9f,
+gateway Jev d35963e conservé. Mode natif avec relecture indépendante.
 Référence distante foundation/v1 : 454b21e. Aucune fusion de ce lot.
-CI d35963e : 11/11 succès. Dernier lot : 264 tests Node et 15 tests Python du lecteur passent.
+CI d35963e : 11/11 succès. Dernier lot : 276 tests Node concernés passent ; les 15 tests Python du lecteur ont passé au lot précédent.
 
 | Composant | Release réellement configurée | Provenance |
 |---|---|---|
 | Gateway Jev 4311 | orchestrator-d35963e | gateway d35963e, runner Mac cc1d2a5 conservé |
-| Worker alertes, toutes les 5 minutes | orchestrator-9faaadb | 9faaadb, file/réglages/créneaux conservés |
-| Plugin ivan-ai-os-alerts | orchestrator-d35963e | d35963e ; sonde réelle avant complétion |
+| Worker alertes, toutes les 5 minutes | orchestrator-8364b9f | 8364b9f, file/réglages/créneaux conservés |
+| Plugin ivan-ai-os-alerts | orchestrator-8364b9f | 8364b9f ; rédaction et relecture isolées |
 | Plugin ivan-ai-os-route | fd2ea04 | fd2ea0447ba0b5cd18980704138d6483d0b677a4 |
 | Plugin ivan-ai-os-memory | 8151c01-memory | 8151c01192add035fb8523e8375d6105753962cb |
 | Plugin ivan-ai-os-engine-briefs | engine-briefs-5224721 | 5224721e2c88d635ecb7419b3afff582437c3d7e |
@@ -28,8 +28,8 @@ revues Workshop incompatibles restent inactives. Aucun nouveau manager permanent
 ## Un seul parcours d'alertes
 
 Sources publiques → collecteur Sentinelle adapté sur Mac et observations Finance
-→ file SQLite commune → filtres déterministes → Jev → jugement/rédaction natifs
-si keep qualifié → digest via Secrétaire Ivan. Collecte six heures, Finance matin,
+→ file SQLite commune → filtres déterministes → jugement/rédaction natifs
+→ contrôles factuels et relecture indépendante → digest via Secrétaire Ivan. Collecte six heures, Finance matin,
 Business semaine et suivi de preuve, digest 19:30 Paris ; créneaux durables.
 
 Ancien producteur : FreezyXV/sentinelle, bot @sentinelleenginebot. API GitHub
@@ -126,3 +126,26 @@ Jev : 761 appels, 0,029489 EUR estimé, inconnus zéro. Preuves privées et snap
 final VERIFIED intact dans mac-alerts-9faaadb ; le snapshot initial a servi aux
 essais isolés, utiliser state-backup-after-next-reader pour une reprise.
 Les sections de mesure antérieures ci-dessus sont historiques.
+
+## Dernier lot — 7 octobre, Jev retiré du tri éditorial
+
+Worker/plugin 8364b9f ; mode native-editorial et verifyNativeBrief=true.
+Créneaux natifs de cinq minutes, quatre complétions max par passage. Le relecteur
+est lié à la source et au brief exacts. La migration des abstentions préserve
+les anciennes décisions et les reçus. Lire NATIVE-ALERT-TRIAGE.md.
+
+Premier passage automatique : deux sources traitées, une écartée et Next.js 16.4
+prêt après rédaction et relecture ; 21,526 secondes, trois complétions, zéro Jev.
+Livraison de qualification déclenchée manuellement, reçu Telegram 62 confirmé.
+Total désormais quatre sources livrées ; les trois anciens reçus sont inchangés.
+Un second passage de la même page n'envoie rien. Deux contre-exemples sont refusés
+par le relecteur réel. Aucun nouveau benchmark complet ni coût natif inventé.
+Compteur Jev inchangé à 761 / 0,029489 EUR estimé, plafond 10 EUR.
+
+Preuves et sauvegarde VERIFIED intacte sous mac-alerts-8364b9f. Le worker peut
+continuer de traiter la file : utiliser native-final-health.json pour le dernier
+instantané et les diagnostics actifs. Les mesures des sections précédentes sont
+historiques. Career/OVH différés ; production Knowledge/Anakalypto attend la fin.
+
+Snapshot après livraison 62 : state-backup-after-native-delivery, VERIFIED ;
+le rollback de code conserve la file actuelle et ses nouveaux reçus.

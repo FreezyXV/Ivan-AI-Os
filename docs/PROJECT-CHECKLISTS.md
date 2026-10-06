@@ -1,3 +1,14 @@
+## Avancement — tri natif et première livraison actuelle, 7 octobre
+
+- [x] Jev retiré de la sélection d'alertes ; worker/plugin 8364b9f actifs.
+- [x] Jugement/rédaction puis relecture indépendante, preuves liées au contenu.
+- [x] Traitement natif toutes les cinq minutes, migration unique et budget borné.
+- [x] Première synthèse actuelle produite automatiquement, relue puis livrée
+  par digest manuel de qualification : Next.js 16.4, reçu 62 confirmé.
+- [x] Anciennes livraisons préservées, page non renvoyée ; 276 tests Node passent.
+- [ ] Qualification Business/Finance actuels et utilité quotidienne : ce reçu
+  prouve le parcours Engineering, pas tous les parcours de l'entreprise virtuelle.
+
 ## Avancement du 7 octobre — source Next.js et doublon Mistral
 
 - [x] #66 reprise avec provenance ; lot source-quality clos.
