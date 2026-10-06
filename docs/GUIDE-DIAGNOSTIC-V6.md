@@ -5,7 +5,11 @@ Commande unique, en lecture seule : `~/.openclaw/tools/node/bin/node scripts/ins
 modèle et n'envoie aucun message. Exploitation, sauvegarde et restauration :
 `docs/MAC-ALERTS-RECOVERY.md`.
 
-## Lire `alerts.diagnosis.code` (ordre de priorité du script)
+## Lire `alerts.diagnoses` (tous les codes actifs)
+
+`alerts.diagnosis.code` reste le premier code pour les anciens clients. Lire la liste
+`alerts.diagnoses` : un refus ne masque plus `WAIT_DIGEST` ni `PROCESS_PENDING`.
+Les fiches Business validées et réellement scorées sont comptées dans `alerts.business`.
 | Code | Signification | Quoi faire |
 |---|---|---|
 | `CHECK_DELIVERY_RECEIPT` | envoi incertain | regarder Telegram ; **ne rien relancer** |
@@ -32,9 +36,8 @@ Les rédactions d'évaluation (benchmarks, recours natifs testés) portent `deli
 n'entrent jamais dans la file. Une **livraison** = synthèse `ready`, puis digest, puis reçu Telegram.
 Lire, relire ou réparer une source ne rouvre jamais un envoi tenté (`delivery_unknown` reste tel quel).
 
-Attention (revue Claude du 2026-10-06) : `CHECK_EDITORIAL_REJECTIONS` passe avant `WAIT_DIGEST` et
-`PROCESS_PENDING`. Un refus encore en revue peut donc masquer des synthèses prêtes ; lire aussi
-`alerts.queue`.
+Correctif Codex après #62 : tous les codes actifs sont affichés ensemble. La priorité
+conservée du premier code ne change ni le planning ni les envois.
 
 ## Limites concrètes au 2026-10-06
 1. **Aucun message v6 livré** (3 messages au total, v5). Six nouvelles sources mesurées :

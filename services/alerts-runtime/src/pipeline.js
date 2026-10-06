@@ -1,6 +1,7 @@
 import { PILOT_CONTEXT, prefilter, fail } from './context.js';
 import { withDeadline } from './deadline.js';
 import {createHash} from 'node:crypto';
+import {businessParagraphs} from './business-fiche.js';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
 const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)/g)??[]).map(n=>{
   const s=n.replace(/[ \u00a0\u202f]/g,'').replace('−','-');
@@ -22,6 +23,9 @@ export function renderBrief(item,brief){
   if(!brief||!Array.isArray(brief.facts)||brief.facts.length<1||brief.facts.length>3||
       !text(brief.utility,500)||!text(brief.action,300)||!PILOT_CONTEXT.active.includes(brief.goal)||
       (brief.uncertainty!==undefined&&!text(brief.uncertainty,300)))fail('ALERT_BRIEF_INVALID');
+  if(brief.goal==='business'&&!brief.business_fiche)fail('ALERT_BUSINESS_FICHE_INVALID');
+  if(brief.business_fiche!==undefined&&(brief.goal!=='business'||
+    brief.business_fiche.probleme!==brief.facts.map(f=>f.summary).join(' ')))fail('ALERT_BUSINESS_FICHE_INVALID');
   for(const fact of brief.facts){
     if(!text(fact.summary,350)||!text(fact.quote,600)||!item.excerpt.includes(fact.quote)||
        numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n))||
@@ -32,7 +36,7 @@ export function renderBrief(item,brief){
   const partial=item.excerptTruncated!==false||item.excerptMode==='passages';
   const limits=[...(partial?['Lecture sur extrait partiel ; les passages omis ne sont pas vérifiés.']:[]),...(brief.uncertainty?[brief.uncertainty]:[])].join(' ');
   const paragraphs=[item.title,`${item.producer==='finance-watch'?'Relevé':'Publié'} le ${item.publishedAt.slice(0,10)}.`,...brief.facts.map(f=>`• ${f.summary}`),
-    `\nUtilité pour toi : ${brief.utility}`,`\nÀ faire : ${brief.action}`,
+    `\nUtilité pour toi : ${brief.utility}`,...(brief.business_fiche?businessParagraphs(item,brief.business_fiche):[`\nÀ faire : ${brief.action}`]),
     ...(limits?[`\nLimite : ${limits}`]:[]),`\nSource : ${item.url}`];
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
 }
@@ -77,7 +81,7 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
     catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
       error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
-      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',nativeFailure(error));}
+      ['ALERT_ASSESSMENT_INVALID','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',nativeFailure(error));}
     if(!result||!['keep','review','skip'].includes(result.decision)||
        (result.decision!=='keep'&&result.brief!==undefined))return complete('review','NATIVE_ASSESSMENT_INVALID');
     const selection={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256,
@@ -115,7 +119,7 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
     catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
       error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
-      ['ALERT_ASSESSMENT_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',{selection:trace,...nativeFailure(error)});}
+      ['ALERT_ASSESSMENT_INVALID','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',{selection:trace,...nativeFailure(error)});}
     if(!result||!['keep','review','skip'].includes(result.decision)||
        (result.decision!=='keep'&&result.brief!==undefined))return complete('review','NATIVE_ASSESSMENT_INVALID',{selection:trace});
     const assessment={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256};
@@ -131,7 +135,7 @@ export async function processNext({ledger,select,synthesize,assess,assessmentAft
     const brief=await withDeadline(signal=>synthesize(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'SYNTHESIS_TIMEOUT');
     const message=renderBrief(job.item,brief);
     return complete('ready','BRIEF_VERIFIED',{...brief,message,contextVersion:PILOT_CONTEXT.version,selection:trace});
-  }catch(e){return complete('review',['ALERT_FACT_UNSUPPORTED','SYNTHESIS_TIMEOUT'].includes(e?.code)?e.code:['ALERT_SYNTHESIS_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(e?.code)?'SYNTHESIS_INVALID':'SYNTHESIS_UNAVAILABLE',{selection:trace,...nativeFailure(e)});}
+  }catch(e){return complete('review',['ALERT_FACT_UNSUPPORTED','SYNTHESIS_TIMEOUT'].includes(e?.code)?e.code:['ALERT_SYNTHESIS_INVALID','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(e?.code)?'SYNTHESIS_INVALID':'SYNTHESIS_UNAVAILABLE',{selection:trace,...nativeFailure(e)});}
 }
 export async function deliverReady({ledger,id,deliver,timeoutMs=30000}){
   if(typeof deliver!=='function')fail('ALERT_DELIVERY_NOT_CONFIGURED');

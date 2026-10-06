@@ -55,3 +55,11 @@ test('content refusals remain visible even beside unread pages, pending work or 
  const uncertain=summarizeAlertCycles({counts:[{state:'delivery_unknown',n:1}],reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:1}]});
  assert.equal(uncertain.diagnosis.code,'CHECK_DELIVERY_RECEIPT');assert.equal(uncertain.contentRefusals.total,1);
 });
+
+test('all active diagnostic actions survive simultaneous refusals, ready work and uncertain delivery',()=>{
+ const r=summarizeAlertCycles({counts:[{state:'ready',n:2},{state:'pending',n:1},{state:'delivery_unknown',n:1}],
+  reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:1},{reason:'SOURCE_NOT_READ',n:3}]});
+ assert.deepEqual(r.diagnoses.map(d=>d.code),['CHECK_DELIVERY_RECEIPT','CHECK_EDITORIAL_REJECTIONS','WAIT_DIGEST','PROCESS_PENDING','EXPAND_READERS']);
+ assert.equal(r.diagnosis.code,'CHECK_DELIVERY_RECEIPT');
+ const idle=summarizeAlertCycles({});assert.deepEqual(idle.diagnoses,[idle.diagnosis]);
+});

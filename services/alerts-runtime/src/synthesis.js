@@ -3,8 +3,9 @@ import {promisify} from 'node:util';
 import {PILOT_CONTEXT,validateItem,fail} from './context.js';
 import {renderBrief} from './pipeline.js';
 import {createHash} from 'node:crypto';
+import {bindBusinessFiche,BUSINESS_PROMPT} from './business-fiche.js';
 const run=promisify(execFile);
-export const EDITORIAL_VERSION='alert-editorial-v1';
+export const EDITORIAL_VERSION='alert-editorial-v2-business';
 // Let the model reference evidence rather than retype it (translation, ellipses
 // and punctuation otherwise corrupt exact citations). Quotes remain code-owned.
 export function evidenceSpans(excerpt){
@@ -20,7 +21,7 @@ export function evidenceSpans(excerpt){
 export function bindEvidence(item,brief){
   if(!Array.isArray(brief?.facts))fail('ALERT_BRIEF_INVALID');
   const spans=evidenceSpans(item.excerpt);
-  return {...brief,facts:brief.facts.map(f=>{
+  return {...brief,...(brief.business_fiche!==undefined?{business_fiche:bindBusinessFiche(item,brief.business_fiche,spans)}:{}),facts:brief.facts.map(f=>{
     if(f.evidence_index===undefined)return f;
     if(!Number.isInteger(f.evidence_index)||f.evidence_index<0||f.evidence_index>=spans.length)fail('ALERT_FACT_UNSUPPORTED');
     return {summary:f.summary,quote:spans[f.evidence_index]};
@@ -50,6 +51,7 @@ Retourne UNIQUEMENT un JSON {"goal":"${item.topic}","facts":[{"summary":"fait es
 1 à 3 faits, summary <=350 caractères, utility <=500, action <=300, uncertainty <=300.
 Chaque fait indique l'index entier du passage qui le prouve dans evidence. Le code fournit sa citation exacte. Chaque sigle, identifiant et version du résumé figure dans sa propre citation, pas seulement ailleurs dans l’extrait. Pas de fait générique ni répété. Aucun nombre absent de ce passage dans le résumé, même une date ou une conversion. Les nombres de utility et action doivent aussi figurer dans les faits étayés. Distingue fait et déduction. Rattache la source au pilote Mac seulement si un composant du pilote y est nommé ; sinon formule une condition (« si un projet utilise X »). L'action commence par la vérification qui décide si Ivan est concerné, avant toute mise à jour ou dépense. Le protocole d'une étude n'est pas un seuil obligatoire pour Ivan : propose une version proportionnée. Les passages sont partiels sauf couverture complète explicite : n'attribue aucune affirmation au reste de l'article. Aucune promesse de revenu, portefeuille, transaction ou objectif privé inventé.
 Contexte public : ${JSON.stringify(PILOT_CONTEXT)}
+${BUSINESS_PROMPT}
 Source publique : ${JSON.stringify(metadata)}
 evidence : ${JSON.stringify(evidenceSpans(item.excerpt).map((quote,index)=>({index,quote})))}
 Contrat : ${EDITORIAL_VERSION}; proposition Claude PR50, conformité mécanique ne prouve pas la fidélité.`;
@@ -67,6 +69,7 @@ review : seulement si un fait essentiel manque réellement : affirmation ambigu�
 skip : information comprise sans utilité précise pour les objectifs actifs : promotion, bruit IA, démonstration d'une application sans rapport, version ordinaire d'un outil tiers non déclaré, incident déjà résolu sans leçon réutilisable ; les procédures institutionnelles BCE sans impact explicite sur taux, inflation, croissance ou marchés ne sont pas un insight macro. Career, production Knowledge/Anakalypto et migration OVH sont différés. Un thème familier n'est pas à lui seul un doublon.
 Retourne UNIQUEMENT l'un de ces JSON : {"decision":"skip"}, {"decision":"review"}, ou {"decision":"keep","brief":{"goal":"objectif actif","facts":[{"summary":"fait essentiel en français","evidence_index":0}],"utility":"utilité concrète pour Ivan","action":"vérification ou étape proportionnée, sinon Rien à faire maintenant","uncertainty":"limite utile"}}. Aucun autre champ, score, confiance, raison libre ou prose pour skip/review.
 Pour keep : 1 à 3 faits, summary <=350 caractères, utility <=500, action <=300, uncertainty <=300. Chaque evidence_index entier pointe le passage qui prouve le fait ; le code fournit la citation exacte. Aucun fait hors evidence. Chaque sigle, identifiant et version du résumé figure dans sa propre citation. Pas de fait générique ni répété. Ne jamais affirmer les technologies des projets existants sans inventaire : formuler si un projet utilise X. Une synthèse de coûts concerne tous les postes payants ; le plafond Jev ne couvre que TypeSafe. Aucun nombre absent du passage cité ; les nombres d'utility/action figurent dans les faits étayés. Sépare faits et déductions. Si l'applicabilité dépend d'une version ou d'une exposition inconnue, formule une condition et propose d'abord de vérifier. Le protocole d'une étude n'est pas une obligation pour Ivan. Ne transforme pas une recherche en changement impératif. Aucune promesse de revenu, donnée personnelle, transaction, contact ou objectif privé inventé. Les omissions d'un extrait partiel restent inconnues.
+${BUSINESS_PROMPT}
 Source publique : ${JSON.stringify(metadata)}
 evidence : ${JSON.stringify(evidenceSpans(excerpt).map((quote,index)=>({index,quote})))}
 Contrat : ${EDITORIAL_VERSION}; conformité mécanique ne garantit pas la fidélité.`;

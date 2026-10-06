@@ -54,7 +54,7 @@ function businessItem(i){return {url:`https://news.ycombinator.com/item?id=${i}`
 test('already triaged candidates are removed before the four-item limit',async t=>{
  const dir=folder(t),items=Array.from({length:6},(_,i)=>businessItem(i+1));
  writeFileSync(path.join(dir,'jev.jsonl'),items.slice(0,4).map(item=>JSON.stringify({id:signalId(item),pertinent:0.9})).join('\n')+'\n',{mode:0o600});
- const ledger={list:state=>state==='review'?items.map(item=>({item})):[]};let seen=[];
+ const ledger={businessSummary:()=>({validatedFiches:0,scoredFiches:0}),list:state=>state==='review'?items.map(item=>({item})):[]};let seen=[];
  assert.equal(businessHasPendingEvidence(ledger,dir),true);
  const r=await businessCycle({directory:dir,ledger,now,triageImpl:async staging=>{
   const signals=readFileSync(path.join(staging,'signals.jsonl'),'utf8').trim().split('\n').map(JSON.parse);seen=signals.map(s=>s.url);
@@ -64,13 +64,13 @@ test('already triaged candidates are removed before the four-item limit',async t
  assert.equal(businessHasPendingEvidence(ledger,dir),false);assert.equal(r.opportunity_scores_created,0);
 });
 test('failed business decisions remain pending and never appear as successful triage',async t=>{
- const dir=folder(t),ledger={list:state=>state==='pending'?[{item:businessItem(1)},{item:businessItem(2)}]:[]};
+ const dir=folder(t),ledger={businessSummary:()=>({validatedFiches:0,scoredFiches:0}),list:state=>state==='pending'?[{item:businessItem(1)},{item:businessItem(2)}]:[]};
  const r=await businessCycle({directory:dir,ledger,now,triageImpl:async()=>({tries:0,en_attente_jev:2})});
  assert.equal(r.triaged,0);assert.equal(r.decisionErrors,2);assert.equal(r.pendingDecisions,2);
  assert.equal(businessHasPendingEvidence(ledger,dir),true);assert.equal(r.payment_evidence_invented,false);
 });
 test('native mode retains Business evidence without paying a separate unqualified triage',async t=>{
- const dir=folder(t),ledger={list:state=>state==='pending'?[{item:businessItem(1)}]:[]};
+ const dir=folder(t),ledger={businessSummary:()=>({validatedFiches:0,scoredFiches:0}),list:state=>state==='pending'?[{item:businessItem(1)}]:[]};
  const r=await businessCycle({directory:dir,ledger,now,useJev:false,triageImpl:async()=>assert.fail('no duplicated Jev triage')});
  assert.equal(r.triaged,0);assert.equal(r.pendingEditorial,1);assert.equal(r.pendingDecisions,0);
  assert.equal(r.classificationMode,'native-editorial-queue');assert.equal(r.payment_evidence_invented,false);

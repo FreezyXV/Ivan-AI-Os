@@ -98,5 +98,6 @@ export async function businessCycle({ledger,directory=businessDir(),triageImpl=t
   }finally{rmSync(staging,{recursive:true,force:true});}
  }
  return {...added,triaged,pendingDecisions,decisionErrors:pendingDecisions,classificationMode:useJev?'jev-advisory':'native-editorial-queue',
-  pendingEditorial:useJev?0:todo.length,readCandidates:candidates.length,opportunity_scores_created:0,payment_evidence_invented:false};
+  pendingEditorial:useJev?0:todo.length,readCandidates:candidates.length,
+  validatedFiches:ledger.businessSummary().validatedFiches,opportunity_scores_created:ledger.businessSummary().scoredFiches,payment_evidence_invented:false};
 }

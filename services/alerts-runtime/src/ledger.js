@@ -4,6 +4,7 @@ import { mkdirSync, lstatSync, openSync, closeSync, readFileSync, writeFileSync,
 import {gzipSync,gunzipSync} from 'node:zlib';
 import path from 'node:path';
 import { validateItem, prefilter, fail, PILOT_CONTEXT } from './context.js';
+import {validateBusinessFiche} from './business-fiche.js';
 
 // SQLite owns transaction locks: process crashes cannot leave an application
 // lock file blocking all producers. Provider calls occur outside transactions.
@@ -39,7 +40,8 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
       owner TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER,updated INTEGER NOT NULL,receipt TEXT);
     CREATE TABLE IF NOT EXISTS evidence_revisions(id TEXT NOT NULL,revision TEXT NOT NULL,item TEXT NOT NULL,
       brief TEXT,reason TEXT,updated INTEGER NOT NULL,PRIMARY KEY(id,revision));
-    CREATE TABLE IF NOT EXISTS evidence_keys(key TEXT PRIMARY KEY,id TEXT NOT NULL);`);
+    CREATE TABLE IF NOT EXISTS evidence_keys(key TEXT PRIMARY KEY,id TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS business_fiches(id TEXT PRIMARY KEY,fiche TEXT NOT NULL,score TEXT,created INTEGER NOT NULL);`);
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='retries'))db.exec('ALTER TABLE alerts ADD COLUMN retries INTEGER NOT NULL DEFAULT 0');
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='archive'))db.exec('ALTER TABLE alerts ADD COLUMN archive TEXT');
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
@@ -99,7 +101,16 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     finish(id,owner,{state,reason,brief=null}){if(!['skipped','review','ready'].includes(state)||!(/^[A-Z_]{1,64}$/).test(reason)||
       (state==='ready'&&(typeof brief?.message!=='string'||!brief.message.trim()||brief.message.length>2500)))fail('ALERT_RESULT_INVALID');
       return tx(()=>{const r=owned(id,owner,'processing');if(r.expires<=now())fail('ALERT_LEASE_LOST');
+        if(state==='ready'&&brief?.business_fiche){
+          if(brief.goal!=='business')fail('ALERT_BUSINESS_FICHE_INVALID');
+          const checked=validateBusinessFiche(r.item,brief.business_fiche);
+          db.prepare('INSERT OR IGNORE INTO business_fiches VALUES(?,?,?,?)').run(id,JSON.stringify(checked.fiche),checked.score?JSON.stringify(checked.score):null,now());
+        }
         db.prepare('UPDATE alerts SET state=?,reason=?,brief=?,owner=NULL,expires=NULL,updated=? WHERE id=?').run(state,reason,brief?JSON.stringify(brief):null,now(),id);return get(id);});},
+    businessFiches(limit=20){if(!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_RESULT_INVALID');
+      return db.prepare('SELECT * FROM business_fiches ORDER BY created DESC,id LIMIT ?').all(limit).map(r=>({...r,fiche:JSON.parse(r.fiche),score:r.score?JSON.parse(r.score):null}));},
+    businessSummary(){const r=db.prepare('SELECT count(*) AS fiches,sum(score IS NOT NULL) AS scored FROM business_fiches').get();
+      return {validatedFiches:r.fiches,scoredFiches:r.scored??0};},
     beginDelivery(id){return tx(()=>{const r=get(id);if(!r||r.state!=='ready')return null;const owner=randomUUID();
       db.prepare("UPDATE alerts SET state='sending',owner=?,expires=?,updated=? WHERE id=?").run(owner,now()+leaseMs,now(),id);return get(id);});},
     finishDelivery(id,owner,receipt){return tx(()=>{owned(id,owner,'sending');

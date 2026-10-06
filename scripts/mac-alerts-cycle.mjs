@@ -68,15 +68,16 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  const processKey=processNow?'process:verify:'+now.toISOString().slice(0,16).replace(/[T:]/g,'-'):
   slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours()+(selectionMode!=='jev'?':'+selectionMode:'');
  await perform('process',processKey,async()=>{
-  let decisions=0,generations=0,nativeCalls=0;const states={};
+  let decisions=0,generations=0,nativeCalls=0,businessFichesCreated=0,opportunityScoresCreated=0;const states={};
   for(let i=0;i<100&&decisions<8&&nativeCalls<2;i++){
    const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,selectionPolicy,
     select:async(...args)=>{decisions++;return select(...args);},
     ...(selectionMode!=='jev'?{assessmentAfterSelection:selectionMode==='jev-native-editorial',assess:async(...args)=>{nativeCalls++;const result=await assess(...args);if(result.decision==='keep')generations++;return result;}}:{}),
     synthesize:async(...args)=>{nativeCalls++;generations++;return synthesize(...args);}});
    if(result.state==='idle')break;states[result.reason??result.state]=(states[result.reason??result.state]??0)+1;
+   if(result.state==='ready'&&result.brief?.business_fiche){businessFichesCreated++;if(result.brief.business_fiche.moteur)opportunityScoresCreated++;}
   }
-  return {selectionMode,decisions,nativeCalls,generations,states};
+  return {selectionMode,decisions,nativeCalls,generations,businessFichesCreated,opportunityScoresCreated,states};
  });
  if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select')){
   // A source may finish after the day's first page. Reserve the next stable page
@@ -89,7 +90,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   }
   if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
  }
- return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),retention,policyRevisions};
+ return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),business:ledger.businessSummary(),retention,policyRevisions};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  let ledger;
