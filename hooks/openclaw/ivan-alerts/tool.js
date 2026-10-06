@@ -1,6 +1,3 @@
-import {validateItem,PILOT_CONTEXT,suspiciousSource,insufficientShortEvidence} from '../../../services/alerts-runtime/src/context.js';
-import {synthesisPrompt,parseBrief,bindEvidence,validatePromptVariant,validateAssessment,assessmentItemSha256} from '../../../services/alerts-runtime/src/synthesis.js';
-import {renderBrief} from '../../../services/alerts-runtime/src/pipeline.js';
 const output=details=>({content:[{type:'text',text:JSON.stringify(details)}],details});
 export function createSynthesisTool(context,subagent){
  if(context?.agentId!=='ivan-system')return null;
@@ -8,6 +5,11 @@ export function createSynthesisTool(context,subagent){
   description:'Assess public read evidence and draft only useful information in one isolated completion, or synthesize an already selected item; no tools or private context.',
   parameters:{type:'object',properties:{item:{type:'object'},purpose:{type:'string',enum:['selected','editorial-evaluation','assessment']},promptVariant:{type:'string',enum:['current','compact-v1']}},required:['item'],additionalProperties:false},
   async execute(_id,args,signal){let stage='VALIDATE';try{
+   // OpenClaw loads this factory synchronously. Engine CLIs contain top-level
+   // await, so load the ESM graph only inside the asynchronous invocation.
+   const {validateItem,PILOT_CONTEXT,suspiciousSource,insufficientShortEvidence}=await import('../../../services/alerts-runtime/src/context.js');
+   const {synthesisPrompt,parseBrief,bindEvidence,validatePromptVariant,validateAssessment,assessmentItemSha256}=await import('../../../services/alerts-runtime/src/synthesis.js');
+   const {renderBrief}=await import('../../../services/alerts-runtime/src/pipeline.js');
    const item=validateItem(args?.item);
    const purpose=args?.purpose??'selected';
    const promptVariant=args?.promptVariant??'current';validatePromptVariant(purpose,promptVariant);

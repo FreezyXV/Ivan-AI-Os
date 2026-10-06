@@ -6,6 +6,7 @@ import {readFileSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {homedir} from 'node:os';
 import path from 'node:path';
+import {probeAlertTool} from './probe-alert-tool.mjs';
 
 const run = promisify(execFile);
 const knownAgents = new Set(['main','ivan-business','ivan-finance','ivan-engineering','ivan-system','ivan-knowledge','ivan-career']);
@@ -121,8 +122,9 @@ export async function inspectPilot({ call=native, fetchImpl=fetch, getToken=read
           .map(key=>[key,usage[key]])) };
     } catch { return { healthy:false }; }
   };
-  const [openclawHealthy,automations,jevStatus,alertStatus]=await Promise.all([health(),inventory(),jev(),alertInventory()]);
-  return { openclaw_healthy:openclawHealthy,jev:jevStatus,automations,alerts:alertStatus };
+  const [openclawHealthy,automations,jevStatus,alertStatus,synthesisTool]=await Promise.all([health(),inventory(),jev(),alertInventory(),
+    probeAlertTool({runImpl:async(_binary,args)=>({stdout:JSON.stringify(await call(args))})})]);
+  return { openclaw_healthy:openclawHealthy,synthesis_tool:synthesisTool,jev:jevStatus,automations,alerts:alertStatus };
 }
 
 if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {

@@ -8,6 +8,7 @@ import {processNext} from '../src/pipeline.js';
 import {sendDigest} from '../src/digest.js';
 import {createSynthesisTool} from '../../../hooks/openclaw/ivan-alerts/tool.js';
 import {validateBusinessFiche} from '../src/business-fiche.js';
+import {createRequire} from 'node:module';
 const now=Date.parse('2026-10-06T10:00:00Z');
 const item={producer:'hacker-news-public',scope:'public',topic:'business',url:'https://news.ycombinator.com/item?id=100',title:'Ask HN: Reviewing generated code',
  publishedAt:new Date(now-3600000).toISOString(),observedAt:new Date(now).toISOString(),readAt:new Date(now).toISOString(),sourceStatus:'read',excerpt:'Our team spends hours reviewing generated code for duplicate modules. Existing reviewers miss architecture problems.'};
@@ -15,6 +16,9 @@ const brief={goal:'business',facts:[{summary:'Une équipe décrit une revue coû
 const fiche={sujet:'revue-code-genere',probleme:'Une équipe décrit une revue coûteuse du code généré.',acheteur:{profil:'Équipes utilisant du code généré',statut:'hypothèse'},
  preuves:[{type:'douleur',evidence_index:0}],objections:['Hypothèse : les outils existants peuvent déjà suffire.'],hypothese:'Hypothèse : une revue structurée pourrait réduire cette difficulté.',
  prochainTest:{description:'Comparer localement les méthodes de revue sur un exemple public.',dureeJours:3,coutEur:0,reversible:true,contactTiers:false},decision:'exploratoire',limites:'Un seul témoignage ; aucun paiement observé.'};
+test('OpenClaw can synchronously load the plugin factory without evaluating asynchronous engine CLI modules',()=>{
+ assert.equal(typeof createRequire(import.meta.url)('../../../hooks/openclaw/ivan-alerts/tool.js').createSynthesisTool,'function');
+});
 test('one Business completion reaches the common digest with a validated fiche and never repeats after resume',async t=>{
  const directory=mkdtempSync(path.join(os.tmpdir(),'ivan-business-'));let clock=now,ledger=openLedger(path.join(directory,'alerts.sqlite'),{now:()=>clock});
  t.after(()=>{ledger.close();rmSync(directory,{recursive:true,force:true});});let calls=0,sends=0;

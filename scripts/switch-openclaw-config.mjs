@@ -7,10 +7,15 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import {probeAlertTool} from './probe-alert-tool.mjs';
 
 const execFileAsync = promisify(execFile);
 const sha256 = bytes => createHash("sha256").update(bytes).digest("hex");
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+export async function checkConfiguredTools(config,probe=probeAlertTool){
+  if(config.plugins?.entries?.['ivan-ai-os-alerts']?.enabled!==true)return true;
+  return (await probe()).available===true;
+}
 
 function regularPrivateFile(file) {
   const stat = lstatSync(file);
@@ -134,7 +139,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
       checkHealth: async () => {
         const response = await runOpenClaw(["gateway", "call", "health", "--json", "--timeout", "5000"],
           { timeout: 9000 });
-        return response.ok === true;
+        return response.ok === true&&await checkConfiguredTools(JSON.parse(readFileSync(livePath,'utf8')));
       }
     });
     console.log(JSON.stringify(result));
