@@ -1,6 +1,6 @@
 # Guide de diagnostic — pilote d'alertes v6 (Claude, 2026-10-06)
 
-Revue Claude initiale : `d1893b6`. Correctifs Codex actifs : `2a51fa1`, contexte v6, mode E.
+Revue Claude initiale : `d1893b6`. Correctifs Codex actifs : `33480ee`, contexte v6, mode E.
 Commande unique, en lecture seule : `~/.openclaw/tools/node/bin/node scripts/inspect-mac-pilot.mjs`. Elle ne lance aucun
 modèle et n'envoie aucun message. Exploitation, sauvegarde et restauration :
 `docs/MAC-ALERTS-RECOVERY.md`.
@@ -21,6 +21,8 @@ Les fiches Business validées et réellement scorées sont comptées dans `alert
 | `EXPAND_READERS` | pages non lisibles | ajouter un lecteur ; jamais résumer un titre |
 | `NO_SELECTED_NEWS` | rien retenu | rien : le silence n'est pas une panne |
 
+synthesis_tool.available vérifie l'outil par une invocation title-only/Career refusée avant modèle. Un gateway sain ne suffit pas. La bascule réalise le même contrôle ; un outil absent entraîne le retour arrière.
+
 ## Phases d'une synthèse native (`nativeFailure.stage`)
 - `COMPLETE` : le modèle n'a pas répondu (panne ou délai) → rejouée une fois après 15 min.
 - `PARSE` : réponse illisible → **non rejouée** (`*_INVALID`).
@@ -40,7 +42,7 @@ Correctif Codex après #62 : tous les codes actifs sont affichés ensemble. La p
 conservée du premier code ne change ni le planning ni les envois.
 
 ## Limites concrètes au 2026-10-06
-1. **Aucun message v6 livré** (3 messages au total, v5). Six nouvelles sources mesurées :
+1. **Aucune alerte fraîche v6 livrée** (3 messages de production, v5). Une fiche Business native historique de test a été livrée (reçu 61), hors file prod. Six nouvelles sources mesurées :
    zéro bruit retenu mais 0/1 utile retrouvé ; essai natif sur deux abstentions non concluant.
 2. Refus désormais visibles (`CHECK_EDITORIAL_REJECTIONS`, compte et raisons), sans
    reprise automatique d'un contenu invalide. Une preuve refusée reste dans SQLite,

@@ -16,6 +16,23 @@ la dernière étape de cette livraison. La pause Career et le report OVH ne
 bloquent pas cette définition. Ne pas annoncer un service permanent pendant
 le sommeil du Mac sans en avoir mesuré le comportement.
 
+## Intégration #62 — 6 octobre
+
+- [x] **Activé 33480ee** : fiches Business exploratoires, même appel natif,
+  vérificateur Claude corrigé, score explicite recalculé, catalogue transactionnel
+  et digest commun ; reprise et archive manquante testées sans second envoi.
+- [x] **Activé** : tous les codes diagnostic simultanés ; sonde réelle de l'outil
+  de rédaction. Défaut require/ESM asynchrone reproduit puis corrigé ; la bascule
+  refuse désormais un gateway sain sans outil chargé.
+- [x] **Qualification historique** : B03, un natif réel, 32 s, fiche validée
+  1307 caractères ; aucun Jev ni sélection/fraîcheur de production revendiqués.
+- [ ] **Qualification quotidienne** : fiche utile fraîche, avis indépendant Claude,
+  coût natif réel et vraie veille du Mac. Le test historique ne coche pas C10/C12.
+
+CI runtime 11/11 ; 323 tests ciblés au correctif du chargeur, 148 concernés après
+ajustement final du format. Seuils et mode E conservés. Catalogue prod encore zéro.
+Mission Claude : CLAUDE-NEXT-PR62-2026-10-06.md ; aucun nouveau benchmark.
+
 ## Intégration #61 — 6 octobre
 
 Code actif 2a51fa1, CI 11/11 ; noms complets et alias corrigés, masque téléphone

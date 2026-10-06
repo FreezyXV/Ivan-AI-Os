@@ -1,3 +1,55 @@
+## État courant vérifié — après #62, 6 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 ; aucune fusion foundation/main.
+Claude #62 repris avec provenance : 48a4611 → f91bcdf, 8a958a0 → 3861850.
+Runtime actif 33480ee (worker/gateway/plugin), contexte v6, mode E .75/.75 inchangé.
+323 tests ciblés au correctif du chargeur ; 148 concernés après ajustement Business.
+CI runtime 33480ee : 11/11 verte. Node 24.19.0 ; file/budget/Secrétaire conservés.
+
+Livré : fiche Business dans le même appel natif, preuves liées par code, problème
+dérivé du premier fait, acheteur hypothétique, objections, test réversible gratuit.
+Le vrai moteur recalcule les entrées publiques explicites ; génération exploratoire
+sans score inventé. Catalogue business_fiches enregistré dans la transaction ready ;
+reprise sans doublon et catalogue indépendant d'une archive source manquante testés.
+Tous les diagnostics actifs dans alerts.diagnoses ; compatibilité diagnosis.code.
+Le diagnostic et la bascule sondent réellement ivan_alert_synthesize, avant modèle.
+
+Défaut racine trouvé à l'activation 5518c34 : factory chargée avec require face à
+une dépendance CLI à top-level await. Gateway sain, outil absent. Corrigé b860b86 :
+imports différés, test rouge puis vert ERR_REQUIRE_ASYNC_MODULE, sonde obligatoire.
+La tentative 5518c34 est un RPC sans complétion native (l'ancien reçu nativeAttempts
+signifie seulement tentative client). Ne pas la compter comme appel modèle.
+B01, premier vrai natif b860b86 : refus VALIDATE, 31 s ; pas de draft disponible.
+Pas de cause précise inventée. 33480ee dérive le champ redondant et conserve
+validationChecks → validation_checks → nativeFailure.checks sans texte de modèle.
+
+B03 (autre capture publique historique), un seul natif sur 33480ee : VERIFIED,
+32 064 ms, fiche 1307 caractères, aucun appel Jev, pas de score/recommandation.
+Fait contrôlé contre sa citation : plainte sur prix/contacts, engagement annuel
+et accès d'essai. Source du 26 août : aucune fraîcheur ni sélection Jev revendiquée.
+Utilité et test proposés restent à relire par Claude ; un prototype fictif ne
+prouve pas une demande solvable. Essai Telegram distinct de la production, livraison confirmée reçu 61 (pas de renvoi).
+Reçus : ~/.ivan-ai-os/mac-alerts-33480ee/business-qualification/
+{result.json,telegram-attempt.json,telegram-result.json} et coordinated-activation.json.
+
+Dernière santé : outil disponible, Jev/worker/OpenClaw sains ; file prod
+3 delivered / 27 review / 7 skipped / 5 expired_unsent, zéro ready/pending.
+754 appels Jev / 0,029054 EUR estimé / plafond 10 EUR / inconnus 0.
+Aucune hausse pendant les bascules et la qualification Business. Coût natif inconnu.
+Catalogue Business prod zéro : la qualification historique n'est pas injectée en prod.
+Ne pas rejouer B01/B03, les anciens benchmarks ou les huit générations.
+
+Claude : CLAUDE-NEXT-PR62-2026-10-06.md (sortie Business, sources publiques non lues,
+deux traductions Finance testables, sans modèle ni activation). Codex poursuit les
+lecteurs/runtime et la vraie qualification quotidienne ; pas de nouveau seuil.
+Aucun recours sur abstentions ou digest hebdomadaire optionnel activé.
+Career en pause, OVH reporté, Knowledge/Anakalypto dernière étape commune.
+Lire BUSINESS-RUNTIME-INTEGRATION-2026-10-06.md, REVIEW-CODEX-PR62-2026-10-06.md,
+GUIDE-DIAGNOSTIC-V6.md, PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md,
+MAC-ALERTS-RECOVERY.md et la précédente qualification v6.
+
+## Historique — avant intégration #62
+
 ## État courant vérifié — après #61, 6 octobre 2026
 
 Branche agent/codex/alerts-integration, PR #57 empilée, aucune fusion foundation/main.

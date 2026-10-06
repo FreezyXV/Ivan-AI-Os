@@ -7,7 +7,7 @@ Après sélection, le même appel natif évalue et rédige une fiche si l'object
 Business : problème, acheteur hypothétique, preuves, objections, hypothèse, test
 local gratuit et réversible, statut et limites. Les citations sont liées par code
 aux passages numérotés ; URL/date/nombre de sources sont fournis par le code.
-Le problème reprend les faits déjà vérifiés : pas de deuxième affirmation libre.
+Le problème est dérivé du premier fait déjà vérifié : pas de deuxième affirmation libre.
 
 Le vérificateur Claude et une borne runtime contrôlent chaque fiche. Un score
 déclaré ne suffit pas : les entrées publiques explicites sont recalculées par
@@ -33,3 +33,20 @@ reprise sans second envoi, archive manquante, refus citation/score/paiement/prof
 Cette preuve avec doubles de modèle/Telegram ne mesure pas la qualité rédactionnelle.
 Une évaluation native isolée, explicitement historique, peut vérifier le nouveau
 format sans être présentée comme une alerte fraîche ou un résultat de sélection Jev.
+
+Correctif racine du chargement : le graphe du moteur contient des CLI avec await au
+niveau module. OpenClaw requiert la factory synchroniquement. Imports différés dans
+execute ; un test reproduit ERR_REQUIRE_ASYNC_MODULE avant correction et passe après.
+La bascule teste désormais l'outil avec une source title-only/Career, refusée avant
+toute complétion ; un gateway sain ou un catalogue persistant ne suffisent plus.
+Le diagnostic expose synthesis_tool.available. Refus Business : checks codés bornés,
+sans texte modèle, propagés dans le reçu puis nativeFailure.checks.
+
+Qualification native après correctifs : B03, source publique historique du 26 août,
+VERIFIED en 32 064 ms, 1307 caractères. Fait comparé à sa propre citation ; acheteur
+hypothétique, test fictif local, aucune demande solvable prétendue. Un second regard
+reste requis pour l'utilité du test. Envoi explicitement historique confirmé Telegram
+61, hors file prod. Aucun Jev supplémentaire ; coûts natifs non exposés. B01 a été
+refusé, sans nouvelle génération sur ce cas. Le premier RPC 5518c34 n'avait pas atteint
+le modèle (outil absent) ; ne pas le compter comme complétion.
+Runtime final actif 33480ee ; CI 11/11 ; budgets inchangés pendant ces opérations.
