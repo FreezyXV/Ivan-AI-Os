@@ -26,6 +26,7 @@ test('one Business completion reaches the common digest with a validated fiche a
  const assess=async source=>{const d=(await tool.execute('one',{item:source,purpose:'assessment'})).details;assert.equal(d.status,'READY');return{decision:d.decision,brief:d.brief};};
  ledger.ingest(item);const r=await processNext({ledger,now,assessmentAfterSelection:true,select:async()=>({decision:'keep',confidence:0.9}),assess});
  assert.equal(r.state,'ready');assert.equal(r.brief.business_fiche.sourcesDistinctes,1);
+ assert.deepEqual(r.brief.businessEditorialWarnings.sort(),['HYPOTHESE_SANS_MARCHE','TEST_SANS_RECHERCHE_DE_PREUVE']);
  assert.match(r.brief.message,/Acheteur envisagé/);assert.match(r.brief.message,/Hypothèse/);assert.match(r.brief.message,/3 jours/);
  assert.equal(r.brief.business_fiche.preuves[0].citation,item.excerpt.split('. ')[0]+'.');
  const deliver=async()=>{sends++;return{delivered:true,messageId:'test-business-receipt'};};
@@ -34,6 +35,7 @@ test('one Business completion reaches the common digest with a validated fiche a
  assert.equal(calls,1);assert.equal(sends,1);assert.equal(ledger.get(r.id).state,'delivered');
  assert.deepEqual(ledger.businessSummary(),{validatedFiches:1,scoredFiches:0});
  ledger.close();ledger=openLedger(path.join(directory,'alerts.sqlite'),{now:()=>clock});
+ assert.equal(ledger.get(r.id).brief.businessEditorialWarnings.length,2,'editorial warnings survive restart alongside the receipt');
  assert.deepEqual(ledger.businessSummary(),{validatedFiches:1,scoredFiches:0});
  assert.equal(ledger.businessFiches()[0].fiche.acheteur.statut,'hypothèse');
  await sendDigest({ledger,key:'digest:business:test',deliver,now});assert.equal(sends,1);

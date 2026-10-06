@@ -107,6 +107,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         if(state==='ready'&&brief?.business_fiche){
           if(brief.goal!=='business')fail('ALERT_BUSINESS_FICHE_INVALID');
           const checked=validateBusinessFiche(r.item,brief.business_fiche);
+          brief={...brief,businessEditorialWarnings:checked.editorialWarnings};
           db.prepare('INSERT OR IGNORE INTO business_fiches VALUES(?,?,?,?)').run(id,JSON.stringify(checked.fiche),checked.score?JSON.stringify(checked.score):null,now());
         }
         db.prepare('UPDATE alerts SET state=?,reason=?,brief=?,owner=NULL,expires=NULL,updated=? WHERE id=?').run(state,reason,brief?JSON.stringify(brief):null,now(),id);return get(id);});},

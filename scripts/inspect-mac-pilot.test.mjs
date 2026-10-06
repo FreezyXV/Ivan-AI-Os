@@ -16,6 +16,11 @@ test('editorial check counts expose the failing field, never a raw draft or exce
   {code:'FACT_1_IDENTIFIER_NOT_IN_QUOTE',n:1},{code:'PRIVATE DRAFT CONTENT',n:4}]});
  assert.deepEqual(r.contentRefusals.checks,{FACT_1_IDENTIFIER_NOT_IN_QUOTE:1});assert.doesNotMatch(JSON.stringify(r),/PRIVATE/);
 });
+test('a failed reader exposes its cause, separately from unavailable feeds',()=>{
+ const r=summarizeAlertCycles({cycles:[{name:'feeds',status:'failed',metrics:JSON.stringify({result:{readerErrors:1,readerFailures:[{code:'PUBLIC_SOURCE_TOO_LARGE',private:'PRIVATE'}]}})}]});
+ assert.equal(r.latest[0].readerErrors,1);assert.equal(r.latest[0].degraded,true);
+ assert.deepEqual(r.latest[0].errorCodes,['PUBLIC_SOURCE_TOO_LARGE']);assert.doesNotMatch(JSON.stringify(r),/PRIVATE/);
+});
 
 test('native automation inventory reveals Career activity without leaking prompts or addresses',()=>{
   const jobs=[{agentId:'ivan-career',enabled:true,payload:{kind:'agentTurn',message:'PRIVATE PROMPT'},

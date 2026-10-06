@@ -18,10 +18,11 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  const latest=cycles.filter(r=>['feeds','finance','business','process','digest'].includes(r.name)).map(r=>{
   let m;try{m=JSON.parse(r.metrics??'{}');}catch{m={};}
   const result=m.result??{};const sourceErrors=result.sourceErrors?.length??0;
-  const errorCodes=[...new Set([m.error_code,result.error_code,...(Array.isArray(result.sourceErrors)?result.sourceErrors.map(e=>e?.code):[])]
+  const readerErrors=Number.isSafeInteger(result.readerErrors)&&result.readerErrors>=0?result.readerErrors:0;
+  const errorCodes=[...new Set([m.error_code,result.error_code,...(Array.isArray(result.sourceErrors)?result.sourceErrors.map(e=>e?.code):[]),...(Array.isArray(result.readerFailures)?result.readerFailures.map(e=>e?.code):[])]
    .filter(code=>typeof code==='string'&&/^[A-Z_]{1,64}$/.test(code)))];
   return {name:r.name,status:['running','done','failed'].includes(r.status)?r.status:'unknown',
-   degraded:result.degraded===true||sourceErrors>0||result.failedFeeds>0,sourceErrors,
+   degraded:result.degraded===true||sourceErrors>0||result.failedFeeds>0||readerErrors>0,sourceErrors,readerErrors,
    failedFeeds:Number.isSafeInteger(result.failedFeeds)&&result.failedFeeds>=0?result.failedFeeds:0,errorCodes,
    attempts:r.attempts,durationMs:m.durationMs,...(Number.isInteger(result.decisions)?{decisions:result.decisions}:{}),
    ...(Number.isInteger(result.generations)?{generations:result.generations}:{}),
