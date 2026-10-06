@@ -1,4 +1,5 @@
 import unittest
+import urllib.error
 from datetime import datetime, timezone
 from collector_export import export_candidates, parse_feed, ExportError, fetch_feed
 
@@ -10,6 +11,16 @@ ATOM = b'''<feed xmlns="http://www.w3.org/2005/Atom"><entry><title>Un article an
 
 
 class ExportTests(unittest.TestCase):
+    def test_rate_limits_timeout_and_changed_feeds_have_distinct_safe_causes(self):
+        cfg={'themes':{'tech':{'flux':['https://example.org/feed']}}}
+        for error,code in [(urllib.error.HTTPError('https://example.org/feed',429,'PRIVATE',{},None),'FEED_RATE_LIMITED'),
+                           (urllib.error.HTTPError('https://example.org/feed',503,'PRIVATE',{},None),'FEED_HTTP_UNAVAILABLE'),
+                           (TimeoutError('PRIVATE'),'FEED_TIMEOUT'),(ExportError('FEED_TOO_LARGE'),'FEED_TOO_LARGE')]:
+            def fetcher(_):raise error
+            value=export_candidates(cfg,fetcher=fetcher,now=NOW)
+            self.assertEqual(value['errors'][0]['code'],code)
+            self.assertNotIn('PRIVATE',str(value))
+
     def test_security_and_central_bank_windows_are_applied_before_feed_exclusion(self):
         old = RSS.replace(b'05 Oct', b'30 Sep').replace(b'Mon, ', b'Wed, ')
         config = {'themes': {'tech': {'flux': ['https://example.org/rss']}}}

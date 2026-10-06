@@ -73,6 +73,10 @@ def supports_source(value):
             return u.path.startswith("/blog/") and not u.query
         if u.hostname == "nextjs.org":
             return u.path.startswith("/blog/") and not u.query
+        if u.hostname == "mistral.ai":
+            return bool(re.fullmatch(r"/news/[a-z0-9-]+/?", u.path)) and not u.query
+        if u.hostname == "developers.cloudflare.com":
+            return bool(re.fullmatch(r"/changelog/post/\d{4}-\d{2}-\d{2}-[a-z0-9-]+/?", u.path)) and not u.query
         if u.hostname == "www.ecb.europa.eu":
             return u.path.startswith(("/press/", "//press/")) and u.path.endswith(".html") and not u.query
         if u.hostname == "news.ycombinator.com":
@@ -133,7 +137,7 @@ class BlogParser(HTMLParser):
             self.title = attrs.get("content")
         if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}:
             return
-        classes = attrs.get("class", "").split()
+        classes = (attrs.get("class") or "").split()
         self.stack.append((self.depth, self.date_depth, self.paragraph_depth, self.ignored))
         if tag == "div" and "entryPage" in classes:
             self.depth = 1
@@ -179,10 +183,12 @@ class ArticleParser(HTMLParser):
             if attrs.get("property") == "article:published_time": self.page_date = attrs.get("content")
         if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}: return
         self.stack.append((self.active, self.ignored))
-        classes = set(attrs.get("class", "").split())
+        classes = set((attrs.get("class") or "").split())
         starts = ((self.host == "www.ecb.europa.eu" and tag == "main") or
                   (self.host == "huggingface.co" and "blog-content" in classes) or
                   (self.host == "nextjs.org" and bool({"prose", "next-prose"}.intersection(classes))) or
+                  (self.host == "developers.cloudflare.com" and "docs-content" in classes) or
+                  (self.host == "mistral.ai" and tag == "div" and {"min-w-0", "lg:gap-10"}.issubset(classes)) or
                   (self.host == "news.ycombinator.com" and "toptext" in classes))
         self.active = self.active or starts
         # HF's blog-content also contains its page heading and controls. Exclude
@@ -190,7 +196,8 @@ class ArticleParser(HTMLParser):
         hf_chrome = self.host == "huggingface.co" and (
             tag in {"header", "time", "h1"} or
             (tag == "a" and attrs.get("href", "").rstrip("/") == "/blog"))
-        self.ignored = self.ignored or hf_chrome or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes
+        primary_chrome = self.host in {'mistral.ai', 'developers.cloudflare.com'} and tag in {'pre', 'header', 'button'}
+        self.ignored = self.ignored or hf_chrome or primary_chrome or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes
         if self.active and tag in {"p", "li", "h1", "h2", "h3", "blockquote", "div"}: self.parts.append("\n")
         if self.host == "news.ycombinator.com" and tag == "span" and "age" in classes and self.page_date is None:
             self.page_date = attrs.get("title", "").split(" ")[0]
@@ -223,14 +230,30 @@ def read_article(url, *, published_at, title, topic, producer, fetcher=fetch_sou
         if not page_date:
             match = re.search(r'"datePublished"\s*:\s*"([^"<]+)"', body.decode("utf-8"))
             page_date = match[1] if match else None
-        if not page_date or page_date[:10] != published_at[:10]: raise SourceError("PUBLIC_SOURCE_DATE_UNVERIFIED")
+        precision = 'feed-and-page-day'
+        if host in {'mistral.ai', 'developers.cloudflare.com'}:
+            # A feed may date a repost rather than the primary announcement.
+            # Only these adapters explicitly own a page-date contract.
+            try:
+                page_day = dt.date.fromisoformat(page_date[:10])
+            except (ValueError, TypeError):
+                raise SourceError('PUBLIC_SOURCE_DATE_UNVERIFIED')
+            if host == 'developers.cloudflare.com' and url.split('/post/')[1][:10] != page_day.isoformat():
+                raise SourceError('PUBLIC_SOURCE_DATE_UNVERIFIED')
+            if page_day > (now or dt.datetime.now(dt.timezone.utc)).date():
+                raise SourceError('PUBLIC_SOURCE_DATE_UNVERIFIED')
+            # Day precision is deliberately conservative; never borrow repost time.
+            published_at = page_day.isoformat() + 'T00:00:00Z'
+            precision = 'page-day'
+        elif not page_date or page_date[:10] != published_at[:10]:
+            raise SourceError("PUBLIC_SOURCE_DATE_UNVERIFIED")
         if not title or len(title) > 200: raise SourceError("PUBLIC_SOURCE_INPUT_INVALID")
     except (UnicodeError, ValueError): raise SourceError("PUBLIC_SOURCE_CONTENT_UNAVAILABLE")
     observed = (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     return {"item": {"producer": producer, "url": url, "title": parser.title or title, "topic": topic,
             "scope": "public", "publishedAt": published_at, "observedAt": observed, "readAt": observed,
             "sourceStatus": "read", **excerpt_evidence(text)},
-            "sourceReceipt": {"url": url, "readAt": observed, "publicationPrecision": "feed-and-page-day",
+            "sourceReceipt": {"url": url, "readAt": observed, "publicationPrecision": precision,
             "publishedDay": published_at[:10], "responseSha256": hashlib.sha256(body).hexdigest(),
             "bodyBytes": len(body), "extractor": "public-article-v1", "coverageVersion": "passages-v3"}}
 

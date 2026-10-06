@@ -1,5 +1,15 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import{renderBrief}from'../src/pipeline.js';
+
+test('a refusal explains which check failed without retaining draft or source content',()=>{
+ const source={...item,excerpt:'The image service has an SSRF vulnerability.'};
+ for(const [value,check] of [
+  [brief('Un fait public.','PRIVATE fabricated quotation'),'FACT_1_QUOTE_NOT_IN_SOURCE'],
+  [brief('Le service corrige 42 failles.',source.excerpt),'FACT_1_NUMBER_NOT_IN_QUOTE'],
+  [brief('Le service désactive AVIF.',source.excerpt),'FACT_1_IDENTIFIER_NOT_IN_QUOTE']]){
+  assert.throws(()=>renderBrief(source,value),error=>error.code==='ALERT_FACT_UNSUPPORTED'&&error.validationChecks?.includes(check)&&!JSON.stringify(error).includes('PRIVATE'));
+ }
+});
 const item={title:'Source',url:'https://example.org/source',producer:'sentinelle',publishedAt:'2026-10-05T08:00:00Z',excerpt:'Updates are available in v16.3.8 (Active LTS). The image service has an SSRF vulnerability. AVIF is disabled.'};
 const brief=(summary,quote)=>({goal:'engineering',facts:[{summary,quote}],utility:'Vérifier si le projet est concerné.',action:'Consulter la version installée.'});
 test('an acronym from another evidence passage cannot be added to the fact linked to a version quote',()=>{

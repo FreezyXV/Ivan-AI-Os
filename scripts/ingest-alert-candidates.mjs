@@ -23,8 +23,11 @@ export async function readPublicSource(item,{signal}={}){
   }
 }
 export function supportsPublicSource(url){
-  const u=new URL(url);
+  let u;try{u=new URL(url);}catch{return false;}
+  if(u.protocol!=='https:'||u.username||u.password||u.port||u.hash)return false;
   return /^https:\/\/simonwillison\.net\/\d{4}\/[A-Z][a-z]{2}\/\d{1,2}\/[a-z0-9-]+\/$/.test(url)||
+    (u.hostname==='mistral.ai'&&/^\/news\/[a-z0-9-]+\/?$/.test(u.pathname)&&!u.search)||
+    (u.hostname==='developers.cloudflare.com'&&/^\/changelog\/post\/\d{4}-\d{2}-\d{2}-[a-z0-9-]+\/?$/.test(u.pathname)&&!u.search)||
     (['huggingface.co','nextjs.org'].includes(u.hostname)&&u.pathname.startsWith('/blog/')&&!u.search)||
     (u.hostname==='www.ecb.europa.eu'&&/^\/{1,2}press\//.test(u.pathname)&&u.pathname.endsWith('.html')&&!u.search)||
     (u.hostname==='news.ycombinator.com'&&u.pathname==='/item'&&/^\?id=\d{1,12}$/.test(u.search));

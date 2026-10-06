@@ -1,15 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,rmSync,mkdirSync} from 'node:fs';
+import {mkdtempSync,rmSync,mkdirSync,writeFileSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {openLedger} from '../src/ledger.js';
 import {PILOT_CONTEXT} from '../src/context.js';
-import {runCycle} from '../../../scripts/mac-alerts-cycle.mjs';
+import {runCycle,collectFeeds} from '../../../scripts/mac-alerts-cycle.mjs';
 import {modernFinanceUrl,collectFinance,financeCycle,businessCycle,observationUrl} from '../src/engines.js';
 const now=new Date('2026-10-05T10:00:00Z');
 function fixture(t){const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-cycle-')),ledger=openLedger(path.join(dir,'alerts.sqlite'));
  t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return {dir,ledger};}
+test('collection preserves bounded source failure codes instead of a counter without cause',async t=>{
+ const {dir,ledger}=fixture(t);
+ const result=await collectFeeds({directory:dir,ledger,
+  runImpl:async(_binary,args)=>writeFileSync(args[args.indexOf('--output')+1],JSON.stringify({items:[],excluded:{},errors:[{feedId:'a'.repeat(16),code:'FEED_UNAVAILABLE',detail:'PRIVATE OUTPUT'}]})),
+  ingestImpl:async()=>({read:0}),officialImpl:async()=>({errors:[{code:'OFFICIAL_RELEASE_CONTENT_MISMATCH',detail:'PRIVATE CONTENT'}]})});
+ assert.deepEqual(result.sourceErrors,[{code:'FEED_UNAVAILABLE',feedId:'a'.repeat(16)},{code:'OFFICIAL_RELEASE_CONTENT_MISMATCH'}]);
+ assert.equal(result.failedFeeds,2);assert.doesNotMatch(JSON.stringify(result.sourceErrors),/PRIVATE/);
+});
 test('Mac resume runs only present slots and a second process cannot replay collections or spend',async t=>{
  const {dir,ledger}=fixture(t);let calls=0;
  const options={ledger,settings:{stateDir:dir},now,feeds:async()=>{calls++;return{};},finance:async()=>{calls++;return{};},business:async()=>{calls++;return{};},select:async()=>assert.fail(),synthesize:async()=>assert.fail(),deliver:async()=>assert.fail()};

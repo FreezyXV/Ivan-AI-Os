@@ -13,6 +13,29 @@ HTML = b'''<meta property="og:title" content="Un article public"><div class="ent
 
 
 class ReaderTests(unittest.TestCase):
+    def test_primary_announcements_use_their_own_date_not_the_hn_repost_date(self):
+        for url, content, day in [
+            ('https://developers.cloudflare.com/changelog/post/2026-10-02-web-search/',
+             '<div class="docs-content nb-cl-prose"><p>A search API returns ranked public results for agent workflows.</p><pre>curl --header Authorization: Bearer $TOKEN</pre></div>', '2026-10-02'),
+            ('https://mistral.ai/news/mistral-large-4/',
+             '<div class="flex lg:gap-10 min-w-0"><p><span class>A model release</span> includes published latency and pricing measurements.</p></div>', '2026-10-06')]:
+            page=('<nav>Menu Subscribe</nav><script type="application/ld+json">{"datePublished":"'+day+'"}</script><article><header>Share Follow</header>'+content+'</article><footer>Contact us</footer>').encode()
+            value=reader.read_article(url,published_at='2026-10-06T15:00:00Z',title='Official release',topic='engineering',producer='sentinelle',fetcher=lambda _:page,now=reader.dt.datetime(2026,10,6,18,tzinfo=reader.dt.timezone.utc))
+            self.assertEqual(value['item']['publishedAt'],day+'T00:00:00Z')
+            self.assertEqual(value['sourceReceipt']['publicationPrecision'],'page-day')
+            for chrome in ['Menu','Subscribe','Share','Follow','Contact','Authorization','curl']:
+                self.assertNotIn(chrome,value['item']['excerpt'])
+
+    def test_new_adapters_refuse_guessed_dates_wrong_containers_and_unsafe_urls(self):
+        url='https://developers.cloudflare.com/changelog/post/2026-10-02-web-search/'
+        for page in [b'<div class="docs-content">A long article without an authoritative publication date.</div>',
+                     b'<script>{"datePublished":"2026-10-03"}</script><div class="docs-content">An article with a date contradicting its permalink.</div>',
+                     b'<script>{"datePublished":"2026-10-02"}</script><main>Navigation and unrelated text must never be evidence.</main>']:
+            with self.subTest(page=page),self.assertRaises(reader.SourceError):
+                reader.read_article(url,published_at='2026-10-06T15:00:00Z',title='Official release',topic='system',producer='sentinelle',fetcher=lambda _:page)
+        for unsafe in [url+'?redirect=1',url+'#x',url.replace('https:','http:'),url.replace('developers.cloudflare.com','developers.cloudflare.com.evil.test'),'https://docs.mistral.ai/models/example']:
+            self.assertFalse(reader.supports_source(unsafe))
+
     def test_passage_selection_does_not_drop_a_fact_crossing_the_head_boundary(self):
         prefix = 'An introduction describes the technical context. ' * 3
         important = 'Updates are available in v16.3.8 and v15.5.27 to fix the vulnerability.'

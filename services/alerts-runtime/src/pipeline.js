@@ -1,8 +1,9 @@
-import { PILOT_CONTEXT, prefilter, fail } from './context.js';
+import { PILOT_CONTEXT, prefilter, fail, AlertError } from './context.js';
 import { withDeadline } from './deadline.js';
 import {createHash} from 'node:crypto';
 import {businessParagraphs} from './business-fiche.js';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
+const unsupported=check=>{throw Object.assign(new AlertError('ALERT_FACT_UNSUPPORTED'),{validationChecks:[check]});};
 const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)/g)??[]).map(n=>{
   const s=n.replace(/[ \u00a0\u202f]/g,'').replace('−','-');
   if(/^[+\-]?[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?$/.test(s))return s.replaceAll(',','');
@@ -26,13 +27,16 @@ export function renderBrief(item,brief){
   if(brief.goal==='business'&&!brief.business_fiche)fail('ALERT_BUSINESS_FICHE_INVALID');
   if(brief.business_fiche!==undefined&&(brief.goal!=='business'||
     brief.business_fiche.probleme!==brief.facts[0]?.summary))fail('ALERT_BUSINESS_FICHE_INVALID');
-  for(const fact of brief.facts){
-    if(!text(fact.summary,350)||!text(fact.quote,600)||!item.excerpt.includes(fact.quote)||
-       numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n))||
-       factIdentifiers(fact.summary).some(id=>!hasFactIdentifier(fact.quote,id)))fail('ALERT_FACT_UNSUPPORTED');
+  for(const [index,fact] of brief.facts.entries()){
+    const prefix=`FACT_${index+1}_`;
+    if(!text(fact?.summary,350)||!text(fact?.quote,600))unsupported(prefix+'INVALID_SHAPE');
+    if(!item.excerpt.includes(fact.quote))unsupported(prefix+'QUOTE_NOT_IN_SOURCE');
+    if(numbers(fact.summary).some(n=>!numbers(fact.quote).includes(n)))unsupported(prefix+'NUMBER_NOT_IN_QUOTE');
+    if(factIdentifiers(fact.summary).some(id=>!hasFactIdentifier(fact.quote,id)))unsupported(prefix+'IDENTIFIER_NOT_IN_QUOTE');
   }
   const grounded=brief.facts.flatMap(f=>numbers(f.quote));
-  if(numbers(brief.utility+' '+brief.action).some(n=>!grounded.includes(n)))fail('ALERT_FACT_UNSUPPORTED');
+  if(numbers(brief.utility).some(n=>!grounded.includes(n)))unsupported('UTILITY_NUMBER_NOT_IN_FACT_QUOTES');
+  if(numbers(brief.action).some(n=>!grounded.includes(n)))unsupported('ACTION_NUMBER_NOT_IN_FACT_QUOTES');
   const partial=item.excerptTruncated!==false||item.excerptMode==='passages';
   const limits=[...(partial?['Lecture sur extrait partiel ; les passages omis ne sont pas vérifiés.']:[]),...(brief.uncertainty?[brief.uncertainty]:[])].join(' ');
   const paragraphs=[item.title,`${item.producer==='finance-watch'?'Relevé':'Publié'} le ${item.publishedAt.slice(0,10)}.`,...brief.facts.map(f=>`• ${f.summary}`),

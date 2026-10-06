@@ -7,13 +7,13 @@ Les réglages et les reçus sont privés, les releases sont épinglées.
 
 Diagnostic depuis le dépôt :
 `/Users/yoanpetrov/.openclaw/tools/node-v24.19.0/bin/node scripts/inspect-mac-pilot.mjs`.
-Lire la santé **et** `alerts.diagnosis`, les raisons de revue, les dernières
+Lire la santé **et** `alerts.diagnoses`, les raisons de revue, les dernières
 collectes et la dernière livraison. Un service sain sans nouvelle alerte retenue
 n'est pas une panne. Ne pas réactiver le planning Sentinelle en parallèle.
 
-Mode courant `native-editorial` : une complétion isolée décide l’utilité et rédige
-si utile, sans dépendance Jev. Deux complétions maximum par passage, même si elles
-écartent les articles. Une page illisible reste non lue ; un jugement incertain reste en revue.
+Mode courant `jev-native-editorial` : Jev sélectionne à 0,75, puis une complétion
+isolée juge l’utilité et rédige si utile. Deux complétions maximum par passage,
+même si elles écartent les articles. Une page illisible reste non lue ; un jugement incertain reste en revue.
 Les revues devenues anciennes quittent la file active sans perdre l'avis Jev.
 Le digest possède trois pages au maximum par jour : le surplus reste en attente,
 puis une expiration non envoyée est comptée. Un reçu perdu ne relance pas l'envoi.
@@ -45,6 +45,8 @@ Copie restaurée sous `/private/tmp/ivan-alert-state-restored-20261005` : 14 rev
 3 exclusions, aucune tâche réouverte ; la production n'a pas été modifiée.
 Le test automatisé inclut aussi une archive et un crash pendant l'envoi :
 la citation/le reçu sont restitués et l'envoi devient incertain sans être rejoué.
+Le catalogue transactionnel Business est inclus dans le snapshot SQLite ;
+un test vérifie que ses fiches et leurs scores absents survivent à la copie WAL.
 
 Pour restaurer, copier `alerts.sqlite` et `archive/` dans un nouveau dossier privé,
 fixer explicitement les permissions des dossiers à 0700 et des fichiers à 0600
@@ -81,3 +83,17 @@ Les tests de ces deux défauts échouaient avant correction, puis passent.
 Continuation de digest : un nouvel élément prêt après la page initiale reçoit un
 créneau p2/p3 stable, sans nouveau p1 ; aucune continuation après reçu incertain.
 La quatrième page attend le prochain digest, aucune suppression silencieuse.
+
+Lecture des annonces Mistral et du changelog Cloudflare : contenu de leur conteneur
+éditorial, sans navigation ni blocs de commandes ; date primaire vérifiée. Le jour
+du repost RSS n'est jamais utilisé pour rajeunir l'article. Les docs non datées et
+les README non épinglés restent hors périmètre.
+
+`CHECK_COLLECTION` accompagne la dernière collecte dégradée de chaque moteur,
+même si des synthèses sont prêtes. Un succès ultérieur retire cette action sans
+effacer l'historique. `latest[].errorCodes` distingue notamment rate limit, délai
+et indisponibilité HTTP ; les identifiants de flux restent dans les métriques privées.
+Les nouveaux refus de faits conservent le contrôle précis dans
+`alerts.contentRefusals.checks` : citation absente, chiffre ou identifiant absent
+de sa citation, chiffre d'utilité/action non étayé. Aucun brouillon refusé n'est
+reconstruit ; les anciens refus sans ces métadonnées restent de cause inconnue.

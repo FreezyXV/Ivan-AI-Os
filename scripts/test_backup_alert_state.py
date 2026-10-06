@@ -33,11 +33,15 @@ class BackupTests(unittest.TestCase):
         self.temp.cleanup()
 
     def test_live_wal_snapshot_keeps_receipts_and_unknown_sends_and_never_replaces(self):
+        self.live.execute('CREATE TABLE business_fiches(id TEXT PRIMARY KEY, fiche TEXT, score TEXT)')
+        self.live.execute('INSERT INTO business_fiches VALUES(?,?,?)',('opportunity','{"statut":"exploratoire"}',None))
+        self.live.commit()
         output = self.root / 'backup'
         result = module.backup(self.source, output)
         self.assertEqual(result['counts'], {'delivered': 1, 'delivery_unknown': 1})
         with sqlite3.connect(output / 'alerts.sqlite') as restored:
             self.assertEqual(restored.execute('SELECT receipt FROM alerts WHERE id="delivered"').fetchone()[0], '{"messageId":"one"}')
+            self.assertEqual(restored.execute('SELECT fiche,score FROM business_fiches').fetchone(),('{"statut":"exploratoire"}',None))
         before = (output / 'alerts.sqlite').read_bytes()
         with self.assertRaises(FileExistsError):
             module.backup(self.source, output)

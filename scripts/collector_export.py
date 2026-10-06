@@ -14,6 +14,7 @@ import signal
 from pathlib import Path
 import urllib.parse
 import urllib.request
+import urllib.error
 import xml.etree.ElementTree as ET
 
 MAX_BYTES = 800_000
@@ -133,7 +134,14 @@ def export_candidates(config, *, fetcher=fetch_feed, now=None, max_age_hours=72)
             except Exception as exc:
                 if isinstance(exc, ExportError) and str(exc)=="COLLECTION_TIMEOUT":
                     raise
-                result["errors"].append({"feedId":hashlib.sha256(str(feed).encode()).hexdigest()[:16],"code":"FEED_UNAVAILABLE"})
+                code = 'FEED_UNAVAILABLE'
+                if isinstance(exc, urllib.error.HTTPError):
+                    code = 'FEED_RATE_LIMITED' if exc.code == 429 else 'FEED_HTTP_UNAVAILABLE'
+                elif isinstance(exc, TimeoutError) or isinstance(getattr(exc, 'reason', None), TimeoutError):
+                    code = 'FEED_TIMEOUT'
+                elif isinstance(exc, ExportError) and str(exc) in {'FEED_REDIRECT_REFUSED', 'FEED_HOST_UNSUPPORTED', 'FEED_TOO_LARGE'}:
+                    code = str(exc)
+                result["errors"].append({"feedId":hashlib.sha256(str(feed).encode()).hexdigest()[:16],"code":code})
     result["items"].sort(key=lambda i:i["publishedAt"],reverse=True)
     result["items"] = result["items"][:100]
     return result

@@ -17,15 +17,18 @@ import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
 const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
-export async function collectFeeds({directory,ledger}){
+export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=ingestCandidates,officialImpl=collectOfficialRelease}){
  const temp=mkdtempSync(path.join(directory,'feed-'));
  try{
   const output=path.join(temp,'candidates.json');
-  await run('python3',[path.join(root,'scripts/collector_export.py'),'--config',path.join(root,'scripts/alert-feeds.json'),'--output',output],{timeout:125000,maxBuffer:65536});
+  await runImpl('python3',[path.join(root,'scripts/collector_export.py'),'--config',path.join(root,'scripts/alert-feeds.json'),'--output',output],{timeout:125000,maxBuffer:65536});
   const envelope=JSON.parse(readFileSync(output));
-  const result=await ingestCandidates({ledger,envelope,readLimit:8});
-  let official;try{official=await collectOfficialRelease({ledger});}catch{official={error_code:'OFFICIAL_RELEASE_UNAVAILABLE'};}
-  return {...result,official,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:envelope.errors.length+(official.error_code?1:official.errors?.length??0)};
+  const result=await ingestImpl({ledger,envelope,readLimit:8});
+  let official;try{official=await officialImpl({ledger});}catch{official={error_code:'OFFICIAL_RELEASE_UNAVAILABLE'};}
+  const sourceErrors=[...envelope.errors,...(official.errors??[]),...(official.error_code?[{code:official.error_code}]:[])].map(error=>({
+   code:/^[A-Z_]{1,64}$/.test(error?.code??'')?error.code:'FEED_UNAVAILABLE',
+   ...(/^[a-f\d]{16}$/.test(error?.feedId??'')?{feedId:error.feedId}:{})}));
+  return {...result,official,sourceErrors,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:sourceErrors.length};
  }finally{rmSync(temp,{recursive:true,force:true});}
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,

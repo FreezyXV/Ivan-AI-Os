@@ -2,6 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { summarizeAutomations, summarizeAlertCycles, inspectPilot } from './inspect-mac-pilot.mjs';
 
+test('latest failed collection is actionable beside ready work, and a later successful collection clears it',()=>{
+ const failed={name:'feeds',status:'failed',attempts:2,metrics:JSON.stringify({result:{failedFeeds:1,sourceErrors:[{code:'FEED_UNAVAILABLE',private:'PRIVATE'}]}})};
+ const r=summarizeAlertCycles({counts:[{state:'ready',n:1}],cycles:[failed]});
+ assert.ok(r.diagnoses.some(d=>d.code==='CHECK_COLLECTION'));
+ assert.equal(r.latest[0].failedFeeds,1);assert.deepEqual(r.latest[0].errorCodes,['FEED_UNAVAILABLE']);
+ assert.doesNotMatch(JSON.stringify(r),/PRIVATE/);
+ const recovered=summarizeAlertCycles({cycles:[{name:'feeds',status:'done',metrics:'{}'},failed]});
+ assert.ok(!recovered.diagnoses.some(d=>d.code==='CHECK_COLLECTION'));
+});
+test('editorial check counts expose the failing field, never a raw draft or exception',()=>{
+ const r=summarizeAlertCycles({reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:1}],rejectionChecks:[
+  {code:'FACT_1_IDENTIFIER_NOT_IN_QUOTE',n:1},{code:'PRIVATE DRAFT CONTENT',n:4}]});
+ assert.deepEqual(r.contentRefusals.checks,{FACT_1_IDENTIFIER_NOT_IN_QUOTE:1});assert.doesNotMatch(JSON.stringify(r),/PRIVATE/);
+});
+
 test('native automation inventory reveals Career activity without leaking prompts or addresses',()=>{
   const jobs=[{agentId:'ivan-career',enabled:true,payload:{kind:'agentTurn',message:'PRIVATE PROMPT'},
     delivery:{to:'PRIVATE TARGET'},state:{lastRunStatus:'error',lastError:'PRIVATE ERROR'}},
