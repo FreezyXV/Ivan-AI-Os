@@ -27,6 +27,15 @@ Raisons de revue utiles : `SOURCE_EVIDENCE_INSUFFICIENT` (rumeur courte non attr
 appel), `SOURCE_NOT_READ`, `SELECTION_UNCERTAIN`, `SELECTION_UNAVAILABLE` (Jev en panne, un seul
 nouvel essai), `SYNTHESIS_INVALID`, `NATIVE_ASSESSMENT_INVALID`.
 
+## Évaluation ou livraison
+Les rédactions d'évaluation (benchmarks, recours natifs testés) portent `deliveryMeasured: false` et
+n'entrent jamais dans la file. Une **livraison** = synthèse `ready`, puis digest, puis reçu Telegram.
+Lire, relire ou réparer une source ne rouvre jamais un envoi tenté (`delivery_unknown` reste tel quel).
+
+Attention (revue Claude du 2026-10-06) : `CHECK_EDITORIAL_REJECTIONS` passe avant `WAIT_DIGEST` et
+`PROCESS_PENDING`. Un refus encore en revue peut donc masquer des synthèses prêtes ; lire aussi
+`alerts.queue`.
+
 ## Limites concrètes au 2026-10-06
 1. **Aucun message v6 livré** (3 messages au total, v5). Six nouvelles sources mesurées :
    zéro bruit retenu mais 0/1 utile retrouvé ; essai natif sur deux abstentions non concluant.
