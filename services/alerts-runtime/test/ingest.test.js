@@ -24,6 +24,15 @@ test('reading a repost keeps the primary publication day so an old article never
  }});
  assert.equal(r.read,1);const read=ledger.get(ledger.ingest(source).id);assert.equal(read.item.publishedAt,'2026-09-20T00:00:00Z');
 });
+test('a fresh unread source remains readable after it disappears from its feed, without a second read',async t=>{
+ const ledger=fixture(t),source={...item,url:'https://mistral.ai/news/example/',publishedAt:'2026-10-05T08:00:00Z'};
+ const {id}=ledger.ingest(source),job=ledger.claim();ledger.finish(id,job.owner,{state:'review',reason:'SOURCE_NOT_READ'});
+ let calls=0;const options={ledger,envelope:{version:1,producer:'sentinelle',items:[]},now:at,readSource:async raw=>{
+  calls++;const e=evidence(raw);e.sourceReceipt.publishedDay='2026-10-05';e.sourceReceipt.extractor='public-article-v1';return e;
+ }};
+ const r=await ingestCandidates(options);assert.equal(r.read,1);assert.equal(r.backlogCandidates,1);
+ await ingestCandidates(options);assert.equal(calls,1);assert.equal(ledger.get(id).item.sourceStatus,'read');
+});
 test('RSS export is promoted only through a matching page reader and is not fetched twice',async t=>{
  const ledger=fixture(t),envelope={version:1,producer:'sentinelle',items:[item]};let calls=0;
  const readSource=async source=>{calls++;return evidence(source);};

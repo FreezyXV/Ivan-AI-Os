@@ -88,6 +88,10 @@ Lecture des annonces Mistral et du changelog Cloudflare : contenu de leur conten
 éditorial, sans navigation ni blocs de commandes ; date primaire vérifiée. Le jour
 du repost RSS n'est jamais utilisé pour rajeunir l'article. Les docs non datées et
 les README non épinglés restent hors périmètre.
+La collecte reprend aussi jusqu'à cent candidats non lus de la file durable,
+même s'ils ont disparu du flux. Ils partagent le même budget de huit lectures
+par passage et les mêmes filtres de fraîcheur/pause ; une page déjà lue, une
+synthèse refusée ou un envoi tenté n'est jamais réouvert par ce rattrapage.
 
 `CHECK_COLLECTION` accompagne la dernière collecte dégradée de chaque moteur,
 même si des synthèses sont prêtes. Un succès ultérieur retire cette action sans

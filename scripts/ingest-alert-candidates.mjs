@@ -36,9 +36,14 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
   if(envelope?.version!==1||envelope.producer!=='sentinelle'||!Array.isArray(envelope.items)||envelope.items.length>100||
      !Number.isInteger(readLimit)||readLimit<0||readLimit>8||!Number.isFinite(now))fail('ALERT_EXPORT_INVALID');
   const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[],
-    readAttempts:0,readLimitExhausted:0,unsupportedSources:0,sourceFiltered:0,readSkips:[]};
+    readAttempts:0,readLimitExhausted:0,unsupportedSources:0,sourceFiltered:0,readSkips:[],backlogCandidates:0};
   const eligible=[],seen=new Set();
-  for(const raw of envelope.items){
+  const incoming=new Set(envelope.items.map(item=>item.url));
+  // The durable queue owns candidates after discovery. A busy feed must not
+  // remove a still-fresh unread page before its reader becomes available.
+  const backlog=ledger.unreadCandidates().filter(item=>!incoming.has(item.url));
+  summary.backlogCandidates=backlog.length;
+  for(const raw of [...envelope.items,...backlog]){
     const item=validateItem(raw);
     // Feed evidence never promotes itself to a read article at this boundary.
     if(item.producer!=='sentinelle'||item.sourceStatus!=='title-only')fail('ALERT_EXPORT_INVALID');

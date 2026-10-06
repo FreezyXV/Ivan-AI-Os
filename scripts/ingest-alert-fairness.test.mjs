@@ -69,6 +69,6 @@ test('duplicate exports and previously proven pages consume no additional read s
 
 test('a missing terminal archive cannot stop a feed batch or trigger another read',async()=>{
  const item={scope:'public',producer:'sentinelle',topic:'system',url:'https://simonwillison.net/2026/Oct/5/proof/',title:'Une annonce déjà livrée',publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',sourceStatus:'title-only',excerpt:''};
- const result=await ingestCandidates({ledger:{ingest:()=>({id:'known',duplicate:true,state:'delivered'}),get:()=>assert.fail('terminal archive must never be loaded by the collector')},envelope:{version:1,producer:'sentinelle',items:[item]},readSource:async()=>assert.fail(),now:Date.parse('2026-10-05T10:00:00Z')});
+ const result=await ingestCandidates({ledger:{unreadCandidates:()=>[],ingest:()=>({id:'known',duplicate:true,state:'delivered'}),get:()=>assert.fail('terminal archive must never be loaded by the collector')},envelope:{version:1,producer:'sentinelle',items:[item]},readSource:async()=>assert.fail(),now:Date.parse('2026-10-05T10:00:00Z')});
  assert.equal(result.duplicates,1);assert.equal(result.readAttempts,0);
 });

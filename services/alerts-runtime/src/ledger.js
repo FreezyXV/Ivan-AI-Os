@@ -63,6 +63,9 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
   for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all())remember(evidenceKeys(JSON.parse(row.item)),row.id);
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
+    unreadCandidates(limit=100){if(!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_RESULT_INVALID');
+      return db.prepare("SELECT item FROM alerts WHERE archive IS NULL AND (state='pending' OR (state='review' AND reason='SOURCE_NOT_READ')) AND json_extract(item,'$.producer')='sentinelle' AND json_extract(item,'$.sourceStatus')='title-only' ORDER BY json_extract(item,'$.publishedAt') DESC,id LIMIT ?").all(limit).map(r=>JSON.parse(r.item));
+    },
     ingest(raw){const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');return tx(()=>{
       // A tombstone suffices to suppress a replay, even if an archive disk is
       // temporarily unavailable. Never reopen a delivered source to reconstruct it.
