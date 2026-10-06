@@ -49,9 +49,22 @@ const writes = segment => /(?:^|[^>2&])>{1,2}\s*(?!\/dev\/null|&)\S/.test(segmen
 // Quoted prose and heredoc bodies are data (commit messages, issue bodies, notes) unless a shell
 // or language interpreter would execute them; then the whole text is scanned.
 const INTERPRETER = /(?:^|[\s;&|(])(?:(?:ba|z|da|k)?sh|eval|xargs|ssh|source|exec|(?:python3?|node|perl|ruby)\s+-[ce])\b/;
+// Quoted text is data, except what the shell executes inside double quotes: $(...) and `...`.
+// The interpreter test runs on this stripped form (executed position only): "bash" inside a PR
+// body or a commit message no longer counts, while `bash -c '…'`, `node -e "…"`, `eval`, a heredoc
+// fed to a shell or a substitution keep the whole text scanned (Codex review f4aba0b).
+function stripData(command) {
+  return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC")
+    .replace(/'[^']*'|"((?:\\.|[^"\\])*)"/g, (whole, dq) => {
+      if (dq === undefined) return "''";
+      const executed = dq.match(/\$\([^)]*\)|`[^`]*`/g);
+      return executed ? `'' ${executed.join(" ")}` : "''";
+    });
+}
 export function commandWords(command) {
-  if (INTERPRETER.test(command)) return command;
-  return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC").replace(/'[^']*'|"(?:\\.|[^"\\])*"/g, "''");
+  const stripped = stripData(command);
+  if (INTERPRETER.test(stripped)) return command;
+  return stripped;
 }
 
 export function classifyCommand(command) {
