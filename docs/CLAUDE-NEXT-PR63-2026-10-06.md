@@ -9,7 +9,18 @@ fetch puis isoler agent/claude/pilot-final-review depuis
 origin/agent/codex/alerts-integration sans toucher aux fichiers locaux modifiés.
 Pas de stash/reset/clean. Codex reste propriétaire du runtime et des lecteurs.
 
-1. Corriger un défaut d'import reproduit pendant la restauration sur copie :
+1. Corriger le faux positif de hooks/claude/rules.mjs, reproduit par Codex :
+   INTERPRETER reconnaît « bash » dans un argument cité de gh pr create ou git
+   commit. commandWords conserve alors le texte intégral et les règles refusent
+   une description de commande comme si elle était exécutée. Voir la preuve dans
+   REVIEW-CODEX-HOOK-PROSE-2026-10-06.md. Détecter l'interpréteur en position
+   exécutée, sans simplement supprimer toutes les chaînes citées : bash -c,
+   eval, node -e, les substitutions et les heredocs exécutés doivent rester
+   analysés. Tester d'abord les corps de PR et messages de commit fautivement
+   refusés, puis les commandes exécutées et les cas ambigus. Une commande inconnue
+   reste evaluer. Ne pas désactiver de règle ni modifier la configuration live.
+
+2. Corriger un défaut d'import reproduit pendant la restauration sur copie :
    l'entrée CLI de skills/jev-decision/scripts/classify.mjs appelle realpathSync
    sur process.argv[1], qui vaut « - » avec node --input-type=module -.
    Importer le module fait ENOENT avant toute opération. Écrire d'abord un test
@@ -17,20 +28,22 @@ Pas de stash/reset/clean. Codex reste propriétaire du runtime et des lecteurs.
    L'import ne doit lancer aucun réseau, modèle ou fichier d'entrée CLI. Conserver
    l'usage normal en fichier et la provenance ; petit correctif dans skills/.
 
-2. Relire les changements Codex ciblés, pas une nouvelle revue générale : reprise
+3. Relire les changements Codex ciblés, pas une nouvelle revue générale : reprise
    des candidats après disparition RSS, date primaire des deux nouveaux lecteurs,
    codes des refus, persistance des avertissements Business. Rapporter seulement
    un défaut reproduit ou un avis sur ces critères, avec les SHA exacts. Vérifier
    la version éditoriale v3-business-market ; pas de jugement de sortie nouvelle
    tant qu'aucun vrai message de cette version n'a été produit.
 
-3. Préparer la contre-revue de clôture K09/K10 : séparer vérifié, limité, différé.
+4. Préparer la contre-revue de clôture K09/K10 : séparer vérifié, limité, différé.
    B03 est insuffisant, même s'il a été livré ; aucun test historique ne valide
    l'utilité quotidienne. Ne pas présenter création/push d'un dépôt comme date
    d'un README. Ne pas fusionner les chiffres divergents Mistral. Knowledge/Anakalypto
    reste la dernière étape commune ; Career et OVH restent différés.
 
-Livrer code/tests limités à skills/ et note docs/REVIEW-CLAUDE-PILOT-FINAL.md.
+Livrer code/tests limités à skills/, hooks/claude/rules.mjs et ses tests,
+avec la note docs/REVIEW-CLAUDE-PILOT-FINAL.md. Le correctif du hook ne change
+ni les limites d'autorisation ni son mode ; son installation reste coordonnée.
 Commit/push et PR brouillon vers la branche Codex, sans fusion ni activation,
 sans modifier sa file, ses réglages ou son worktree. Aucune nouvelle sollicitation
 d'Ivan pour les opérations autonomes déjà autorisées. Codex prend les corrections

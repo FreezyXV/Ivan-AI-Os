@@ -44,6 +44,10 @@ mac-alerts-0066e49, mac-alerts-d35963e sous ~/.ivan-ai-os/. Dernier lot Claude c
 préparé dans CLAUDE-NEXT-PR63-2026-10-06.md, pas envoyé comme message extérieur.
 Défaut d'import stdin dans son skill classify.mjs laissé à son périmètre ; la
 restauration a été vérifiée avec un fichier mjs, sans masquer l'erreur initiale.
+Nouveau constat confirmé sans réseau : le hook Claude interprète « bash » dans
+un corps de PR ou message de commit cité comme du code exécuté. Preuve dans
+REVIEW-CODEX-HOOK-PROSE-2026-10-06.md ; correctif et tests ajoutés à son lot ciblé.
+Le hook live et ses règles d'autorisation ne sont pas modifiés par cette revue.
 
 Reste Codex : couverture de sources utile (19 non lues), cas de refus futurs
 précis, qualité d'une vraie synthèse actuelle/fiche Business, coût natif si
