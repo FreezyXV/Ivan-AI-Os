@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { summarizeAutomations, summarizeAlertCycles, inspectPilot } from './inspect-mac-pilot.mjs';
 
+test('persisted reader failures remain visible after a successful cycle without hiding ready syntheses',()=>{
+ const r=summarizeAlertCycles({counts:[{state:'ready',n:1}],cycles:[{name:'feeds',status:'done',metrics:'{}'}],
+  sourceReadFailures:[{code:'PUBLIC_SOURCE_TOO_LARGE',n:2,private:'PRIVATE'}, {code:'PRIVATE RAW TEXT',n:1}]});
+ assert.deepEqual(r.sourceReadFailures,{total:2,codes:{PUBLIC_SOURCE_TOO_LARGE:2}});
+ assert.ok(r.diagnoses.some(d=>d.code==='CHECK_SOURCE_READS'));
+ assert.ok(r.diagnoses.some(d=>d.code==='WAIT_DIGEST'));assert.doesNotMatch(JSON.stringify(r),/PRIVATE/);
+});
+
 test('latest failed collection is actionable beside ready work, and a later successful collection clears it',()=>{
  const failed={name:'feeds',status:'failed',attempts:2,metrics:JSON.stringify({result:{failedFeeds:1,sourceErrors:[{code:'FEED_UNAVAILABLE',private:'PRIVATE'}]}})};
  const r=summarizeAlertCycles({counts:[{state:'ready',n:1}],cycles:[failed]});

@@ -9,6 +9,9 @@ import {validateBusinessFiche} from './business-fiche.js';
 // SQLite owns transaction locks: process crashes cannot leave an application
 // lock file blocking all producers. Provider calls occur outside transactions.
 const terminal="'delivered','skipped','expired_unsent'";
+const structuralReadFailures=new Set(['PUBLIC_SOURCE_TOO_LARGE','PUBLIC_SOURCE_DATE_UNVERIFIED',
+  'PUBLIC_SOURCE_DATE_INVALID','PUBLIC_SOURCE_CONTENT_UNAVAILABLE','PUBLIC_SOURCE_INPUT_INVALID',
+  'PUBLIC_SOURCE_REDIRECT_REFUSED','PUBLIC_SOURCE_UNSUPPORTED','ALERT_SOURCE_EVIDENCE_INVALID']);
 const fingerprint=item=>item.sourceStatus==='read'?createHash('sha256').update(JSON.stringify([
   item.topic,item.publishedAt.slice(0,10),item.title.normalize('NFKC').replace(/\s+/g,' ').trim(),
   item.excerpt])).digest('hex'):null;
@@ -41,7 +44,9 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     CREATE TABLE IF NOT EXISTS evidence_revisions(id TEXT NOT NULL,revision TEXT NOT NULL,item TEXT NOT NULL,
       brief TEXT,reason TEXT,updated INTEGER NOT NULL,PRIMARY KEY(id,revision));
     CREATE TABLE IF NOT EXISTS evidence_keys(key TEXT PRIMARY KEY,id TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS business_fiches(id TEXT PRIMARY KEY,fiche TEXT NOT NULL,score TEXT,created INTEGER NOT NULL);`);
+    CREATE TABLE IF NOT EXISTS business_fiches(id TEXT PRIMARY KEY,fiche TEXT NOT NULL,score TEXT,created INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS source_read_failures(id TEXT PRIMARY KEY,revision TEXT NOT NULL,
+      code TEXT NOT NULL,attempts INTEGER NOT NULL,updated INTEGER NOT NULL,next_attempt INTEGER);`);
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='retries'))db.exec('ALTER TABLE alerts ADD COLUMN retries INTEGER NOT NULL DEFAULT 0');
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='archive'))db.exec('ALTER TABLE alerts ADD COLUMN archive TEXT');
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
@@ -63,8 +68,44 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
   for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all())remember(evidenceKeys(JSON.parse(row.item)),row.id);
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
-    unreadCandidates(limit=100){if(!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_RESULT_INVALID');
-      return db.prepare("SELECT item FROM alerts WHERE archive IS NULL AND (state='pending' OR (state='review' AND reason='SOURCE_NOT_READ')) AND json_extract(item,'$.producer')='sentinelle' AND json_extract(item,'$.sourceStatus')='title-only' ORDER BY json_extract(item,'$.publishedAt') DESC,id LIMIT ?").all(limit).map(r=>JSON.parse(r.item));
+    sourceReadStatus(id,{revision,at=now()}={}){
+      if(!/^[a-f\d]{64}$/.test(revision??'')||!Number.isSafeInteger(at))fail('ALERT_READER_RETRY_INVALID');
+      const row=db.prepare('SELECT * FROM source_read_failures WHERE id=? AND revision=?').get(id,revision);
+      if(!row)return {allowed:true};
+      if(row.next_attempt===null)return {allowed:false,reason:'SOURCE_READER_BLOCKED',code:row.code};
+      if(row.attempts>=3)return {allowed:false,reason:'SOURCE_READER_RETRIES_EXHAUSTED',code:row.code};
+      return row.next_attempt>at?{allowed:false,reason:'SOURCE_READER_RETRY_PENDING',code:row.code}:{allowed:true};
+    },
+    recordSourceReadFailure(id,{revision,code,at=now()}={}){
+      if(!/^[a-f\d]{64}$/.test(revision??'')||!Number.isSafeInteger(at)||
+         !/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(code??''))fail('ALERT_READER_RETRY_INVALID');
+      return tx(()=>{
+        const row=db.prepare('SELECT state,item,reason FROM alerts WHERE id=?').get(id);
+        if(!row||JSON.parse(row.item).sourceStatus==='read'||
+           !(row.state==='pending'||(row.state==='review'&&row.reason==='SOURCE_NOT_READ')))return false;
+        const prior=db.prepare('SELECT attempts FROM source_read_failures WHERE id=? AND revision=?').get(id,revision);
+        const attempts=(prior?.attempts??0)+1;
+        const next=structuralReadFailures.has(code)?null:at+(attempts===1?1800000:7200000);
+        db.prepare(`INSERT INTO source_read_failures VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET
+          revision=excluded.revision,code=excluded.code,attempts=excluded.attempts,
+          updated=excluded.updated,next_attempt=excluded.next_attempt`).run(id,revision,code,attempts,at,next);
+        return true;
+      });
+    },
+    sourceReadFailures(){return db.prepare(`SELECT f.code,count(*) AS n FROM source_read_failures f
+      JOIN alerts a ON a.id=f.id WHERE a.archive IS NULL AND
+      (a.state='pending' OR (a.state='review' AND a.reason='SOURCE_NOT_READ'))
+      AND json_extract(a.item,'$.sourceStatus')='title-only' GROUP BY f.code`).all();},
+    unreadCandidates(limit=100,{revision,at=now()}={}){
+      if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isSafeInteger(at)||
+         (revision!==undefined&&!/^[a-f\d]{64}$/.test(revision)))fail('ALERT_RESULT_INVALID');
+      // Apply the retry gate BEFORE LIMIT; blocked rows cannot hide an eligible older page.
+      return db.prepare(`SELECT a.item FROM alerts a LEFT JOIN source_read_failures f ON f.id=a.id
+        WHERE a.archive IS NULL AND (a.state='pending' OR (a.state='review' AND a.reason='SOURCE_NOT_READ'))
+        AND json_extract(a.item,'$.producer')='sentinelle' AND json_extract(a.item,'$.sourceStatus')='title-only'
+        AND (? IS NULL OR f.id IS NULL OR f.revision<>? OR (f.next_attempt<=? AND f.attempts<3))
+        ORDER BY json_extract(a.item,'$.publishedAt') DESC,a.id LIMIT ?`)
+        .all(revision??null,revision??null,at,limit).map(r=>JSON.parse(r.item));
     },
     ingest(raw){const item=validateItem(raw),id=createHash('sha256').update(item.url).digest('hex');return tx(()=>{
       // A tombstone suffices to suppress a replay, even if an archive disk is
@@ -76,6 +117,7 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         // Never alter a lease, an evaluated read source or an attempted send.
         if(prior.item.sourceStatus!=='read'&&item.sourceStatus==='read'&&
            (prior.state==='pending'||(prior.state==='review'&&prior.reason==='SOURCE_NOT_READ'))){
+          db.prepare('DELETE FROM source_read_failures WHERE id=?').run(id);
           const keys=evidenceKeys(item),equivalent=equivalentOf(keys);
           if(equivalent&&equivalent.id!==id){
             db.prepare("UPDATE alerts SET item=?,state='skipped',reason='DUPLICATE_EVIDENCE',brief=?,updated=? WHERE id=?")

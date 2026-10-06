@@ -2,6 +2,7 @@ import { readFileSync, realpathSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { openLedger } from '../services/alerts-runtime/src/ledger.js';
 import { validateItem, prefilter, fail, PILOT_CONTEXT } from '../services/alerts-runtime/src/context.js';
 import { withDeadline } from '../services/alerts-runtime/src/deadline.js';
@@ -9,6 +10,9 @@ import { createJevSelector } from '../services/alerts-runtime/src/jev-selector.j
 import { processNext } from '../services/alerts-runtime/src/pipeline.js';
 const run=promisify(execFile);
 const reader=fileURLToPath(new URL('./read-public-alert.py',import.meta.url));
+// Reader/validation changes allow a new bounded attempt; unrelated deployments do not.
+export const PUBLIC_READER_REVISION=createHash('sha256').update(readFileSync(reader))
+  .update(readFileSync(fileURLToPath(import.meta.url))).digest('hex');
 export async function readPublicSource(item,{signal}={}){
   try{
     const {stdout}=await run('python3',[reader,item.url,'--topic',item.topic,'--producer',item.producer,
@@ -32,16 +36,18 @@ export function supportsPublicSource(url){
     (u.hostname==='www.ecb.europa.eu'&&/^\/{1,2}press\//.test(u.pathname)&&u.pathname.endsWith('.html')&&!u.search)||
     (u.hostname==='news.ycombinator.com'&&u.pathname==='/item'&&/^\?id=\d{1,12}$/.test(u.search));
 }
-export async function ingestCandidates({ledger,envelope,readSource=readPublicSource,readLimit=3,now=Date.now()}){
+export async function ingestCandidates({ledger,envelope,readSource=readPublicSource,readLimit=3,
+ readerRevision=PUBLIC_READER_REVISION,now=Date.now()}){
   if(envelope?.version!==1||envelope.producer!=='sentinelle'||!Array.isArray(envelope.items)||envelope.items.length>100||
-     !Number.isInteger(readLimit)||readLimit<0||readLimit>8||!Number.isFinite(now))fail('ALERT_EXPORT_INVALID');
+     !Number.isInteger(readLimit)||readLimit<0||readLimit>8||!Number.isSafeInteger(now)||
+     !/^[a-f\d]{64}$/.test(readerRevision))fail('ALERT_EXPORT_INVALID');
   const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[],
-    readAttempts:0,readLimitExhausted:0,unsupportedSources:0,sourceFiltered:0,readSkips:[],backlogCandidates:0};
+    readAttempts:0,readLimitExhausted:0,readDeferred:0,unsupportedSources:0,sourceFiltered:0,readSkips:[],backlogCandidates:0};
   const eligible=[],seen=new Set();
   const incoming=new Set(envelope.items.map(item=>item.url));
   // The durable queue owns candidates after discovery. A busy feed must not
   // remove a still-fresh unread page before its reader becomes available.
-  const backlog=ledger.unreadCandidates().filter(item=>!incoming.has(item.url));
+  const backlog=ledger.unreadCandidates(100,{revision:readerRevision,at:now}).filter(item=>!incoming.has(item.url));
   summary.backlogCandidates=backlog.length;
   for(const raw of [...envelope.items,...backlog]){
     const item=validateItem(raw);
@@ -62,6 +68,9 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
     if(!supportsPublicSource(item.url)){
       summary.unread++;summary.unsupportedSources++;summary.readSkips.push({id:row.id,reason:'PUBLIC_SOURCE_UNSUPPORTED'});continue;
     }
+    const retry=ledger.sourceReadStatus(row.id,{revision:readerRevision,at:now});
+    if(!retry.allowed){summary.unread++;summary.readDeferred++;
+      summary.readSkips.push({id:row.id,reason:retry.reason,code:retry.code});continue;}
     eligible.push({item,row,index:eligible.length});
   }
   // Reserve one source per active category present, then spend the remaining budget
@@ -86,8 +95,11 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
          !Number.isSafeInteger(receipt.bodyBytes)||receipt.bodyBytes<20||receipt.bodyBytes>400000)fail('ALERT_SOURCE_EVIDENCE_INVALID');
       const update=ledger.ingest(read);
       if(update.evidenceUpdated){summary.evidenceUpdated++;summary.read++;summary.sourceReceipts.push({id:row.id,...receipt});}
-    }catch(error){summary.readerErrors++;summary.unread++;summary.readerFailures.push({id:row.id,
-      code:/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(error.code??'')?error.code:'PUBLIC_SOURCE_UNAVAILABLE'});}
+    }catch(error){
+      const code=/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(error.code??'')?error.code:'PUBLIC_SOURCE_UNAVAILABLE';
+      ledger.recordSourceReadFailure(row.id,{revision:readerRevision,code,at:now});
+      summary.readerErrors++;summary.unread++;summary.readerFailures.push({id:row.id,code});
+    }
   }
   return summary;
 }

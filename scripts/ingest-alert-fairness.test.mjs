@@ -41,7 +41,7 @@ test('failed reads still consume the hard global budget; zero and oversize budge
  assert.equal(calls,8);assert.equal(result.readerErrors,8);assert.equal(result.readLimitExhausted,7);assert.equal(result.unread,15);
  assert.ok(!JSON.stringify(result).includes('private transport detail'));
  const zero=await ingestCandidates({ledger,envelope:envelope(crowded()),readLimit:0,now,readSource});
- assert.equal(calls,8);assert.equal(zero.readLimitExhausted,15);
+ assert.equal(calls,8);assert.equal(zero.readLimitExhausted,7);assert.equal(zero.readDeferred,8);
  await assert.rejects(ingestCandidates({ledger,envelope:envelope(crowded()),readLimit:9,now,readSource}),{code:'ALERT_EXPORT_INVALID'});
  assert.equal(calls,8);
 });
@@ -71,4 +71,56 @@ test('a missing terminal archive cannot stop a feed batch or trigger another rea
  const item={scope:'public',producer:'sentinelle',topic:'system',url:'https://simonwillison.net/2026/Oct/5/proof/',title:'Une annonce déjà livrée',publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',sourceStatus:'title-only',excerpt:''};
  const result=await ingestCandidates({ledger:{unreadCandidates:()=>[],ingest:()=>({id:'known',duplicate:true,state:'delivered'}),get:()=>assert.fail('terminal archive must never be loaded by the collector')},envelope:{version:1,producer:'sentinelle',items:[item]},readSource:async()=>assert.fail(),now:Date.parse('2026-10-05T10:00:00Z')});
  assert.equal(result.duplicates,1);assert.equal(result.readAttempts,0);
+});
+
+test('structural failures survive restart and free the next cycle for another source',async t=>{
+ const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-reader-restart-'));
+ let ledger=openLedger(path.join(dir,'alerts.sqlite'));
+ t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});
+ const seen=[],items=[source(0),source(1),source(2)];
+ const readSource=async item=>{seen.push(item.title);if(item.url!==items[2].url)
+  throw Object.assign(Error('private body'),{code:'PUBLIC_SOURCE_TOO_LARGE'});return evidence(item);};
+ await ingestCandidates({ledger,envelope:envelope(items),readLimit:2,now,readSource});
+ ledger.close();ledger=openLedger(path.join(dir,'alerts.sqlite'));
+ const second=await ingestCandidates({ledger,envelope:envelope([]),readLimit:2,now:now+1000,readSource});
+ assert.deepEqual(seen,items.map(i=>i.title));
+ assert.equal(second.read,1);assert.equal(second.readAttempts,1);
+ const third=await ingestCandidates({ledger,envelope:envelope(items),readLimit:2,now:now+2000,readSource});
+ assert.equal(third.readAttempts,0);assert.equal(third.readDeferred,2);
+ assert.ok(!JSON.stringify(third).includes('private body'));
+});
+
+test('transient reader failures cool down, stop after three attempts and reset only for a new reader revision',async t=>{
+ const ledger=fixture(t),items=[source(0)];let calls=0;
+ const options={ledger,envelope:envelope(items),readLimit:1,readerRevision:'a'.repeat(64),
+  readSource:async()=>{calls++;throw Object.assign(Error('private network detail'),{code:'PUBLIC_SOURCE_TIMEOUT'});}};
+ for(const at of [now,now+1000,now+1800000,now+1800001,now+9000000,now+90000000])
+  await ingestCandidates({...options,now:at});
+ assert.equal(calls,3);
+ await ingestCandidates({...options,now:now+90000001,readerRevision:'b'.repeat(64)});
+ assert.equal(calls,4);
+});
+
+test('a changed reader revision retries structural failures without reopening delivered evidence',async t=>{
+ const ledger=fixture(t),items=[source(0)];let calls=0;
+ const options={ledger,envelope:envelope(items),readLimit:1,now,readerRevision:'a'.repeat(64),
+  readSource:async item=>{calls++;if(calls===1)throw Object.assign(Error(),{code:'PUBLIC_SOURCE_DATE_UNVERIFIED'});return evidence(item);}};
+ await ingestCandidates(options);
+ await ingestCandidates(options);assert.equal(calls,1);
+ await ingestCandidates({...options,readerRevision:'b'.repeat(64)});assert.equal(calls,2);
+ await ingestCandidates({...options,readerRevision:'c'.repeat(64)});assert.equal(calls,2);
+ assert.deepEqual(ledger.sourceReadFailures(),[]);
+});
+
+test('a hundred blocked pages cannot hide an older readable page behind the backlog limit',async t=>{
+ const ledger=fixture(t),revision='a'.repeat(64),items=Array.from({length:101},(_,i)=>
+  ({...source(i),publishedAt:new Date(now-(i+1)*600000).toISOString()}));
+ for(const item of items.slice(0,100)){
+  const {id}=ledger.ingest(item);
+  ledger.recordSourceReadFailure(id,{revision,code:'PUBLIC_SOURCE_TOO_LARGE',at:now});
+ }
+ ledger.ingest(items[100]);let seen;
+ const result=await ingestCandidates({ledger,envelope:envelope([]),readerRevision:revision,readLimit:1,now,
+  readSource:async item=>{seen=item.url;return evidence(item);}});
+ assert.equal(seen,items[100].url);assert.equal(result.read,1);
 });

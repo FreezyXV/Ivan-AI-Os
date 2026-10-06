@@ -12,9 +12,11 @@ const run = promisify(execFile);
 const knownAgents = new Set(['main','ivan-business','ivan-finance','ivan-engineering','ivan-system','ivan-knowledge','ivan-career']);
 const knownStatuses = new Set(['ok','error','skipped']);
 
-export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejectionChecks=[],delivery=null,sourceCommit,selectionMode}){
+export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejectionChecks=[],sourceReadFailures=[],delivery=null,sourceCommit,selectionMode}){
  const queue=Object.fromEntries(counts.filter(r=>['pending','processing','review','ready','sending','delivered','skipped','delivery_unknown','expired_unsent'].includes(r.state)&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.state,r.n]));
  const reasons=Object.fromEntries(reviewReasons.filter(r=>/^[A-Z_]{1,64}$/.test(r.reason??'')&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.reason,r.n]));
+ const readerCodes=Object.fromEntries(sourceReadFailures.filter(r=>/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(r.code??'')&&Number.isSafeInteger(r.n)&&r.n>0).map(r=>[r.code,r.n]));
+ const persistentReads={total:Object.values(readerCodes).reduce((sum,n)=>sum+n,0),codes:readerCodes};
  const latest=cycles.filter(r=>['feeds','finance','business','process','digest'].includes(r.name)).map(r=>{
   let m;try{m=JSON.parse(r.metrics??'{}');}catch{m={};}
   const result=m.result??{};const sourceErrors=result.sourceErrors?.length??0;
@@ -40,6 +42,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  add((queue.delivery_unknown??0)+(queue.sending??0)>0,'CHECK_DELIVERY_RECEIPT','Envoi incertain : vérifier son reçu avant tout nouvel envoi.');
  const currentCollections=['feeds','finance','business'].map(name=>latest.find(r=>r.name===name)).filter(Boolean);
  add(currentCollections.some(r=>r.status==='failed'||r.degraded),'CHECK_COLLECTION','Une collecte est dégradée : consulter ses codes de source et vérifier sa reprise au prochain créneau.');
+ add(persistentReads.total>0,'CHECK_SOURCE_READS','Des lectures attendent un nouvel essai ou un correctif du lecteur : consulter les codes persistés ; les autres sources continuent.');
  add(contentRefusals.total>0,'CHECK_EDITORIAL_REJECTIONS','Des contenus ont été refusés : vérifier leurs citations et la phase de validation avant une correction ciblée.');
  add(queue.ready>0,'WAIT_DIGEST','Synthèses prêtes pour le prochain digest.');
  add((queue.pending??0)+(queue.processing??0)>0,'PROCESS_PENDING','Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.');
@@ -49,7 +52,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  if(!diagnoses.length)diagnoses.push({code:'NO_SELECTED_NEWS',message:'Aucune nouvelle synthèse retenue ; ce silence ne prouve pas une panne.'});
  const diagnosis=diagnoses[0];
  return {sourceCommit:/^[a-f\d]{40}$/.test(sourceCommit??'')?sourceCommit:undefined,
-  selectionMode:['jev','native-editorial','jev-native-editorial'].includes(selectionMode)?selectionMode:undefined,queue,reviewReasons:reasons,contentRefusals,diagnosis,diagnoses,latest,
+  selectionMode:['jev','native-editorial','jev-native-editorial'].includes(selectionMode)?selectionMode:undefined,queue,reviewReasons:reasons,sourceReadFailures:persistentReads,contentRefusals,diagnosis,diagnoses,latest,
   lastDelivery:delivery?{at:delivery.updated,messageId:delivery.messageId}:null,prose_usage_available:false};
 }
 async function inspectAlertCycles(){
@@ -65,7 +68,12 @@ async function inspectAlertCycles(){
   const cycles=db.prepare('SELECT name,status,attempts,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all();
   const last=db.prepare("SELECT updated,receipt FROM alerts WHERE state='delivered' ORDER BY updated DESC LIMIT 1").get();
   const delivery=last?{updated:last.updated,messageId:JSON.parse(last.receipt).messageId}:null;
-  const summary=summarizeAlertCycles({counts,cycles,reviewReasons,rejectionChecks,delivery,sourceCommit:settings.sourceCommit,selectionMode:settings.selectionMode??'jev'});
+  const hasReaderFailures=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='source_read_failures'").get();
+  const sourceReadFailures=hasReaderFailures?db.prepare(`SELECT f.code,count(*) AS n FROM source_read_failures f
+    JOIN alerts a ON a.id=f.id WHERE a.archive IS NULL AND
+    (a.state='pending' OR (a.state='review' AND a.reason='SOURCE_NOT_READ'))
+    AND json_extract(a.item,'$.sourceStatus')='title-only' GROUP BY f.code`).all():[];
+  const summary=summarizeAlertCycles({counts,cycles,reviewReasons,rejectionChecks,sourceReadFailures,delivery,sourceCommit:settings.sourceCommit,selectionMode:settings.selectionMode??'jev'});
   const hasBusiness=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='business_fiches'").get();
   if(hasBusiness){const b=db.prepare('SELECT count(*) AS fiches,sum(score IS NOT NULL) AS scored FROM business_fiches').get();
    summary.business={available:true,validatedFiches:b.fiches,scoredFiches:b.scored??0};
