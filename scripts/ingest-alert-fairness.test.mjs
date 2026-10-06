@@ -5,6 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import {openLedger} from '../services/alerts-runtime/src/ledger.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
+import {DatabaseSync} from 'node:sqlite';
+import {createHash} from 'node:crypto';
+import {canonicalUrl} from '../services/alerts-runtime/src/context.js';
 const now=Date.parse('2026-10-05T12:00:00Z');
 function source(index,topic='engineering'){
  return {producer:'sentinelle',scope:'public',topic,sourceStatus:'title-only',url:`https://nextjs.org/blog/source-${index}`,
@@ -67,9 +70,58 @@ test('duplicate exports and previously proven pages consume no additional read s
  assert.equal(seen.length,3);assert.equal(second.readAttempts,0);assert.equal(second.unread,0);assert.equal(second.duplicates,4);
 });
 
+test('Next HTML receipts accept 600KB only on Next while other hosts keep their 400KB ceiling',async t=>{
+ for(const [url,bytes,expected] of [['https://nextjs.org/blog/large',498948,1],
+  ['https://nextjs.org/blog/huge',600001,0],['https://huggingface.co/blog/large',498948,0]]){
+  const ledger=fixture(t),item={...source(0),url};
+  const result=await ingestCandidates({ledger,envelope:envelope([item]),now,
+   readSource:async item=>({...evidence(item),sourceReceipt:{...evidence(item).sourceReceipt,bodyBytes:bytes}})});
+  assert.equal(result.read,expected,url);assert.equal(result.readerErrors,1-expected,url);
+ }
+});
+
+test('Mistral slash aliases reuse the same proven source without another read',async t=>{
+ const ledger=fixture(t),item={...source(0),url:'https://mistral.ai/news/mistral-large-4/'};
+ const first=ledger.ingest(evidence(item).item);
+ const result=await ingestCandidates({ledger,envelope:envelope([item,{...item,url:item.url+'/'},{...item,url:item.url.slice(0,-1)}]),now,
+  readSource:async()=>assert.fail('already read announcement')});
+ assert.equal(result.readAttempts,0);assert.equal(result.duplicates,3);
+ assert.equal(ledger.get(first.id).item.url,item.url);
+});
+
+test('legacy unread aliases are retired without changing proven sources or attempted deliveries',t=>{
+ const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-legacy-alias-')),filename=path.join(dir,'alerts.sqlite');
+ let ledger=openLedger(filename);t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});
+ const canonical={...source(0),url:'https://mistral.ai/news/mistral-large-4/'};
+ const target=ledger.ingest(evidence(canonical).item);
+ const ready=ledger.claim();ledger.finish(ready.id,ready.owner,{state:'ready',reason:'QUALIFIED',brief:{message:'A verified message.'}});
+ const sending=ledger.beginDelivery(target.id);
+ ledger.finishDelivery(target.id,sending.owner,{delivered:true,messageId:'proof-1'});
+ const before=ledger.get(target.id);ledger.close();
+ const db=new DatabaseSync(filename),aliases=[];
+ // These identities were written before URL canonicalization existed.
+ for(const [url,status,state,topic] of [[canonical.url+'/','title-only','review','engineering'],
+  [canonical.url+'//','read','review','engineering'],[canonical.url+'///','title-only','sending','engineering'],
+  [canonical.url+'////','title-only','review','career']]){
+  const item={...canonical,url,topic,sourceStatus:status,...(status==='read'?{readAt:canonical.observedAt}:{})};
+  const id=createHash('sha256').update(url).digest('hex');aliases.push(id);
+  db.prepare('INSERT INTO alerts(id,url,item,state,created,updated,reason) VALUES(?,?,?,?,?,?,?)')
+   .run(id,url,JSON.stringify(item),state,now,now,'SOURCE_NOT_READ');
+ }
+ db.close();ledger=openLedger(filename);
+ assert.equal(ledger.resolveUnreadAliases(),1);assert.equal(ledger.resolveUnreadAliases(),0);
+ assert.deepEqual(ledger.get(target.id),before);
+ assert.equal(ledger.get(aliases[0]).reason,'DUPLICATE_SOURCE_URL');
+ assert.equal(ledger.get(aliases[0]).brief.duplicateOf,target.id);
+ assert.equal(ledger.get(aliases[1]).state,'review');assert.equal(ledger.get(aliases[2]).state,'sending');
+ assert.equal(ledger.get(aliases[3]).state,'review');
+ assert.equal(canonicalUrl('https://example.org/resource//'),'https://example.org/resource//');
+ assert.equal(canonicalUrl('https://mistral.ai/docs/example//'),'https://mistral.ai/docs/example//');
+});
+
 test('a missing terminal archive cannot stop a feed batch or trigger another read',async()=>{
  const item={scope:'public',producer:'sentinelle',topic:'system',url:'https://simonwillison.net/2026/Oct/5/proof/',title:'Une annonce déjà livrée',publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',sourceStatus:'title-only',excerpt:''};
- const result=await ingestCandidates({ledger:{unreadCandidates:()=>[],ingest:()=>({id:'known',duplicate:true,state:'delivered'}),get:()=>assert.fail('terminal archive must never be loaded by the collector')},envelope:{version:1,producer:'sentinelle',items:[item]},readSource:async()=>assert.fail(),now:Date.parse('2026-10-05T10:00:00Z')});
+ const result=await ingestCandidates({ledger:{resolveUnreadAliases:()=>0,unreadCandidates:()=>[],ingest:()=>({id:'known',duplicate:true,state:'delivered'}),get:()=>assert.fail('terminal archive must never be loaded by the collector')},envelope:{version:1,producer:'sentinelle',items:[item]},readSource:async()=>assert.fail(),now:Date.parse('2026-10-05T10:00:00Z')});
  assert.equal(result.duplicates,1);assert.equal(result.readAttempts,0);
 });
 

@@ -13,6 +13,39 @@ HTML = b'''<meta property="og:title" content="Un article public"><div class="ent
 
 
 class ReaderTests(unittest.TestCase):
+    def test_script_heavy_next_page_has_separate_transfer_and_article_limits(self):
+        url = 'https://nextjs.org/blog/next-16-4'
+        def read(page, target=url):
+            return reader.read_article(target, published_at='2026-10-06T20:00:00Z',
+                title='Official release', topic='engineering', producer='sentinelle', fetcher=lambda _:page)
+        article = '<meta property="article:published_time" content="2026-10-06"><div class="next-prose"><p>A release includes verified improvements for application developers.</p></div>'
+        page = (article + '<script>' + 'x'*490000 + '</script>').encode()
+        result = read(page)
+        self.assertGreater(result['sourceReceipt']['bodyBytes'], 400000)
+        self.assertLess(result['item']['textChars'], 100)
+        self.assertNotIn('xxx', result['item']['excerpt'])
+        for oversized in [page+b' '*120000,
+                ('<meta property="article:published_time" content="2026-10-06"><div class="next-prose">'+'article '*13000+'</div>').encode()]:
+            with self.assertRaisesRegex(reader.SourceError, 'PUBLIC_SOURCE_TOO_LARGE'):
+                read(oversized)
+        with self.assertRaisesRegex(reader.SourceError, 'PUBLIC_SOURCE_TOO_LARGE'):
+            read(page, 'https://huggingface.co/blog/example')
+
+    def test_transport_uses_the_same_host_specific_byte_limit(self):
+        from unittest.mock import patch, MagicMock
+        for url, limit in [('https://nextjs.org/blog/example',600000),
+                ('https://huggingface.co/blog/example',400000)]:
+            response=MagicMock()
+            response.status=200
+            response.headers.get_content_type.return_value='text/html'
+            response.read.return_value=b'x'*(limit+1)
+            opener=MagicMock()
+            opener.open.return_value.__enter__.return_value=response
+            with patch.object(reader.urllib.request,'build_opener',return_value=opener):
+                with self.assertRaisesRegex(reader.SourceError,'PUBLIC_SOURCE_TOO_LARGE'):
+                    reader.fetch_source(url)
+            response.read.assert_called_once_with(limit+1)
+
     def test_primary_announcements_use_their_own_date_not_the_hn_repost_date(self):
         for url, content, day in [
             ('https://developers.cloudflare.com/changelog/post/2026-10-02-web-search/',

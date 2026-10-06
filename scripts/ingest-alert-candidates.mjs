@@ -44,6 +44,7 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
   const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[],
     readAttempts:0,readLimitExhausted:0,readDeferred:0,unsupportedSources:0,sourceFiltered:0,readSkips:[],backlogCandidates:0};
   const eligible=[],seen=new Set();
+  summary.aliasesResolved=ledger.resolveUnreadAliases();
   const incoming=new Set(envelope.items.map(item=>item.url));
   // The durable queue owns candidates after discovery. A busy feed must not
   // remove a still-fresh unread page before its reader becomes available.
@@ -92,7 +93,8 @@ export async function ingestCandidates({ledger,envelope,readSource=readPublicSou
       if(read.url!==item.url||read.topic!==item.topic||read.producer!==item.producer||read.sourceStatus!=='read'||
          receipt?.url!==read.url||receipt.readAt!==read.readAt||receipt.publishedDay!==read.publishedAt.slice(0,10)||
          !['simon-blog-v1','public-article-v1'].includes(receipt.extractor)||!/^[a-f\d]{64}$/.test(receipt.responseSha256??'')||
-         !Number.isSafeInteger(receipt.bodyBytes)||receipt.bodyBytes<20||receipt.bodyBytes>400000)fail('ALERT_SOURCE_EVIDENCE_INVALID');
+         !Number.isSafeInteger(receipt.bodyBytes)||receipt.bodyBytes<20||
+         receipt.bodyBytes>(new URL(read.url).hostname==='nextjs.org'?600000:400000))fail('ALERT_SOURCE_EVIDENCE_INVALID');
       const update=ledger.ingest(read);
       if(update.evidenceUpdated){summary.evidenceUpdated++;summary.read++;summary.sourceReceipts.push({id:row.id,...receipt});}
     }catch(error){

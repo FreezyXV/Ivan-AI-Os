@@ -29,3 +29,24 @@ Preuves de régression : scripts/ingest-alert-fairness.test.mjs (échecs initiau
 reproduits, redémarrage, délais, nouvelle version et cent pages bloquées) et
 scripts/inspect-mac-pilot.test.mjs (visibilité persistante sans masquer le digest).
 Cette correction ne qualifie pas à elle seule l'utilité éditoriale quotidienne.
+
+## Taille et variantes d'URL — revue #66
+
+Next.js : plafond de téléchargement 600 000 octets, contre 400 000 pour les
+autres hôtes. Le texte de l'article extrait par read_article est limité séparément
+à 100 000 caractères ; l'extrait transmis reste limité à 1 200 caractères avec
+couverture déclarée. Ni scripts ni navigation ne deviennent des preuves. Python
+et validation du reçu JS appliquent le même plafond propre à l'hôte.
+Mesure réelle : Next.js 16.4, 498 948 octets HTML et 17 652 caractères de texte
+extrait par notre lecteur, date de page concordant avec celle du flux.
+
+Mistral : les chemins /news/<slug>, /news/<slug>/ et /news/<slug>// ont une
+identité canonique à un seul slash final. Les anciennes variantes encore non lues
+sont classées DUPLICATE_SOURCE_URL seulement si la source canonique active a déjà
+été lue. Leur identité d'origine et le lien duplicateOf sont conservés ; les sources
+lues, les envois tentés, les archives et les sujets différés ne sont pas réécrits.
+Les chemins d'autres sites ne sont pas simplifiés arbitrairement.
+
+Simon /le-chonk/ reste non lu : son suffixe de date est identifié, mais son apport
+doit être relié à l'annonce Mistral avant d'étendre ce lecteur. Il n'est pas
+automatiquement classé comme inutile et aucune relation d'événement n'est inventée.

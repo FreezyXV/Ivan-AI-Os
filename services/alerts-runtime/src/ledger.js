@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, lstatSync, openSync, closeSync, readFileSync, writeFileSync, linkSync, unlinkSync } from 'node:fs';
 import {gzipSync,gunzipSync} from 'node:zlib';
 import path from 'node:path';
-import { validateItem, prefilter, fail, PILOT_CONTEXT } from './context.js';
+import { validateItem, prefilter, fail, PILOT_CONTEXT, canonicalUrl } from './context.js';
 import {validateBusinessFiche} from './business-fiche.js';
 
 // SQLite owns transaction locks: process crashes cannot leave an application
@@ -68,6 +68,26 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
   for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all())remember(evidenceKeys(JSON.parse(row.item)),row.id);
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
+    resolveUnreadAliases(){return tx(()=>{
+      let resolved=0;
+      // Retire only old, unprocessed aliases of a proven active source. Keep
+      // their original identity as provenance; never reopen receipts/archives.
+      for(const row of db.prepare(`SELECT id,url,item FROM alerts WHERE archive IS NULL AND
+          (state='pending' OR (state='review' AND reason='SOURCE_NOT_READ'))
+          AND json_extract(item,'$.sourceStatus')='title-only'`).all()){
+        const item=JSON.parse(row.item),url=canonicalUrl(row.url);
+        if(url===row.url||PILOT_CONTEXT.deferred.includes(item.topic))continue;
+        const target=db.prepare('SELECT id,item FROM alerts WHERE url=?').get(url);
+        if(!target)continue;
+        const proven=JSON.parse(target.item);
+        if(proven.sourceStatus!=='read'||PILOT_CONTEXT.deferred.includes(proven.topic))continue;
+        db.prepare("UPDATE alerts SET state='skipped',reason='DUPLICATE_SOURCE_URL',brief=?,updated=? WHERE id=?")
+          .run(JSON.stringify({duplicateOf:target.id}),now(),row.id);
+        db.prepare('DELETE FROM source_read_failures WHERE id=?').run(row.id);
+        resolved++;
+      }
+      return resolved;
+    });},
     sourceReadStatus(id,{revision,at=now()}={}){
       if(!/^[a-f\d]{64}$/.test(revision??'')||!Number.isSafeInteger(at))fail('ALERT_READER_RETRY_INVALID');
       const row=db.prepare('SELECT * FROM source_read_failures WHERE id=? AND revision=?').get(id,revision);

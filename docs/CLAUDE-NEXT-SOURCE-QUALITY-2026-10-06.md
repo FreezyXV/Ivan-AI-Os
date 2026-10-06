@@ -1,5 +1,9 @@
 # Lot Claude : couverture utile et revue finale ciblée
 
+**Lot clos :** livré dans #66 (640e2ec, repris avec provenance en 5015a28).
+Ne pas recommencer cette revue. Codex prend la correction Next.js et les variantes
+Mistral ; la revue d'une prochaine synthèse exige toujours un reçu réel.
+
 #64 et #65 sont intégrées sur la branche Codex ; le lot CLAUDE-NEXT-PR63 est clos.
 Ne pas refaire l'import stdin, les options Git, les corpus ou leurs campagnes payantes.
 

@@ -32,6 +32,7 @@ export function canonicalUrl(value) {
   for (const key of [...u.searchParams.keys()]) if (/^(utm_|fbclid$|gclid$|ref$)/i.test(key)) u.searchParams.delete(key);
   // Site-specific aliases: arbitrary /resource and /resource/ can differ.
   if(u.hostname==='nextjs.org'&&/^\/blog\/[^/]+\/$/.test(u.pathname))u.pathname=u.pathname.slice(0,-1);
+  if(u.hostname==='mistral.ai'&&/^\/news\/[a-z0-9-]+\/*$/.test(u.pathname))u.pathname=u.pathname.replace(/\/*$/,'/');
   u.hash = ''; return u.href;
 }
 export function sourceMaxAgeHours(item){

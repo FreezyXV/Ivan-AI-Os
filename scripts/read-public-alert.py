@@ -17,6 +17,14 @@ import urllib.request
 from html.parser import HTMLParser
 
 MAX_BYTES = 400_000
+MAX_ARTICLE_CHARS = 100_000
+
+
+def transfer_limit(url):
+    # Next's measured pages contain ~500 KB of HTML, mostly application code.
+    # Keep an independent download ceiling before stripping that code.
+    return 600_000 if urllib.parse.urlsplit(url).hostname == 'nextjs.org' else MAX_BYTES
+
 MONTHS = {name: number for number, name in enumerate(
     ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], 1)}
 
@@ -111,8 +119,9 @@ def fetch_source(url):
         with urllib.request.build_opener(NoRedirect).open(request, timeout=12) as response:
             if response.status != 200 or response.headers.get_content_type() != "text/html":
                 raise SourceError("PUBLIC_SOURCE_UNAVAILABLE")
-            body = response.read(MAX_BYTES + 1)
-            if len(body) > MAX_BYTES:
+            limit = transfer_limit(url)
+            body = response.read(limit + 1)
+            if len(body) > limit:
                 raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
             return body
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
@@ -220,11 +229,12 @@ def read_article(url, *, published_at, title, topic, producer, fetcher=fetch_sou
         if published.utcoffset() != dt.timedelta(0): raise ValueError()
     except (ValueError, AttributeError): raise SourceError("PUBLIC_SOURCE_DATE_INVALID")
     body = fetcher(url)
-    if not isinstance(body, bytes) or len(body) > MAX_BYTES: raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
+    if not isinstance(body, bytes) or len(body) > transfer_limit(url): raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
     try:
         parser = ArticleParser(host)
         parser.feed(body.decode("utf-8", errors="strict"))
         text = " ".join("".join(parser.parts).split())
+        if len(text) > MAX_ARTICLE_CHARS: raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
         if len(text) < 40: raise SourceError("PUBLIC_SOURCE_CONTENT_UNAVAILABLE")
         page_date = parser.page_date
         if not page_date:
