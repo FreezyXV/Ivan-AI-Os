@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { verifierFiche } from "../business-engine/scripts/fiche.mjs";
+import { qualiteFiche, verifierFiche } from "../business-engine/scripts/fiche.mjs";
 
 const dir = new URL("../business-engine/corpus/fiches-v1/", import.meta.url);
 const raw = readFileSync(new URL("fixtures.jsonl", dir));
@@ -74,4 +74,17 @@ test("engine provenance: the recommendation must equal scoreOpportunity on the e
 test("malformed or incomplete JSON returns errors, never throws", () => {
   for (const bad of [null, undefined, {}, [], "x", { preuves: [null, 3, {}] }, { prochainTest: null, acheteur: null, objections: "x" }, { moteur: { entree: null }, decision: "lancer" }])
     assert.ok(Array.isArray(verifierFiche(bad, sources)) && verifierFiche(bad, sources).length > 0, JSON.stringify(bad));
+});
+
+// Real native output (runtime 33480ee, B03): mechanically valid, editorially weak. Two new checks.
+test("native B03 fiche: mechanically valid, but editorial warnings flag a non-evidence test and a non-market hypothesis", () => {
+  const b03 = JSON.parse(readFileSync(new URL("sortie-native-B03.json", dir), "utf8")).fiche;
+  assert.deepEqual(verifierFiche(b03, sources), [], "blocking checks unchanged: the runtime keeps accepting it");
+  assert.deepEqual(qualiteFiche(b03).sort(), ["HYPOTHESE_SANS_MARCHE", "TEST_SANS_RECHERCHE_DE_PREUVE"]);
+  const fixed = copie(b03);
+  fixed.hypothese = "Hypothèse : des équipes qui paient un outil d'emailing tarifé au contact chercheraient une offre en libre-service tarifée à l'usage.";
+  fixed.prochainTest.description = "Pendant 3 jours, relever dans des discussions publiques déjà en ligne d'autres témoignages distincts sur la tarification au contact et l'engagement annuel ; aucun message.";
+  assert.deepEqual(verifierFiche(fixed, sources), []);
+  assert.deepEqual(qualiteFiche(fixed), []);
+  assert.deepEqual(qualiteFiche(exemple), [], "the 2-source example has no warning");
 });
