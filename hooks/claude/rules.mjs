@@ -61,9 +61,13 @@ function stripData(command) {
       return executed ? `'' ${executed.join(" ")}` : "''";
     });
 }
+// git global options placed before the subcommand (-C <dir>, -c k=v, --git-dir=…, --no-pager…)
+// must not hide the subcommand from the rules below (found live on 2026-10-06).
+const GIT_GLOBAL = /\bgit((?:\s+(?:-C\s+\S+|-c\s+\S+|--(?:git-dir|work-tree|namespace|exec-path|super-prefix|config-env)(?:=\S+|\s+\S+)|--no-pager|--paginate|--bare|--no-replace-objects|--literal-pathspecs|-p|-P))+)(?=\s)/g;
+export const normalizeGit = text => text.replace(GIT_GLOBAL, "git");
 export function commandWords(command) {
-  const stripped = stripData(command);
-  if (INTERPRETER.test(stripped)) return command;
+  const stripped = normalizeGit(stripData(command));
+  if (INTERPRETER.test(stripped)) return normalizeGit(command);
   return stripped;
 }
 
@@ -74,7 +78,7 @@ export function classifyCommand(command) {
   const { parts, ops } = segments(command);
   let level = "read_only";
   for (let i = 0; i < parts.length; i++) {
-    const p = parts[i].replace(/^cd\s+\S+$/, "pwd");
+    const p = normalizeGit(parts[i]).replace(/^cd\s+\S+$/, "pwd");
     const piped = i > 0 && ops[i - 1] === "|";
     if (writes(p)) return { verdict: "evaluer", raison: "redirection ou sous-commande" };
     if (piped && FILTERS.test(p)) continue;
