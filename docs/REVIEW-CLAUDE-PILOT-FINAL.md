@@ -72,3 +72,16 @@ bloquant, mais le risque grandit avec l'arriéré. Proposition : mémoriser le c
 2. Faire étiqueter par Ivan 10 abstentions réelles avant toute nouvelle politique.
 3. Corriger la famine du budget de lecture (§ 2).
 4. Une nuit de veille du Mac instrumentée.
+
+## Addendum — état à `78fd8c1` (2026-10-06, soir)
+
+- Depuis la relecture ci-dessus (`9d9062f`), la branche Codex n'a reçu que les commits du hook
+  (reprise de #65 : `54c61c9`, `0264ea9`, `ad23aa2`) et de la documentation : aucun code runtime
+  nouveau à relire. Fusion à blanc de cette PR sur `78fd8c1` : sans conflit ; skills/agents
+  81/81, runtime 139/139 (Node 24 géré).
+- **Hook** : version installée `1c91ce3` (prose citée corrigée, options `-C`/`-c`/`--git-dir`
+  couvertes). Complément source `c6ead2c` sur #65, **non installé** (installation coordonnée
+  par Codex) : liste fermée des options globales de Git 2.42, dont les quatre options relevées par
+  Codex (`--no-optional-locks`, `--glob-pathspecs`, `--noglob-pathspecs`, `--icase-pathspecs`).
+  Une option hors de cette liste reste `evaluer` : ce n'est **pas** une protection de toutes les
+  formes Git possibles, et les permissions natives de Claude Code restent indépendantes.
