@@ -44,7 +44,8 @@ function segments(command) {
   return { parts: parts.map(p => p.trim().replace(/^(?:cd\s+\S+\s*&&\s*)/, "")).filter(Boolean), ops };
 }
 
-const writes = segment => /(?:^|[^>2&])>{1,2}\s*(?!\/dev\/null|&)\S/.test(segment.replace(/'[^']*'|"[^"]*"/g, "''")) || /\$\(|`/.test(segment.replace(/'[^']*'/g, "''"));
+// Escaped \` and \$ inside double quotes are literal text, never a substitution.
+const writes = segment => /(?:^|[^>2&])>{1,2}\s*(?!\/dev\/null|&)\S/.test(segment.replace(/'[^']*'|"[^"]*"/g, "''")) || /\$\(|`/.test(segment.replace(/'[^']*'/g, "''").replace(/\\[`$]/g, ""));
 
 // Quoted prose and heredoc bodies are data (commit messages, issue bodies, notes) unless a shell
 // or language interpreter would execute them; then the whole text is scanned.
@@ -57,7 +58,7 @@ function stripData(command) {
   return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC")
     .replace(/'[^']*'|"((?:\\.|[^"\\])*)"/g, (whole, dq) => {
       if (dq === undefined) return "''";
-      const executed = dq.match(/\$\([^)]*\)|`[^`]*`/g);
+      const executed = dq.replace(/\\./g, "").match(/\$\([^)]*\)|`[^`]*`/g);
       return executed ? `'' ${executed.join(" ")}` : "''";
     });
 }
