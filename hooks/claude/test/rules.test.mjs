@@ -141,3 +141,9 @@ test("git global options before the subcommand do not bypass level-0 rules", () 
     assert.equal(classifyCommand(c).verdict, "never", c);
   assert.equal(classifyCommand("git -C /Users/x/repo status --short").verdict, "autonome", "read-only git with -C stays autonomous");
 });
+
+// Found live with 76dedb6: escaped backticks inside double quotes are literal text, not a substitution.
+test("escaped backticks and escaped $( in double-quoted prose are data", () => {
+  assert.equal(classifyCommand('gh pr comment 65 --body "Vérifié : \\`git -C … stash\\` refusé, \\$(sudo ls) cité"').verdict, "autonome");
+  assert.equal(classifyCommand('gh pr comment 65 --body "exécuté : `sudo ls`"').verdict, "never", "an unescaped substitution is still executed");
+});
