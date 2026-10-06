@@ -9,16 +9,17 @@ fetch puis isoler agent/claude/pilot-final-review depuis
 origin/agent/codex/alerts-integration sans toucher aux fichiers locaux modifiés.
 Pas de stash/reset/clean. Codex reste propriétaire du runtime et des lecteurs.
 
-1. Corriger le faux positif de hooks/claude/rules.mjs, reproduit par Codex :
-   INTERPRETER reconnaît « bash » dans un argument cité de gh pr create ou git
-   commit. commandWords conserve alors le texte intégral et les règles refusent
-   une description de commande comme si elle était exécutée. Voir la preuve dans
-   REVIEW-CODEX-HOOK-PROSE-2026-10-06.md. Détecter l'interpréteur en position
-   exécutée, sans simplement supprimer toutes les chaînes citées : bash -c,
-   eval, node -e, les substitutions et les heredocs exécutés doivent rester
-   analysés. Tester d'abord les corps de PR et messages de commit fautivement
-   refusés, puis les commandes exécutées et les cas ambigus. Une commande inconnue
-   reste evaluer. Ne pas désactiver de règle ni modifier la configuration live.
+1. #65 est reprise jusqu'à 1c91ce3, déjà installée par Claude : faux positif
+   prose corrigé, 19/19 tests hook/adaptateur confirmés. Ne pas refaire ce lot.
+   Terminer seulement normalizeGit : --no-optional-locks, --glob-pathspecs,
+   --noglob-pathspecs et --icase-pathspecs, acceptés par Git 2.42.0, font encore
+   passer stash en evaluer au lieu de never. Preuve et quatre tests rouges dans
+   REVIEW-CODEX-PR65-2026-10-06.md. -C/dossier et -cclef=valeur sont invalides :
+   ne pas les traiter comme des contournements prouvés.
+   Ajouter les cas aux tests avec stash, push forcé/main, reset --hard et clean -f ;
+   préserver git status/log et les données citées. Les formes non comprises
+   restent evaluer. Ne pas remplacer la configuration ou la copie active :
+   livrer un seul complément source, Codex coordonne ensuite son installation.
 
 2. Corriger un défaut d'import reproduit pendant la restauration sur copie :
    l'entrée CLI de skills/jev-decision/scripts/classify.mjs appelle realpathSync

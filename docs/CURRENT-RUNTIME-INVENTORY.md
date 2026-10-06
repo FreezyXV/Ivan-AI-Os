@@ -12,6 +12,7 @@ CI code actif : 11/11 succès ; 241 tests Node ciblés et 22 Python.
 | Plugin ivan-ai-os-route | fd2ea04 | fd2ea0447ba0b5cd18980704138d6483d0b677a4 |
 | Plugin ivan-ai-os-memory | 8151c01-memory | 8151c01192add035fb8523e8375d6105753962cb |
 | Plugin ivan-ai-os-engine-briefs | engine-briefs-5224721 | 5224721e2c88d635ecb7419b3afff582437c3d7e |
+| Hook Claude, projet uniquement | claude-hook/1c91ce3 | #65 ; installé par Claude, empreinte vérifiée par Codex |
 
 Inventaire lu depuis la configuration et les marqueurs des releases, sans copier
 jeton, profil, destinataire ou paramètres privés. La version des autres plugins
@@ -46,6 +47,10 @@ attendre un artifact et sans second responsable de livraison.
 - Contributions Claude #49–#63 reprises selon les commits de passation/revue.
   Les PR GitHub restent ouvertes : cherry-pick source n'est pas fusion de PR.
   Dernière reprise : #63 84d92d7 → 1425e86 ; correctif runtime d35963e.
+- #65 : trois commits repris en 54c61c9, 0264ea9 et ad23aa2 ; 19 tests hook/adaptateur passent.
+  Copie privée 1c91ce3 déjà active, mode gate et gateway 4311 conservés.
+  Normalisation Git encore partielle : quatre options valides restent à corriger selon
+  REVIEW-CODEX-PR65-2026-10-06.md.
 - #1 vers main, #17 table de routage, #40 autorisation de fusion et les propositions
   métier hors pilote ne sont pas activées par ce lot.
 
