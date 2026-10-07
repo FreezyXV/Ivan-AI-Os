@@ -81,6 +81,29 @@ test('an expired source lease counts as existing work before migrating old Jev r
  assert.equal(result.results.process.nativeCalls,2);
 });
 
+for(const failingStage of ['writer','verifier'])test(`a ${failingStage} outage pauses the cycle instead of spending the remaining model budget`,async t=>{
+ const {ledger,dir}=fixture(t);for(let i=0;i<4;i++)ledger.ingest(item('provider-slot-'+i));let writers=0,verifiers=0;
+ const cycle=await runCycle({ledger,settings:{stateDir:dir,selectionMode:'native-editorial',verifyNativeBrief:true},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>{writers++;if(failingStage==='writer')throw Error('synthetic unavailable provider');return{decision:'keep',brief:brief()};},
+  verify:async()=>{verifiers++;throw Error('synthetic unavailable verifier');},deliver:async()=>assert.fail()});
+ assert.equal(writers,1);assert.equal(verifiers,failingStage==='writer'?0:1);
+ assert.equal(cycle.results.process.error_code,failingStage==='writer'?'NATIVE_ASSESSMENT_UNAVAILABLE':'NATIVE_VERIFICATION_UNAVAILABLE');
+ assert.equal(ledger.counts().pending,3);assert.equal(ledger.counts().review,1);
+ assert.equal(ledger.cycleStatus().find(c=>c.name==='process').status,'failed');
+});
+
+test('a content rejection does not pause a healthy provider or block the following source',async t=>{
+ const {ledger,dir}=fixture(t);for(let i=0;i<2;i++)ledger.ingest(item('valid-provider-'+i));let calls=0;
+ const cycle=await runCycle({ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>{if(++calls===1)throw Object.assign(Error('synthetic invalid output'),{code:'ALERT_ASSESSMENT_INVALID'});return{decision:'skip'};},
+  deliver:async()=>assert.fail()});
+ assert.equal(calls,2);assert.equal(cycle.results.process.error_code,undefined);
+ assert.equal(ledger.cycleStatus().find(c=>c.name==='process').status,'done');
+ assert.equal(ledger.counts().review,1);assert.equal(ledger.counts().skipped,1);
+});
+
 test('official security release previews wait for released fixes without model spend',async t=>{
  const {ledger}=fixture(t);ledger.ingest({...item('preview'),topic:'engineering',url:'https://nextjs.org/blog/preview-security-release',
   excerpt:'Later today, we will publish the patched versions alongside full advisory details, including impact and upgrade instructions.'});

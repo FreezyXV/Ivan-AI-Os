@@ -18,6 +18,8 @@ import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
 const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
+const providerFailures=new Set(['SELECTION_UNAVAILABLE','SELECTION_TIMEOUT','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT',
+ 'NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT','NATIVE_VERIFICATION_UNAVAILABLE','NATIVE_VERIFICATION_TIMEOUT']);
 export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=ingestCandidates,officialImpl=collectOfficialRelease}){
  const temp=mkdtempSync(path.join(directory,'feed-'));
  try{
@@ -63,7 +65,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
   try{const result=await fn();
-   const degraded=(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
+   const degraded=Boolean(result?.error_code)||(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
    results[name]={...result,...(degraded?{degraded:true}:{})};
    ledger.finishCycle(lease,{ok:!degraded,metrics:{durationMs:Date.now()-at,result:results[name]}});}
   catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
@@ -83,7 +85,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
    const queued=ledger.counts(),spare=Math.max(0,2-(queued.pending??0)-(queued.processing??0));
    if(spare)editorialRevisions=ledger.reassessJevAbstentions({limit:spare}).requeued;
   }
-  let decisions=0,generations=0,nativeCalls=0,businessFichesCreated=0,opportunityScoresCreated=0;const states={};
+  let decisions=0,generations=0,nativeCalls=0,businessFichesCreated=0,opportunityScoresCreated=0,providerError;const states={};
   const modelBudget=verify?4:2,requiredCalls=verify?2:1;
   for(let i=0;i<100&&decisions<8&&nativeCalls+requiredCalls<=modelBudget;i++){
    const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,selectionPolicy,
@@ -92,9 +94,10 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
     ...(verify?{verify:async(...args)=>{nativeCalls++;return verify(...args);}}:{}),
     synthesize:async(...args)=>{nativeCalls++;generations++;return synthesize(...args);}});
    if(result.state==='idle')break;states[result.reason??result.state]=(states[result.reason??result.state]??0)+1;
+   if(providerFailures.has(result.reason)){providerError=result.reason;break;}
    if(result.state==='ready'&&result.brief?.business_fiche){businessFichesCreated++;if(result.brief.business_fiche.moteur)opportunityScoresCreated++;}
   }
-  return {selectionMode,decisions,nativeCalls,generations,businessFichesCreated,opportunityScoresCreated,states};
+  return {selectionMode,decisions,nativeCalls,generations,businessFichesCreated,opportunityScoresCreated,states,...(providerError?{error_code:providerError}:{})};
  });
  if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select')){
   // A source may finish after the day's first page. Reserve the next stable page

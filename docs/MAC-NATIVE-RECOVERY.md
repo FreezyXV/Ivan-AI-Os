@@ -24,6 +24,11 @@ continu pendant la veille, ni une reprise entièrement correcte sans réparation
 - Le diagnostic expose `CHECK_PROCESS_RECOVERY` si le dernier cycle de
   traitement a échoué ; le prochain succès efface cette action. Les synthèses
   prêtes et les autres codes restent visibles simultanément.
+- Une indisponibilité du fournisseur arrête le traitement du passage dès le
+  premier échec. Le reste de la file garde son état, au lieu de consommer le
+  budget sur la même panne. Un refus de contenu ne coupe pas un fournisseur
+  sain. Le prochain créneau courant peut reprendre, avec les essais par source
+  toujours bornés.
 
 ## Preuves et limites
 
@@ -31,6 +36,14 @@ Tests rouges avant chaque correctif : migration avec une et deux nouvelles
 sources, cycles expirés et diagnostic. Tests supplémentaires : une source
 interrompue est reprise avant migration, aucun envoi incertain rouvert,
 réservation vivante préservée, essais bornés. Aucun appel modèle dans ces tests.
+
+Les six erreurs natives du matin sont corrélées à six erreurs de la passerelle
+locale Codex : `CodexAppServerLocalRequestCancellationError`, `model/list timed
+out`, après environ 5,3 secondes. Elles précèdent la rédaction ; elles ne
+prouvent donc pas six jugements éditoriaux défaillants. Des appels ultérieurs
+ont de nouveau réussi sans modifier les modèles ni redémarrer le service.
+Le correctif évite d'enchaîner trois échecs identiques dans un même passage ;
+il ne prétend pas réparer le transport interne du fournisseur.
 
 Le coût d'une complétion interrompue pendant la veille n'est pas connu, et le
 SDK natif ne fournit pas de facture dans ce parcours. Quatre complétions
