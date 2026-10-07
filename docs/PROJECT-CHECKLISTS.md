@@ -1,4 +1,17 @@
-## Avancement — tri natif et première livraison actuelle, 7 octobre
+## Avancement — reprise nocturne, 7 octobre au matin
+
+- [x] Worker c613533 activé : sources nouvelles/interrompues avant migration,
+  cycles expirés fermés et panne fournisseur sans appels répétés dans le passage.
+- [x] 284 tests Node passent ; CI c613533 11/11 ; sauvegarde VERIFIED,
+  quatre reçus conservés, zéro cycle fantôme après réparation.
+- [x] Nuit réelle observée : 49 périodes de sommeil/réveils partiels ; six erreurs
+  natives attribuées au catalogue local Codex avant rédaction, puis reprise.
+- [ ] Prochaine nuit avec le correctif, coût natif et utilité réelle : ne pas
+  confondre observation de la panne, réparation et qualification sous la correction.
+- [ ] Business actuel : aucune fiche qualifiée ; trois synthèses en attente,
+  dont Finance, ne constituent pas trois nouvelles livraisons Telegram.
+
+## Historique — tri natif et première livraison actuelle, 7 octobre
 
 - [x] Jev retiré de la sélection d'alertes ; worker/plugin 8364b9f actifs.
 - [x] Jugement/rédaction puis relecture indépendante, preuves liées au contenu.

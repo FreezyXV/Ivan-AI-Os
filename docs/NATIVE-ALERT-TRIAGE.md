@@ -20,8 +20,11 @@ une garantie de vérité et la qualification quotidienne reste nécessaire.
   reste non exposé par le SDK : ne pas le présenter comme gratuit.
 - Une indisponibilité peut être réessayée une seule fois après délai. Un refus,
   un JSON invalide ou une preuve incorrecte ne déclenche pas une boucle payante.
+  Une panne fournisseur arrête les autres appels du passage ; la file restante
+  attend le créneau suivant. Un simple refus de contenu n'arrête pas le traitement.
 - Les abstentions Jev encore fraîches sont soumises à un nouveau jugement,
-  deux au plus par passage, une seule fois pour le contexte. Leur décision
+  deux au plus par passage dans les places libres après les sources nouvelles
+  et interrompues, une seule fois pour le contexte. Leur décision
   d'origine reste dans evidence_revisions ; aucune décision native ni livraison
   déjà tentée n'est réouverte.
 - Les rumeurs courtes non attribuées et annonces Next.js de correctifs à venir
@@ -67,4 +70,7 @@ Un retour de version conserve la file actuelle. Après la livraison 62, préfér
 le snapshot VERIFIED state-backup-after-native-delivery ; restaurer aveuglément
 le snapshot antérieur ferait perdre ce reçu et pourrait permettre un doublon.
 Les messages reçus après n'importe quel snapshot doivent être rapprochés avant
-une restauration d'état. La reprise après une vraie nuit Mac reste à mesurer.
+une restauration d'état. Une nuit réelle a révélé des cycles expirés encore
+affichés en cours ; ils sont désormais réconciliés et visibles au diagnostic.
+Voir MAC-NATIVE-RECOVERY.md pour les preuves, la panne de catalogue modèle et
+les limites ; la prochaine nuit sous le correctif reste à observer.

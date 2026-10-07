@@ -1,7 +1,7 @@
 # Lot Claude : livraisons utiles et documentation alignée
 
-Codex a appliqué la décision d'Ivan : Jev ne trie plus les alertes. Worker et
-plugin 8364b9f actifs, mode native-editorial avec relecture indépendante ;
+Codex a appliqué la décision d'Ivan : Jev ne trie plus les alertes. Worker
+c613533 et plugin 8364b9f actifs, mode native-editorial avec relecture indépendante ;
 NATIVE-ALERT-TRIAGE.md et haut de SESSION_HANDOFF décrivent le résultat vérifié.
 La première vraie synthèse actuelle est Next.js 16.4, message Telegram 62.
 Elle est produite automatiquement ; son digest de qualification a été déclenché
@@ -33,7 +33,17 @@ Préserver tout travail local ; aucun stash/reset/clean ni modification du check
 
 4. Revue runtime ciblée : liaison du reçu de relecture au brief exact ; limite
    des deux étapes ; migration unique des abstentions ; créneaux ; pas de renvoi
-   après un envoi incertain. Signaler seulement des défauts reproduits.
+   après un envoi incertain. Ajouter priorité des sources nouvelles/interrompues,
+   réconciliation des cycles expirés et pause du passage au premier échec du
+   fournisseur (commits 32dcdff et c613533, MAC-NATIVE-RECOVERY.md).
+   Signaler seulement des défauts reproduits, sans nouvelle campagne payante.
+
+5. Contrôle qualité des vrais briefs prêts : morning-recovery-proof.json dans
+   ~/.ivan-ai-os/mac-alerts-c613533 donne les sources et les propositions. Une
+   synthèse BCE Finance attend le digest ; le catalogue Business est toujours
+   vide. Relire leurs preuves/utilité sans les appeler « messages livrés ».
+   Six échecs du matin viennent de model/list timed out, avant la rédaction :
+   ne pas les noter comme six jugements faux. Ne rien réessayer sur la file live.
 
 Périmètre Claude : documentation, skills et tests associés. Codex garde services,
 hooks/openclaw, scripts de runtime et activation. Ne rien installer/fusionner,

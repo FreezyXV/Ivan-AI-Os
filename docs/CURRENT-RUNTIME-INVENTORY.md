@@ -1,14 +1,14 @@
-# Inventaire vérifié du pilote Mac — 6 octobre 2026
+# Inventaire vérifié du pilote Mac — 7 octobre 2026
 
-Source Codex : branche agent/codex/alerts-integration ; worker et plugin alertes actifs 8364b9f,
+Source Codex : branche agent/codex/alerts-integration ; worker c613533 et plugin alertes 8364b9f actifs,
 gateway Jev d35963e conservé. Mode natif avec relecture indépendante.
 Référence distante foundation/v1 : 454b21e. Aucune fusion de ce lot.
-CI d35963e : 11/11 succès. Dernier lot : 276 tests Node concernés passent ; les 15 tests Python du lecteur ont passé au lot précédent.
+CI c613533 : 11/11 succès. Dernier lot : 284 tests Node concernés passent ; les 15 tests Python du lecteur ont passé au lot précédent.
 
 | Composant | Release réellement configurée | Provenance |
 |---|---|---|
 | Gateway Jev 4311 | orchestrator-d35963e | gateway d35963e, runner Mac cc1d2a5 conservé |
-| Worker alertes, toutes les 5 minutes | orchestrator-8364b9f | 8364b9f, file/réglages/créneaux conservés |
+| Worker alertes, toutes les 5 minutes | orchestrator-c613533 | c613533, priorité de file et reprise nocturne ; état/réglages conservés |
 | Plugin ivan-ai-os-alerts | orchestrator-8364b9f | 8364b9f ; rédaction et relecture isolées |
 | Plugin ivan-ai-os-route | fd2ea04 | fd2ea0447ba0b5cd18980704138d6483d0b677a4 |
 | Plugin ivan-ai-os-memory | 8151c01-memory | 8151c01192add035fb8523e8375d6105753962cb |
@@ -37,6 +37,24 @@ vérifiée : workflow Sentinelle disabled_manually. L'export candidat reste acti
 au sens GitHub mais uniquement workflow_dispatch sur codex/collector-export,
 sans schedule, sans Jev et sans envoi. Le Mac lit les flux directement, sans
 attendre un artifact et sans second responsable de livraison.
+
+## Contrôle matinal courant
+
+c613533 activé à 08:36 UTC, worker seul. Les anciennes abstentions ne passent
+plus avant les nouvelles sources ; les cycles expirés sont fermés ; une panne
+fournisseur suspend les autres appels du passage. Quatre reçus conservés,
+sauvegarde VERIFIED et aucune modification OpenClaw/Jev/Claude.
+Nuit réelle observée, 49 périodes de sommeil/réveils partiels ; les deux cycles
+interrompus sont identifiés, zéro cycle fantôme après réconciliation. Six appels
+matinaux échouent avant rédaction sur model/list timed out ; succès ultérieurs,
+pas de réparation prétendue du fournisseur ni de coût natif inventé.
+
+À 08:37 UTC : trois synthèses approuvées attendent le digest, dont une Finance ;
+catalogue Business zéro. Dernière livraison toujours 62. Les pages de date
+inconnue et les refus de contenu sont visibles ; ne pas les masquer avec la
+santé des services. Preuves dans mac-alerts-c613533/morning-recovery-proof.json.
+Voir MAC-NATIVE-RECOVERY.md et le haut du relais. Les sections suivantes gardent
+les observations historiques, sans les attribuer au runtime actuel.
 
 ## PR ouvertes et intégration
 

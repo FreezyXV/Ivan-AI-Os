@@ -1,4 +1,44 @@
-## État courant — tri natif activé et vraie livraison, 7 octobre 2026
+## État courant — reprise nocturne et priorité des sources, 7 octobre 2026
+
+Worker c613533 actif ; plugin alertes 8364b9f, Jev d35963e et hook Claude
+c6ead2c inchangés. Mode native-editorial avec relecture indépendante, zéro Jev
+pour les alertes. 284 tests Node concernés passent. CI c613533 : 11/11 verte.
+
+Correctifs activés : les nouvelles sources et le travail interrompu occupent
+les places avant la migration des anciennes abstentions ; les cycles expirés
+sont fermés avec CYCLE_INTERRUPTED ; une panne fournisseur arrête le passage
+après le premier échec, sans consommer la file restante. Un refus de contenu
+ne coupe pas un fournisseur sain. Lire MAC-NATIVE-RECOVERY.md.
+
+Nuit réellement observée : 49 périodes de sommeil entre 00:34 et 10:01 Paris,
+avec réveils partiels ; deux cycles restés running après expiration. Fermés
+après correctif, zéro cycle fantôme au contrôle et quatre reçus préservés.
+Six erreurs matinales viennent de model/list timed out dans la passerelle locale
+Codex (~5,3 s), avant rédaction. Les appels ont ensuite repris sans modifier le
+modèle. Le transport interne reste externe ; ne pas revendiquer sa réparation.
+
+État à 08:41 UTC : services sains, 4 livrées, 3 prêtes, 4 pending, zéro processing ;
+deux dates non vérifiées et des refus/outages restent visibles. Finance BCE a
+une synthèse approuvée en attente, pas une nouvelle livraison revendiquée ;
+catalogue Business toujours zéro. Le traitement courant continue automatiquement.
+Premier cycle c613533 terminé en 49,553 s, trois appels natifs et zéro Jev,
+sans nouvelle fiche ni livraison. CHECK_PROCESS_RECOVERY effacé par ce succès.
+Jev reste 761 appels / 0,029489 EUR estimé. Aucun nouvel envoi dans ce lot.
+
+Preuves privées : ~/.ivan-ai-os/mac-alerts-c613533/{worker-activation,
+morning-recovery-proof,final-recovery-proof}.json et state-backup-before-provider-recovery VERIFIED ;
+première qualification matinale dans mac-alerts-32dcdff/morning-recovery-proof.json.
+Snapshot final VERIFIED : mac-alerts-c613533/state-backup-after-recovery.
+Rollback de code en gardant la file actuelle et ses reçus, pas de restauration
+aveugle d'une ancienne file. Aucun changement des autres services/réglages.
+
+Lot Claude actualisé : CLAUDE-NEXT-NATIVE-EDITORIAL-2026-10-07.md ; reçu 62,
+documents/skills et avis ciblé sur les trois correctifs, pas de campagne payante.
+Reste global : qualité/utilité Business et Finance, coût natif accessible,
+prochaine nuit sous cette version, Engineering/mémoire et consolidation des PR,
+puis Knowledge/Anakalypto ensemble en dernière étape. Career en pause, OVH différé.
+
+## Historique — tri natif activé et vraie livraison, 7 octobre 2026
 
 Décision explicite d'Ivan : ne pas utiliser Jev là où il n'est pas fiable.
 Worker et plugin alertes 8364b9f actifs ; gateway Jev d35963e et hook Claude
