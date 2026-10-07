@@ -19,6 +19,14 @@ test('latest failed collection is actionable beside ready work, and a later succ
  const recovered=summarizeAlertCycles({cycles:[{name:'feeds',status:'done',metrics:'{}'},failed]});
  assert.ok(!recovered.diagnoses.some(d=>d.code==='CHECK_COLLECTION'));
 });
+test('an interrupted native cycle is visible beside ready work and a successful current cycle clears the action',()=>{
+ const interrupted={name:'process',status:'failed',metrics:JSON.stringify({error_code:'CYCLE_INTERRUPTED'})};
+ const r=summarizeAlertCycles({counts:[{state:'ready',n:1}],cycles:[interrupted]});
+ assert.ok(r.diagnoses.some(d=>d.code==='CHECK_PROCESS_RECOVERY'));
+ assert.ok(r.diagnoses.some(d=>d.code==='WAIT_DIGEST'));
+ const recovered=summarizeAlertCycles({cycles:[{name:'process',status:'done',metrics:'{}'},interrupted]});
+ assert.ok(!recovered.diagnoses.some(d=>d.code==='CHECK_PROCESS_RECOVERY'));
+});
 test('editorial check counts expose the failing field, never a raw draft or exception',()=>{
  const r=summarizeAlertCycles({reviewReasons:[{reason:'ALERT_FACT_UNSUPPORTED',n:1}],rejectionChecks:[
   {code:'FACT_1_IDENTIFIER_NOT_IN_QUOTE',n:1},{code:'PRIVATE DRAFT CONTENT',n:4}]});

@@ -184,6 +184,10 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
       const state=confirmed?'delivered':'delivery_unknown';
       db.prepare('UPDATE alerts SET state=?,receipt=?,updated=?,expires=NULL WHERE id=?').run(state,confirmed?JSON.stringify({messageId:receipt.messageId,delivered:true}):null,now(),id);return get(id);});},
     reconcile(){return tx(()=>{
+      // A suspended/crashed process may never return to finish its cycle.
+      // Keep the exhausted attempt visible without replaying old time slots.
+      db.prepare("UPDATE cycles SET status='failed',expires=NULL,updated=?,metrics=? WHERE status='running' AND expires<=?")
+        .run(now(),JSON.stringify({error_code:'CYCLE_INTERRUPTED'}),now());
       db.prepare("UPDATE digests SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now());
       return db.prepare("UPDATE alerts SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now()).changes;
     });},

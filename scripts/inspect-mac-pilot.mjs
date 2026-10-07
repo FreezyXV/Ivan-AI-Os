@@ -43,6 +43,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  const currentCollections=['feeds','finance','business'].map(name=>latest.find(r=>r.name===name)).filter(Boolean);
  add(currentCollections.some(r=>r.status==='failed'||r.degraded),'CHECK_COLLECTION','Une collecte est dégradée : consulter ses codes de source et vérifier sa reprise au prochain créneau.');
  add(persistentReads.total>0,'CHECK_SOURCE_READS','Des lectures attendent un nouvel essai ou un correctif du lecteur : consulter les codes persistés ; les autres sources continuent.');
+ add(latest.find(r=>r.name==='process')?.status==='failed','CHECK_PROCESS_RECOVERY','Un traitement a été interrompu ou a échoué : vérifier le prochain créneau courant et son code ; aucun rattrapage des créneaux anciens.');
  add(contentRefusals.total>0,'CHECK_EDITORIAL_REJECTIONS','Des contenus ont été refusés : vérifier leurs citations et la phase de validation avant une correction ciblée.');
  add(queue.ready>0,'WAIT_DIGEST','Synthèses prêtes pour le prochain digest.');
  add((queue.pending??0)+(queue.processing??0)>0,'PROCESS_PENDING','Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.');

@@ -77,7 +77,12 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   selectionMode==='native-editorial'?'process:native:'+Math.floor(now.getTime()/300000):
   slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours()+(selectionMode!=='jev'?':'+selectionMode:'');
  await perform('process',processKey,async()=>{
-  if(selectionMode==='native-editorial')editorialRevisions=ledger.reassessJevAbstentions().requeued;
+  if(selectionMode==='native-editorial'){
+   // Older Jev reviews retain their original queue age. Only reopen enough to
+   // fill spare capacity, so migration cannot displace newly collected sources.
+   const queued=ledger.counts(),spare=Math.max(0,2-(queued.pending??0)-(queued.processing??0));
+   if(spare)editorialRevisions=ledger.reassessJevAbstentions({limit:spare}).requeued;
+  }
   let decisions=0,generations=0,nativeCalls=0,businessFichesCreated=0,opportunityScoresCreated=0;const states={};
   const modelBudget=verify?4:2,requiredCalls=verify?2:1;
   for(let i=0;i<100&&decisions<8&&nativeCalls+requiredCalls<=modelBudget;i++){

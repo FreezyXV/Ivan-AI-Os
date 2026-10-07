@@ -8,7 +8,7 @@ import {sendDigest} from '../src/digest.js';
 import {scheduleSlots} from '../src/schedule.js';
 const at=Date.parse('2026-10-05T18:00:00Z');
 function fixture(t){const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-digest-'));let time=at;
- const ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>time,leaseMs:1000});t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return {ledger,advance:()=>time+=1001};}
+ const ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>time,leaseMs:1000});t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return {ledger,advance:(ms=1001)=>time+=ms};}
 function ready(ledger,suffix){const {id}=ledger.ingest({producer:'sentinelle',scope:'public',topic:'system',url:'https://example.org/'+suffix,title:`Un fait public distinct ${suffix}`,publishedAt:'2026-10-05T08:00:00Z',observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z',sourceStatus:'read',excerpt:'Une preuve publique complète.'});
  const job=ledger.claim();ledger.finish(id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Fait vérifié, utilité et action. Source : https://example.org/'+suffix}});return id;}
 test('Paris schedules survive DST and wake up in one current slot, no backlog replay',()=>{
@@ -19,6 +19,22 @@ test('Paris schedules survive DST and wake up in one current slot, no backlog re
 test('cycle reservation excludes overlapping processes and successful repeats',t=>{
  const {ledger}=fixture(t),c=ledger.claimCycle('feeds','feeds:today');assert.ok(c);assert.equal(ledger.claimCycle('feeds','feeds:today'),null);
  ledger.finishCycle(c,{ok:true,metrics:{calls:0}});assert.equal(ledger.claimCycle('feeds','feeds:today'),null);
+});
+test('wake reconciliation closes expired cycles, preserves live leases and bounds their recovery',t=>{
+ const {ledger,advance}=fixture(t),old=ledger.claimCycle('feeds','feeds:interrupted');
+ advance(900001);
+ const live=ledger.claimCycle('process','process:current');
+ assert.equal(ledger.reconcile(),0,'the return value still counts uncertain deliveries only');
+ const failed=ledger.cycleStatus().find(c=>c.key===old.key);
+ assert.equal(failed.status,'failed');assert.equal(failed.metrics.error_code,'CYCLE_INTERRUPTED');
+ assert.equal(ledger.cycleStatus().find(c=>c.key===live.key).status,'running');
+ assert.throws(()=>ledger.finishCycle(old,{ok:true}),{code:'ALERT_LEASE_LOST'});
+ assert.equal(ledger.claimCycle('feeds',old.key),null,'no immediate catch-up burst');
+ ledger.finishCycle(live,{ok:true});
+ advance(900001);
+ const retry=ledger.claimCycle('feeds',old.key);assert.equal(retry.attempt,2);
+ advance(900001);ledger.reconcile();
+ assert.equal(ledger.claimCycle('feeds',old.key),null,'the interrupted retry still consumes the second attempt');
 });
 test('one native digest receipt completes both producers and its key cannot resend',async t=>{
  const {ledger}=fixture(t),a=ready(ledger,'a'),b=ready(ledger,'b');let calls=0;

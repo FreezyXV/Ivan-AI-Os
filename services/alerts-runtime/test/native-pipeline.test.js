@@ -37,6 +37,50 @@ test('switching to native triage revisits Jev abstentions once without reopening
   assert.equal(ledger.get(id).brief.selection.provider,'native-editorial');}
 });
 
+for(const freshCount of [1,2])test(`native migration leaves capacity for ${freshCount} newly collected source(s)`,async t=>{
+ let clock=at;const {ledger,dir}=fixture(t,()=>clock),legacy=[];
+ for(let i=0;i<3;i++){
+  legacy.push(ledger.ingest(item('legacy-'+i)).id);
+  await processNext({ledger,now:at,select:async()=>({decision:'keep',confidence:.47,provider:'jev',
+   context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000001'})});
+ }
+ // The migrated rows retain their older creation time. Fresh rows must not wait
+ // behind them merely because switching editorial modes reopened the history.
+ clock+=1000;
+ const fresh=[];for(let i=0;i<freshCount;i++)fresh.push(ledger.ingest(item('fresh-'+i)).id);
+ const assessed=[];
+ const options={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async source=>{assessed.push(source.url);return{decision:'review'};},
+  select:async()=>assert.fail('no Jev'),deliver:async()=>assert.fail('no publishable result')};
+ const first=await runCycle(options);
+ assert.equal(first.editorialRevisions,2-freshCount);
+ for(const id of fresh){assert.equal(ledger.get(id).reason,'NATIVE_EDITORIAL_UNCERTAIN');
+  assert.ok(assessed.includes(ledger.get(id).item.url));}
+ assert.equal(legacy.filter(id=>ledger.get(id).reason==='SELECTION_UNCERTAIN').length,1+freshCount);
+ const second=await runCycle({...options,now:new Date(at+60000)});
+ assert.equal(second.editorialRevisions,2,'legacy reviews fill the next empty slot');
+ assert.equal(assessed.length,4);assert.equal(new Set(assessed).size,4,'no native review is reopened');
+});
+
+test('an expired source lease counts as existing work before migrating old Jev reviews',async t=>{
+ let clock=at;const {ledger,dir}=fixture(t,()=>clock);
+ for(let i=0;i<2;i++){
+  ledger.ingest(item('migration-held-'+i));
+  await processNext({ledger,now:at,select:async()=>({decision:'keep',confidence:.47,provider:'jev',
+   context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000001'})});
+ }
+ clock+=1000;const interrupted=ledger.ingest(item('interrupted-source'));ledger.claim();clock+=120001;
+ ledger.ingest(item('morning-source'));
+ const result=await runCycle({ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(clock),processNow:true,
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>({decision:'review'}),deliver:async()=>assert.fail('no publishable result')});
+ assert.equal(result.editorialRevisions,0);
+ assert.equal(ledger.get(interrupted.id).reason,'NATIVE_EDITORIAL_UNCERTAIN');
+ assert.equal(ledger.counts().processing??0,0);assert.equal(ledger.counts().pending??0,0);
+ assert.equal(result.results.process.nativeCalls,2);
+});
+
 test('official security release previews wait for released fixes without model spend',async t=>{
  const {ledger}=fixture(t);ledger.ingest({...item('preview'),topic:'engineering',url:'https://nextjs.org/blog/preview-security-release',
   excerpt:'Later today, we will publish the patched versions alongside full advisory details, including impact and upgrade instructions.'});
@@ -57,7 +101,7 @@ test('normal native processing advances each five-minute slot and cannot replay 
  await runCycle({...options,now:new Date(at+60000)});assert.equal(calls,2);
  await runCycle({...options,now:new Date(at+300000)});assert.equal(calls,4);
 });
-function fixture(t){const dir=mkdtempSync(path.join(tmpdir(),'ivan-native-pipeline-')),ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>at});
+function fixture(t,clock=()=>at){const dir=mkdtempSync(path.join(tmpdir(),'ivan-native-pipeline-')),ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:clock});
  t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return{ledger,dir};}
 test('native editorial assessment is one completion and never depends on Jev or a second prose call',async t=>{
  const {ledger}=fixture(t);ledger.ingest(item('one'));let calls=0;
