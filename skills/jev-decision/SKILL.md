@@ -3,13 +3,13 @@ name: jev-decision
 description: Utiliser Jev (TypeSafe System One, via le Jev Gateway d'Ivan-AI-Os) pour les décisions bon marché - routage vers un manager, tri oui/non, notation, choix parmi des options, pré-contrôle d'une action - et concevoir de nouvelles questions Jev. Utiliser dès qu'une tâche demande de classer, trier, noter, filtrer ou router en volume, avant d'appeler un modèle premium pour ça, ou quand Ivan dit "passe par Jev", "fais trier", "note ces éléments".
 compatibility: "claude-code, codex"
 metadata:
-  version: "0.5.1"
+  version: "0.6.0"
   famille: system
   manager: system
   risque: lecture
   profil: "non"
   statut: brouillon
-  provenance: "services/jev-gateway, docs/CLASSIFY-GATEWAY.md, docs/ALERTS-RUNTIME.md (Codex) ; budget fixé par Ivan le 2026-09-29 ; état revu le 2026-10-05"
+  provenance: "services/jev-gateway, docs/CLASSIFY-GATEWAY.md, docs/ALERTS-RUNTIME.md (Codex) ; budget fixé par Ivan le 2026-09-29 ; état revu le 2026-10-08 (Jev retiré du tri des alertes)"
 ---
 # Jev : décisions rapides et bon marché
 
@@ -39,19 +39,18 @@ Ne pas inventer de question ni d'endpoint : une nouvelle question demande un con
 Knowledge et OVH y sont écartés par code sans appel fournisseur.
 Le compteur mesure les tokens d'entrée (`jev-1.13.0`) et refuse avant le réseau au plafond de 10 €.
 
-## Usage réel des alertes (2026-10-06, runtime Codex `bf2d2e1`)
-- Question `alerts.pertinence.mac-v3`, contexte public **`mac-alerts-20261006-v6`** (v5 = historique), politique
-  `keep ≥ 0,75 / skip ≥ 0,75` sur la confiance ; deux seuils contradictoires → review
-  (`selectionOutcome`). Mode actif **E** : Jev keep, puis jugement et rédaction natifs, digest
-  seulement. Jev ne rédige rien et n'autorise aucune action.
-- Mesuré **en v5** (labels figés, historique, ne qualifie pas v6) : 6/14 utiles sur dev et 4/5 sur le benchmark, **0 bruit** ; rappel
-  limité (rate les incidents de sécurité d'agents génériques). Politique P(keep) ≥ 0,10 /
-  P(skip) ≥ 0,20 en réserve (1 faux keep sur le benchmark).
+## Alertes : Jev retiré du tri (décision d'Ivan, 2026-10-07)
+- Les alertes sont triées par une complétion native isolée puis relues par une seconde lecture
+  indépendante (`docs/NATIVE-ALERT-TRIAGE.md`, `workflows/alert-editorial.md`). **Aucun appel Jev**
+  dans cette chaîne ; `/v1/alerts/select` (`alerts.pertinence.mac-v3`) n'est plus un passage obligé.
+- Historique, à ne pas réutiliser comme preuve du tri actuel : politique `keep ≥ 0,75 / skip ≥ 0,75`,
+  mesurée en v5 (6/14 utiles sur dev, 4/5 sur le benchmark, 0 bruit, rappel faible). Les anciennes
+  abstentions Jev reçoivent un nouveau jugement natif, une seule fois ; leur décision d'origine reste
+  dans `evidence_revisions`.
 - **Non qualifiés** (jamais mesurés sur jeu figé) : routage (la table active fait mieux),
   `signal.pertinent`, `preuve.suffisante`, `alerte.importante`, `source.fiable`, `sujet.*`,
-  `publication.prete`. Ne pas en dépendre pour décider seul ; mesurer d'abord.
-- Une adresse de contact dans un extrait fait refuser l'entrée par le gateway (A10) : c'est voulu.
-  Ne pas contourner ; la correction proposée remplace l'adresse côté client avant l'appel.
+  `publication.prete`. Ne pas en dépendre pour décider seul ; une preuve spécifique d'abord.
+- Une adresse de contact dans un extrait fait refuser l'entrée par le gateway : c'est voulu.
 
 ## Cascade (du moins cher au plus cher)
 1. Code déterministe (regex, règle, liste) si la règle s'écrit en 10 lignes.
