@@ -74,7 +74,7 @@ test('uncertain, malformed and unavailable selections do not trigger prose gener
     async()=>{throw Error('provider outage');},async()=>({decision:'skip',confidence:0.9})];
   const expected=['SELECTION_UNCERTAIN','SELECTION_INVALID','SELECTION_UNAVAILABLE','SELECTION_REJECTED'];
   for(let i=0;i<selections.length;i++){
-    ledger.ingest(item({url:`https://example.org/selection/${i}`}));
+    ledger.ingest(item({url:`https://example.org/selection/${i}`,title:`Sélection indépendante ${i}`}));
     const result=await processNext({ledger,now:at,select:selections[i],synthesize:()=>{calls++;}});
     assert.equal(result.reason,expected[i]);
   }
@@ -97,7 +97,7 @@ test('fabricated quotation or unsupported number prevents automatic delivery',as
     {summary:'Reprise en 2 secondes.',quote:'une reprise après 15 secondes'},
     {summary:'Tout fonctionne.',quote:'Cette phrase ne figure pas dans la source.'}
   ].entries()){
-    ledger.ingest(item({url:`https://example.org/fact/${i}`}));
+    ledger.ingest(item({url:`https://example.org/fact/${i}`,title:`Vérification indépendante ${i}`}));
     const result=await processNext({ledger,now:at,select:keep,synthesize:async()=>({...brief(),facts:[fact]})});
     assert.equal(result.state,'review');assert.equal(result.reason,'ALERT_FACT_UNSUPPORTED');
   }
@@ -166,7 +166,7 @@ test('a hanging provider is cancelled and cannot block the next queued alert',as
   const result=await processNext({ledger,now:at,stageTimeoutMs:15,
     select:async(_item,_context,options)=>{signal=options.signal;return new Promise(()=>{});}});
   assert.equal(result.reason,'SELECTION_TIMEOUT');assert.equal(result.state,'review');assert.equal(signal.aborted,true);
-  ledger.ingest(item({url:'https://example.org/next'}));
+  ledger.ingest(item({url:'https://example.org/next',title:'Une autre annonce après la panne'}));
   assert.equal((await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()})).state,'ready');
 });
 
@@ -174,7 +174,7 @@ test('synthesis timeout preserves the Jev decision receipt instead of retrying',
   const {ledger}=fixture(t);ledger.ingest(item());
   const selected={decision:'keep',confidence:0.9,provider:'jev',request_id:'00000000-0000-4000-a000-000000000000',context_version:PILOT_CONTEXT.version};
   const result=await processNext({ledger,now:at,stageTimeoutMs:15,select:async()=>selected,synthesize:async()=>new Promise(()=>{})});
-  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual(result.brief.selection,selected);
+  assert.equal(result.reason,'SYNTHESIS_TIMEOUT');assert.deepEqual({...result.brief.selection,itemSha256:undefined},{...selected,policy:{keepMinConfidence:0.75,skipMinConfidence:0.75},itemSha256:undefined});assert.match(result.brief.selection.itemSha256,/^[a-f0-9]{64}$/);
 });
 
 test('a sender that never returns becomes uncertain and is never invoked twice',async t=>{
@@ -206,4 +206,36 @@ test('new source evidence can release an unread review without retrying delivere
   await deliverReady({ledger,id,deliver:async()=>{throw Error('uncertain');}});
   assert.equal(ledger.ingest(item()).state,'delivery_unknown');
   assert.equal(ledger.get(id).state,'delivery_unknown');
+});
+
+test('invalid stage configuration cannot consume a queued source or masquerade as provider failure',async t=>{
+ const {ledger}=fixture(t);const {id}=ledger.ingest(item());
+ await assert.rejects(processNext({ledger,stageTimeoutMs:70000}),{code:'ALERT_DEADLINE_CONFIG_INVALID'});
+ assert.equal(ledger.get(id).state,'pending');
+ await processNext({ledger,now:at,select:async()=>{throw Error();}});
+ assert.equal(ledger.retryTransient({minDelayMs:0}),1);
+ await processNext({ledger,now:at,select:async()=>{throw Error();}});
+ assert.equal(ledger.retryTransient({minDelayMs:0}),0);
+});
+test('operator reader repair permits one changed evidence revision but never reopens an attempted send',async t=>{
+ const {ledger}=fixture(t);const original=item();const {id}=ledger.ingest(original);
+ await processNext({ledger,now:at,select:async()=>({decision:'review',confidence:0.8})});
+ const updated={...original,excerpt:'Une preuve différente, réellement lue, après correction du lecteur.'};
+ assert.equal(ledger.reviseReviewedEvidence(updated,{revision:'reader-clean-v2'}).revised,true);
+ await processNext({ledger,now:at,select:async()=>({decision:'review',confidence:0.8})});
+ assert.equal(ledger.reviseReviewedEvidence(original,{revision:'reader-clean-v2'}).revised,false);
+ assert.equal(ledger.get(id).state,'review');
+ assert.equal(ledger.reviseReviewedEvidence({...original,topic:'finance'},{revision:'reader-clean-v3'}).revised,false);
+ const {id:other}=ledger.ingest(item({url:'https://example.org/sent',title:'Une autre annonce à livrer'}));
+ await processNext({ledger,now:at,select:keep,synthesize:async()=>brief()});
+ await deliverReady({ledger,id:other,deliver:async()=>{throw Error();}});
+ assert.equal(ledger.reviseReviewedEvidence({...updated,url:'https://example.org/sent'},{revision:'reader-clean-v2'}).revised,false);
+ assert.equal(ledger.get(other).state,'delivery_unknown');
+});
+
+test('a native synthesis retry reuses the bound Jev receipt instead of paying selection again',async t=>{
+ const {ledger,advance}=fixture(t);ledger.ingest(item());let selected=0;
+ const options={ledger,now:at,select:async()=>{selected++;return{decision:'keep',confidence:0.9,provider:'jev',context_version:PILOT_CONTEXT.version,request_id:'00000000-0000-4000-a000-000000000000'};},synthesize:async()=>{throw Error('temporary native outage');}};
+ await processNext(options);advance(900001);assert.equal(ledger.retryTransient(),1);
+ await processNext({...options,now:at+900001,synthesize:async()=>brief()});assert.equal(selected,1);assert.equal(ledger.counts().ready,1);
 });

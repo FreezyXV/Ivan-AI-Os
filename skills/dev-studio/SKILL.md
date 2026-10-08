@@ -1,6 +1,7 @@
 ---
 name: dev-studio
 description: Méthode de développement rapide, testée et économe pour Ivan (Next.js/TypeScript/Prisma par défaut, Node pur pour les services) - cadrage, architecture, découpage en tickets, preuve avant correctif, tests minimaux utiles, CI gratuite, branches par agent. Utiliser pour toute tâche de code : nouveau projet, MVP, fonctionnalité, bug, refactor, intégration API, "prépare ce repo", tests, même si Ivan ne demande pas de méthode.
+compatibility: "claude-code, codex"
 metadata:
   version: "2.1.0"
   famille: engineering

@@ -8,6 +8,7 @@ import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSy
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 export const AGENT_ROOT = "Ivan AI OS";
 export const FOLDERS = { connaissance: "connaissances", decision: "decisions", journal: "journal", inbox: "inbox" };
@@ -162,7 +163,7 @@ export function list(vault, max = "interne") {
   });
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [command, ...args] = process.argv.slice(2);
   const values = flag => args.flatMap((a, i) => a === flag ? [args[i + 1]] : []);
   const one = flag => values(flag)[0];

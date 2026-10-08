@@ -1,6 +1,6 @@
 ---
 name: recruiter-outreach
-description: Messages de prospection ultra-personnalisés (LinkedIn, e-mail) vers recruteurs, ESN, cabinets et managers pour le positionnement Business Analyst Métier d'Ivan à Paris et au Luxembourg - premier contact, relance, remerciement après entretien. Utiliser dès qu'Ivan veut contacter, relancer ou remercier un recruteur, un manager ou une ESN, même s'il ne dit pas "outreach".
+description: Career en pause depuis le 2026-10-05 - seulement sur demande explicite d'Ivan. Messages de prospection ultra-personnalisés (LinkedIn, e-mail) vers recruteurs, ESN, cabinets et managers pour le positionnement Business Analyst Métier d'Ivan à Paris et au Luxembourg - premier contact, relance, remerciement après entretien. Utiliser dès qu'Ivan veut contacter, relancer ou remercier un recruteur, un manager ou une ESN, même s'il ne dit pas "outreach".
 metadata:
   version: "1.1.0"
   famille: career

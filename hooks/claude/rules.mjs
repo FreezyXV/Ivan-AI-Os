@@ -44,14 +44,57 @@ function segments(command) {
   return { parts: parts.map(p => p.trim().replace(/^(?:cd\s+\S+\s*&&\s*)/, "")).filter(Boolean), ops };
 }
 
-const writes = segment => /(?:^|[^>2&])>{1,2}\s*(?!\/dev\/null|&)\S/.test(segment.replace(/'[^']*'|"[^"]*"/g, "''")) || /\$\(|`/.test(segment.replace(/'[^']*'/g, "''"));
+// Escaped \` and \$ inside double quotes are literal text, never a substitution.
+const writes = segment => /(?:^|[^>2&])>{1,2}\s*(?!\/dev\/null|&)\S/.test(segment.replace(/'[^']*'|"[^"]*"/g, "''")) || /\$\(|`/.test(segment.replace(/'[^']*'/g, "''").replace(/\\[`$]/g, ""));
 
 // Quoted prose and heredoc bodies are data (commit messages, issue bodies, notes) unless a shell
 // or language interpreter would execute them; then the whole text is scanned.
 const INTERPRETER = /(?:^|[\s;&|(])(?:(?:ba|z|da|k)?sh|eval|xargs|ssh|source|exec|(?:python3?|node|perl|ruby)\s+-[ce])\b/;
+// Quoted text is data, except what the shell executes inside double quotes: $(...) and `...`.
+// The interpreter test runs on this stripped form (executed position only): "bash" inside a PR
+// body or a commit message no longer counts, while `bash -c '…'`, `node -e "…"`, `eval`, a heredoc
+// fed to a shell or a substitution keep the whole text scanned (Codex review f4aba0b).
+function stripData(command) {
+  return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC")
+    .replace(/'[^']*'|"((?:\\.|[^"\\])*)"/g, (whole, dq) => {
+      if (dq === undefined) return "''";
+      const executed = dq.replace(/\\./g, "").match(/\$\([^)]*\)|`[^`]*`/g);
+      return executed ? `'' ${executed.join(" ")}` : "''";
+    });
+}
+// git global options placed before the subcommand must not hide it from the rules below
+// (found live on 2026-10-06; completed after Codex review REVIEW-CODEX-PR65). Closed list of
+// Git 2.42 global options: flags without value, options taking a value (separate or "="),
+// and "=value only" options. An option outside this list is not understood: the command is
+// left as is and ends up evaluer (never a silent pass).
+const GIT_FLAGS = new Set(["-p", "-P", "--paginate", "--no-pager", "--bare", "--no-replace-objects", "--no-lazy-fetch",
+  "--no-optional-locks", "--literal-pathspecs", "--glob-pathspecs", "--noglob-pathspecs", "--icase-pathspecs", "--exec-path"]);
+const GIT_WITH_VALUE = new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace", "--super-prefix", "--config-env", "--attr-source"]);
+const GIT_EQUALS_ONLY = new Set(["--exec-path", "--list-cmds"]);
+function skipGitOptions(tokens) {
+  let i = 0;
+  while (i < tokens.length && tokens[i].startsWith("-")) {
+    const t = tokens[i], name = t.split("=")[0];
+    if (t.includes("=") && (GIT_WITH_VALUE.has(name) || GIT_EQUALS_ONLY.has(name))) { i += 1; continue; }
+    if (GIT_WITH_VALUE.has(t)) { i += 2; continue; }
+    if (GIT_FLAGS.has(t)) { i += 1; continue; }
+    return null; // unknown option: do not guess
+  }
+  return i;
+}
+export function normalizeGit(text) {
+  return text.replace(/\bgit((?:\s+-\S+(?:\s+(?!-)\S+)?)+)(?=\s)/g, (whole, opts) => {
+    const tokens = opts.trim().split(/\s+/);
+    // Re-scan token by token: a value token following -C/-c must not be read as the subcommand.
+    const n = skipGitOptions(tokens);
+    if (n === null) return whole;
+    return ["git", ...tokens.slice(n)].join(" ");
+  });
+}
 export function commandWords(command) {
-  if (INTERPRETER.test(command)) return command;
-  return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC").replace(/'[^']*'|"(?:\\.|[^"\\])*"/g, "''");
+  const stripped = normalizeGit(stripData(command));
+  if (INTERPRETER.test(stripped)) return normalizeGit(command);
+  return stripped;
 }
 
 export function classifyCommand(command) {
@@ -61,7 +104,7 @@ export function classifyCommand(command) {
   const { parts, ops } = segments(command);
   let level = "read_only";
   for (let i = 0; i < parts.length; i++) {
-    const p = parts[i].replace(/^cd\s+\S+$/, "pwd");
+    const p = normalizeGit(parts[i]).replace(/^cd\s+\S+$/, "pwd");
     const piped = i > 0 && ops[i - 1] === "|";
     if (writes(p)) return { verdict: "evaluer", raison: "redirection ou sous-commande" };
     if (piped && FILTERS.test(p)) continue;

@@ -1,6 +1,7 @@
 ---
 name: verification-affirmations
 description: Vérification des faits par règles de preuve codées - registre d'affirmations (chiffres, dates, définitions, relations) liées à leurs sources, niveau de fiabilité des domaines, deux sources indépendantes pour tout chiffre ou date, détection des valeurs divergentes, section Faits clés et Sources générée à partir des seules affirmations confirmées, choix du visuel. Utiliser avant de publier un article Anakalypto, un document ou une recherche contenant des chiffres, dates ou affirmations factuelles, ou quand Ivan dit "vérifie", "fact-check", "c'est sûr ce chiffre ?".
+compatibility: "claude-code, codex"
 metadata:
   version: "1.0.0"
   famille: knowledge

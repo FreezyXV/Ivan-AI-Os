@@ -6,7 +6,7 @@ const token='synthetic-alert-selector-token-only-1234';
 const item={producer:'secretaire',scope:'public',topic:'system',url:'https://example.org/news',title:'Un changement technique',
   excerpt:'Un changement public améliore la reprise des tâches.',sourceStatus:'read',publishedAt:'2026-10-05T08:00:00Z',
   observedAt:'2026-10-05T09:00:00Z',readAt:'2026-10-05T09:00:00Z'};
-const answer={question:'alerts.pertinence.mac-v1',context_version:PILOT_CONTEXT.version,decision:'keep',confidence:0.9,
+const answer={question:'alerts.pertinence.mac-v3',context_version:PILOT_CONTEXT.version,decision:'keep',confidence:0.9,
   provider:'jev',request_id:'00000000-0000-4000-a000-000000000000'};
 
 test('selector posts only bounded public fields to loopback and forbids redirects',async()=>{
@@ -15,8 +15,13 @@ test('selector posts only bounded public fields to loopback and forbids redirect
   }});
   const result=await select({...item,excerpt:'x'.repeat(1200),privateProfile:'ignored input'});
   assert.equal(result.decision,'keep');assert.equal(seen.url,'http://127.0.0.1:4311/v1/alerts/select');
-  assert.equal(seen.redirect,'error');assert.equal(JSON.parse(seen.body).excerpt.length,500);
+  assert.equal(seen.redirect,'error');assert.equal(JSON.parse(seen.body).excerpt.length,1200);
   assert.deepEqual(Object.keys(JSON.parse(seen.body)).sort(),['context_version','excerpt','scope','title','topic']);
+});
+test('decisive evidence beyond character 500 reaches Jev unchanged, without expanding the read envelope',async()=>{
+ let received;const select=createJevSelector({token,fetchImpl:async(_url,options)=>{received=JSON.parse(options.body);return {ok:true,json:async()=>answer};}});
+ const excerpt='Introduction publique. '.repeat(30)+'Le correctif corrige les accès à images.remotePatterns.';
+ await select({...item,excerpt});assert.equal(received.excerpt,excerpt);assert.ok(received.excerpt.indexOf('images.remotePatterns')>500);
 });
 
 test('deferred roles and unread sources cause zero HTTP requests',async()=>{

@@ -2,11 +2,12 @@
 // public, derived inputs only (slug, claim-check summary, word count, visual type, validator
 // result) and write <lot>.jev.json next to the batch. Any Jev failure writes nothing: fail closed.
 // Usage: node porte_jev.mjs <lot.md>   (expects <lot>.claims.json from verification-affirmations)
-import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { classify, JevError } from "../../jev-decision/scripts/classify.mjs";
 import { summary, verify } from "../../verification-affirmations/scripts/affirmations.mjs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 const BLOC = /^---\ntype: article\n([\s\S]*?)\n---\n([\s\S]*?)(?=^---\ntype: |(?![\s\S]))/gm;
 const VISUEL = /```anakalypto-visuel\n([\s\S]*?)\n```/;
@@ -40,7 +41,7 @@ export async function gate(lot, { classifyImpl = classify, draftCheck } = {}) {
   return { fichier: out, fiches: Object.keys(decisions).length, pretes: Object.values(decisions).filter(d => d["publication.prete"].decision >= 0.7).length };
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   try {
     const lot = process.argv[2];
     if (!lot?.endsWith(".md")) throw new Error("USAGE: node porte_jev.mjs <lot.md>");

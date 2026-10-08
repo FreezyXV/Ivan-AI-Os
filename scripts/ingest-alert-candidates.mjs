@@ -2,16 +2,21 @@ import { readFileSync, realpathSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { openLedger } from '../services/alerts-runtime/src/ledger.js';
-import { validateItem, prefilter, fail } from '../services/alerts-runtime/src/context.js';
+import { validateItem, prefilter, fail, PILOT_CONTEXT } from '../services/alerts-runtime/src/context.js';
 import { withDeadline } from '../services/alerts-runtime/src/deadline.js';
 import { createJevSelector } from '../services/alerts-runtime/src/jev-selector.js';
 import { processNext } from '../services/alerts-runtime/src/pipeline.js';
 const run=promisify(execFile);
 const reader=fileURLToPath(new URL('./read-public-alert.py',import.meta.url));
+// Reader/validation changes allow a new bounded attempt; unrelated deployments do not.
+export const PUBLIC_READER_REVISION=createHash('sha256').update(readFileSync(reader))
+  .update(readFileSync(fileURLToPath(import.meta.url))).digest('hex');
 export async function readPublicSource(item,{signal}={}){
   try{
-    const {stdout}=await run('python3',[reader,item.url,'--topic',item.topic,'--producer',item.producer],
+    const {stdout}=await run('python3',[reader,item.url,'--topic',item.topic,'--producer',item.producer,
+      '--published-at',item.publishedAt,'--title',item.title],
       {signal,timeout:18000,maxBuffer:65536});
     return JSON.parse(stdout);
   }catch(error){
@@ -21,34 +26,82 @@ export async function readPublicSource(item,{signal}={}){
     fail(code);
   }
 }
-export async function ingestCandidates({ledger,envelope,readSource=readPublicSource,readLimit=3,now=Date.now()}){
+export function supportsPublicSource(url){
+  let u;try{u=new URL(url);}catch{return false;}
+  if(u.protocol!=='https:'||u.username||u.password||u.port||u.hash)return false;
+  return /^https:\/\/simonwillison\.net\/\d{4}\/[A-Z][a-z]{2}\/\d{1,2}\/[a-z0-9-]+\/$/.test(url)||
+    (u.hostname==='mistral.ai'&&/^\/news\/[a-z0-9-]+\/?$/.test(u.pathname)&&!u.search)||
+    (u.hostname==='developers.cloudflare.com'&&/^\/changelog\/post\/\d{4}-\d{2}-\d{2}-[a-z0-9-]+\/?$/.test(u.pathname)&&!u.search)||
+    (['huggingface.co','nextjs.org'].includes(u.hostname)&&u.pathname.startsWith('/blog/')&&!u.search)||
+    (u.hostname==='www.ecb.europa.eu'&&/^\/{1,2}press\//.test(u.pathname)&&u.pathname.endsWith('.html')&&!u.search)||
+    (u.hostname==='news.ycombinator.com'&&u.pathname==='/item'&&/^\?id=\d{1,12}$/.test(u.search));
+}
+export async function ingestCandidates({ledger,envelope,readSource=readPublicSource,readLimit=3,
+ readerRevision=PUBLIC_READER_REVISION,now=Date.now()}){
   if(envelope?.version!==1||envelope.producer!=='sentinelle'||!Array.isArray(envelope.items)||envelope.items.length>100||
-     !Number.isInteger(readLimit)||readLimit<0||readLimit>10||!Number.isFinite(now))fail('ALERT_EXPORT_INVALID');
-  const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[]};
-  let attempts=0;
-  for(const raw of envelope.items){
+     !Number.isInteger(readLimit)||readLimit<0||readLimit>8||!Number.isSafeInteger(now)||
+     !/^[a-f\d]{64}$/.test(readerRevision))fail('ALERT_EXPORT_INVALID');
+  const summary={ingested:0,duplicates:0,evidenceUpdated:0,read:0,unread:0,readerErrors:0,readerFailures:[],sourceReceipts:[],
+    readAttempts:0,readLimitExhausted:0,readDeferred:0,unsupportedSources:0,sourceFiltered:0,readSkips:[],backlogCandidates:0};
+  const eligible=[],seen=new Set();
+  summary.aliasesResolved=ledger.resolveUnreadAliases();
+  const incoming=new Set(envelope.items.map(item=>item.url));
+  // The durable queue owns candidates after discovery. A busy feed must not
+  // remove a still-fresh unread page before its reader becomes available.
+  const backlog=ledger.unreadCandidates(100,{revision:readerRevision,at:now}).filter(item=>!incoming.has(item.url));
+  summary.backlogCandidates=backlog.length;
+  for(const raw of [...envelope.items,...backlog]){
     const item=validateItem(raw);
     // Feed evidence never promotes itself to a read article at this boundary.
     if(item.producer!=='sentinelle'||item.sourceStatus!=='title-only')fail('ALERT_EXPORT_INVALID');
-    const row=ledger.ingest(item),prior=ledger.get(row.id);
+    const row=ledger.ingest(item);
     summary[row.duplicate?'duplicates':'ingested']++;
+    // Terminal identity is enough: collection must not read archived content.
+    if(!['pending','review'].includes(row.state))continue;
+    const prior=ledger.get(row.id);
     if(prior.item.sourceStatus==='read'||!['pending','review'].includes(prior.state))continue;
-    const supported=/^https:\/\/simonwillison\.net\/\d{4}\/[A-Z][a-z]{2}\/\d{1,2}\/[a-z0-9-]+\/$/.test(item.url);
-    if(!supported||attempts>=readLimit||prefilter({...item,sourceStatus:'read',readAt:item.observedAt},{now}).decision!=='select'){
-      summary.unread++;continue;
+    if(seen.has(row.id))continue;
+    seen.add(row.id);
+    const filtered=prefilter({...item,sourceStatus:'read',readAt:item.observedAt},{now});
+    if(filtered.decision!=='select'){
+      summary.unread++;summary.sourceFiltered++;summary.readSkips.push({id:row.id,reason:filtered.reason});continue;
     }
-    attempts++;
+    if(!supportsPublicSource(item.url)){
+      summary.unread++;summary.unsupportedSources++;summary.readSkips.push({id:row.id,reason:'PUBLIC_SOURCE_UNSUPPORTED'});continue;
+    }
+    const retry=ledger.sourceReadStatus(row.id,{revision:readerRevision,at:now});
+    if(!retry.allowed){summary.unread++;summary.readDeferred++;
+      summary.readSkips.push({id:row.id,reason:retry.reason,code:retry.code});continue;}
+    eligible.push({item,row,index:eligible.length});
+  }
+  // Reserve one source per active category present, then spend the remaining budget
+  // on the freshest sources. Feed ordering cannot let a busy technical feed starve Finance/Business.
+  const freshest=(a,b)=>Date.parse(b.item.publishedAt)-Date.parse(a.item.publishedAt)||
+    Date.parse(b.item.observedAt)-Date.parse(a.item.observedAt)||a.index-b.index;
+  eligible.sort(freshest);
+  const representatives=PILOT_CONTEXT.active.map(topic=>eligible.find(c=>c.item.topic===topic)).filter(Boolean).sort(freshest);
+  const reserved=new Set(representatives.map(c=>c.row.id));
+  const schedule=[...representatives,...eligible.filter(c=>!reserved.has(c.row.id))];
+  for(const {item,row} of schedule){
+    if(summary.readAttempts>=readLimit){
+      summary.unread++;summary.readLimitExhausted++;summary.readSkips.push({id:row.id,reason:'SOURCE_READ_LIMIT'});continue;
+    }
+    summary.readAttempts++;
     try{
       const evidence=await withDeadline(signal=>readSource(item,{signal}),18000,'SOURCE_READ_TIMEOUT');
       const read=validateItem(evidence.item),receipt=evidence.sourceReceipt;
       if(read.url!==item.url||read.topic!==item.topic||read.producer!==item.producer||read.sourceStatus!=='read'||
          receipt?.url!==read.url||receipt.readAt!==read.readAt||receipt.publishedDay!==read.publishedAt.slice(0,10)||
-         receipt.extractor!=='simon-blog-v1'||!/^[a-f\d]{64}$/.test(receipt.responseSha256??'')||
-         !Number.isSafeInteger(receipt.bodyBytes)||receipt.bodyBytes<20||receipt.bodyBytes>400000)fail('ALERT_SOURCE_EVIDENCE_INVALID');
+         !['simon-blog-v1','public-article-v1'].includes(receipt.extractor)||!/^[a-f\d]{64}$/.test(receipt.responseSha256??'')||
+         !Number.isSafeInteger(receipt.bodyBytes)||receipt.bodyBytes<20||
+         receipt.bodyBytes>(new URL(read.url).hostname==='nextjs.org'?600000:400000))fail('ALERT_SOURCE_EVIDENCE_INVALID');
       const update=ledger.ingest(read);
       if(update.evidenceUpdated){summary.evidenceUpdated++;summary.read++;summary.sourceReceipts.push({id:row.id,...receipt});}
-    }catch(error){summary.readerErrors++;summary.unread++;summary.readerFailures.push({id:row.id,
-      code:/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(error.code??'')?error.code:'PUBLIC_SOURCE_UNAVAILABLE'});}
+    }catch(error){
+      const code=/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(error.code??'')?error.code:'PUBLIC_SOURCE_UNAVAILABLE';
+      ledger.recordSourceReadFailure(row.id,{revision:readerRevision,code,at:now});
+      summary.readerErrors++;summary.unread++;summary.readerFailures.push({id:row.id,code});
+    }
   }
   return summary;
 }

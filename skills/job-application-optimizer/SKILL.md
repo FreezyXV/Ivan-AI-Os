@@ -1,6 +1,6 @@
 ---
 name: job-application-optimizer
-description: Analyse complète d'une offre d'emploi pour Ivan, positionné Business Analyst Métier (BA fonctionnel, AMOA, consultant fonctionnel, PO fonctionnel) à Paris et au Luxembourg - score de fit, écarts, CV ciblé, lettre, réponses aux questions. Utiliser dès qu'Ivan colle une offre, un lien d'annonce, demande "est-ce que je postule", "adapte mon CV", "lettre de motivation", ou transfère une offre de la Secrétaire.
+description: Career en pause depuis le 2026-10-05 - seulement sur demande explicite d'Ivan. Analyse complète d'une offre d'emploi pour Ivan, positionné Business Analyst Métier (BA fonctionnel, AMOA, consultant fonctionnel, PO fonctionnel) à Paris et au Luxembourg - score de fit, écarts, CV ciblé, lettre, réponses aux questions. Utiliser dès qu'Ivan colle une offre, un lien d'annonce, demande "est-ce que je postule", "adapte mon CV", "lettre de motivation", ou transfère une offre de la Secrétaire.
 metadata:
   version: "1.1.0"
   famille: career

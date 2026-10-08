@@ -26,6 +26,11 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
   const roles = managers.map(manager => {
     if (!expected.delete(manager.route) || !Array.isArray(manager.skills) || manager.skills.some(name => !known.has(name))) throw new Error("INVALID_MANAGER_REGISTRY");
     const publicFinance = manager.route === "finance";
+    const runtimes=manager.runtimes??['openclaw'];
+    if(!Array.isArray(runtimes)||!runtimes.length||new Set(runtimes).size!==runtimes.length||
+       runtimes.some(r=>!['openclaw','codex','claude-code','claude-ai'].includes(r))||
+       (manager.route==='orchestrator'&&!runtimes.includes('openclaw')))throw Error('INVALID_MANAGER_RUNTIMES');
+    const nativeRuntime=runtimes.includes('openclaw');
     // Ivan explicitly chose public Finance on OpenClaw plus private context on
     // Claude. Reuse public research/report skills, never the personal finance skill.
     const candidates = publicFinance ? [
@@ -33,16 +38,17 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
       "recherche-sourcee", "rapport-telegram"] : manager.skills;
     if (candidates.some(name => !known.has(name))) throw new Error("INVALID_MANAGER_REGISTRY");
     const availableTools = [...new Set(availableToolsByRoute[manager.route] ?? [])];
-    const allowed = candidates.filter(name => isOpenClawSkillAvailable(known.get(name), { availableTools }));
+    const allowed = candidates.filter(name => nativeRuntime?isOpenClawSkillAvailable(known.get(name), { availableTools }):
+      known.get(name).statut==='actif'&&(!known.get(name).compatibility||known.get(name).compatibility.some(r=>runtimes.includes(r))));
     if (!allowed.length) throw new Error("MANAGER_WITHOUT_SKILLS");
     return {
       role: manager.route === "orchestrator" ? "chief-of-staff" : manager.route,
       route: manager.route, agentId: manager.route === "orchestrator" ? "main" : ROLE_IDS[manager.route],
-      runtime: "openclaw", workspace: manager.route === "orchestrator" && mainWorkspace
+      runtime: nativeRuntime?'openclaw':'external',runtimes:[...runtimes], workspace: manager.route === "orchestrator" && mainWorkspace
         ? mainWorkspace : path.join(runtimeRoot, manager.route === "orchestrator" ? "chief-of-staff" : manager.route),
       ...(manager.route === "orchestrator" && mainWorkspace ? { preparedWorkspace: path.join(runtimeRoot, "chief-of-staff") } : {}),
       skills: allowed, availableTools, description: publicFinance ? "Veille financière publique : macro, taux, évolutions et opportunités sourcées pour éclairer les décisions d'Ivan." : manager.description,
-      publicContextOnly: publicFinance, status: pausedRoutes.includes(manager.route) ? "PAUSED" : "PREPARED_NOT_ACTIVATED"
+      publicContextOnly: publicFinance, status: pausedRoutes.includes(manager.route) ? "PAUSED" : nativeRuntime?'PREPARED_NOT_ACTIVATED':'EXTERNAL_HANDOFF_REQUIRED'
     };
   });
   if (expected.size) throw new Error("INVALID_MANAGER_REGISTRY");
@@ -75,6 +81,8 @@ export function buildDispatchPlan({ route, metadata, plan }) {
   if (!role) throw new Error("MANAGER_NOT_CONFIGURED");
   if (role.status === "PAUSED") return { status:"PAUSED",manager:route.manager,reason:"MANAGER_PAUSED",executable:false };
   if (safeMetadata.requested_tasks.includes("portfolio_review")) return { status: "PRIVATE_CLAUDE_HANDOFF", manager: "finance", executable: false, private_data_forwarded: false };
+  if(role.runtime!=='openclaw')return {status:'EXTERNAL_MANAGER_HANDOFF',manager:route.manager,runtimes:role.runtimes,
+    reason:'NATIVE_RUNTIME_UNAVAILABLE',executable:false,metadata:safeMetadata};
   return {
     status: "DELEGATION_PROPOSED", manager: route.manager, executable: false,
     spawn: { agentId: role.agentId, runtime: "subagent", context: "isolated", mode: "run", runTimeoutSeconds: 300, deliver: false,

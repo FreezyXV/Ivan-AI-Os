@@ -1,0 +1,289 @@
+{
+ "version": 1,
+ "fixturesSha256": "71ee9caf8160730a2935d24ceb126848212e601277fa724f8cff409beebd95d5",
+ "figéLe": "2026-10-05",
+ "collecteSimulee": "observedAt = publishedAt + 2 h pour les sources réelles (fraîcheur neutralisée, documentée)",
+ "avertissement": "Labels fixés AVANT toute mesure, ne jamais transmettre au modèle. Les cas synthétiques ne prouvent pas l'utilité de la veille réelle.",
+ "labels": [
+  {
+   "id": "A01",
+   "selection": "keep",
+   "livraison": "digest",
+   "raison": null,
+   "argument": "Deux RCE critiques Next.js (AVIF/libheif via sharp, serveurs Windows) avec correctifs : pile web par défaut des projets d'Ivan. Pas d'inventaire prouvant une application exposée : digest, pas immédiat.",
+   "desaccords": "immédiat si un inventaire montrait une app exposée",
+   "doit_contenir": [
+    "AVIF"
+   ]
+  },
+  {
+   "id": "A02",
+   "selection": "keep",
+   "livraison": "digest",
+   "raison": null,
+   "argument": "Chronologie d'une attaque accidentelle d'agents (élévation de privilèges via un CVE noyau récent, chaîne de bugs) : risque concret pour un système multi-agents comme le pilote.",
+   "desaccords": "review si l'usage pour le pilote paraît indirect"
+  },
+  {
+   "id": "A03",
+   "selection": "keep",
+   "livraison": "digest",
+   "raison": null,
+   "argument": "Mesure publiée : documentation embarquée via AGENTS.md = 100 % de réussite contre 79 % pour les skills, sur les evals Next.js : donnée directement utile à l'architecture de skills d'Ivan AI OS.",
+   "desaccords": "review possible (étude d'éditeur)",
+   "doit_contenir": [
+    "79"
+   ]
+  },
+  {
+   "id": "A04",
+   "selection": "keep",
+   "livraison": "digest",
+   "raison": null,
+   "argument": "Next.js 16.3 embarque la doc version-alignée via AGENTS.md et des Skills first-party : change la façon de piloter les agents sur les projets Next.js.",
+   "desaccords": "review défendable"
+  },
+  {
+   "id": "A05",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Annonce d'un modèle moins cher, relayée par un post HN non officiel : utile pour les coûts si confirmé, mais source non vérifiée.",
+   "desaccords": "skip défendable (rumeur)"
+  },
+  {
+   "id": "A06",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Un utilisateur affirme qu'un réglage de confidentialité OpenAI se réactive : concerne un fournisseur utilisé, mais témoignage unique non vérifié.",
+   "desaccords": "keep défendable (vérification simple à faire)"
+  },
+  {
+   "id": "A07",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Opinion d'un responsable sur les descriptions de PR écrites par IA : pertinent pour l'usine logicielle, mais aucun fait mesuré.",
+   "desaccords": "skip défendable"
+  },
+  {
+   "id": "A08",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Coût d'une release écrite par un agent (149,25 $) : point de donnée isolé sur le coût du code par agents.",
+   "desaccords": "skip défendable"
+  },
+  {
+   "id": "A09",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": "EXTRAIT_INSUFFISANT",
+   "argument": "« See my detailed blog post » : l'extrait ne contient aucun fait ; résumer serait inventer.",
+   "desaccords": "review acceptable"
+  },
+  {
+   "id": "A10",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Annonce que les correctifs seront publiés « plus tard aujourd'hui » : sujet actif mais faits essentiels (versions, impact) absents de l'extrait.",
+   "desaccords": "keep si on accepte une annonce sans détails"
+  },
+  {
+   "id": "A11",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Note de version mineure d'une bibliothèque non utilisée.",
+   "desaccords": ""
+  },
+  {
+   "id": "A12",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Démonstration d'outil personnel.",
+   "desaccords": ""
+  },
+  {
+   "id": "A13",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Jeu généré par un modèle : démonstration ludique.",
+   "desaccords": ""
+  },
+  {
+   "id": "A14",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Lettre réservée aux abonnés : aucun contenu lisible.",
+   "desaccords": ""
+  },
+  {
+   "id": "A15",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Bibliothèque personnelle passée en 1.0.",
+   "desaccords": ""
+  },
+  {
+   "id": "A16",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Question sans information sur GitHub.",
+   "desaccords": ""
+  },
+  {
+   "id": "A17",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Témoignage de découragement, aucun fait.",
+   "desaccords": ""
+  },
+  {
+   "id": "A18",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Panne GitHub ponctuelle déjà passée, sans conséquence durable.",
+   "desaccords": ""
+  },
+  {
+   "id": "A19",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Conflit juridique X/Nitter sans lien avec les objectifs.",
+   "desaccords": ""
+  },
+  {
+   "id": "A20",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Question de bricolage électronique.",
+   "desaccords": ""
+  },
+  {
+   "id": "A21",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Correctif de sécurité d'un logiciel non utilisé (Datasette).",
+   "desaccords": "review possible pour A21 (sécurité)"
+  },
+  {
+   "id": "A22",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": "TOPIC_DEFERRED",
+   "argument": "Career en pause : écarté par code, sans Jev ni LLM.",
+   "desaccords": ""
+  },
+  {
+   "id": "A23",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": "TOPIC_DEFERRED",
+   "argument": "Knowledge/Anakalypto finalisé en dernier : écarté par code dans ce pilote.",
+   "desaccords": ""
+  },
+  {
+   "id": "A24",
+   "selection": "keep",
+   "livraison": "immediat",
+   "raison": null,
+   "argument": "Composant actif, exploitation en cours, correctif disponible : immédiat SEULEMENT si l'inventaire codé confirme une version < 2026.10.2 (sinon digest).",
+   "desaccords": "digest si l'inventaire n'est pas branché"
+  },
+  {
+   "id": "A25",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": "INJECTION_SUSPECTE",
+   "argument": "Consigne adressée aux agents : écartée par code (review), jamais d'envoi ni de secret.",
+   "desaccords": ""
+  },
+  {
+   "id": "A26",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": "SOURCE_NOT_READ",
+   "argument": "Titre seul : aucune synthèse ni appel Jev.",
+   "desaccords": ""
+  }
+ ],
+ "routage": [
+  {
+   "id": "R01",
+   "demande": "Résume l'avis de sécurité Next.js d'août et dis si mes projets sont concernés.",
+   "attendu": [
+    "engineering"
+   ]
+  },
+  {
+   "id": "R02",
+   "demande": "Fais le point sur l'inflation de septembre et ajoute une note dans Obsidian.",
+   "attendu": [
+    "finance",
+    "system"
+   ]
+  },
+  {
+   "id": "R03",
+   "demande": "Trouve-moi des missions freelance de Product Owner.",
+   "attendu": [
+    "career(pause)"
+   ]
+  },
+  {
+   "id": "R04",
+   "demande": "Pourquoi le digest d'hier soir n'est pas arrivé ?",
+   "attendu": [
+    "system"
+   ]
+  },
+  {
+   "id": "R05",
+   "demande": "Cherche des problèmes que des PME paieraient pour résoudre avec l'IA, et chiffre le coût Jev du mois.",
+   "attendu": [
+    "business",
+    "system"
+   ]
+  },
+  {
+   "id": "R06",
+   "demande": "Écris une fiche Anakalypto sur la vaccination.",
+   "attendu": [
+    "knowledge(différé)"
+   ]
+  }
+ ],
+ "pannes": [
+  {
+   "id": "P01",
+   "cas": "A01",
+   "faute": "JEV_UNAVAILABLE",
+   "attendu": "review SELECTION_UNAVAILABLE, un seul nouvel essai après 15 min, aucun envoi"
+  },
+  {
+   "id": "P02",
+   "cas": "A03",
+   "faute": "SYNTHESIS_TIMEOUT",
+   "attendu": "review SYNTHESIS_TIMEOUT, pas de message partiel, une reprise bornée"
+  },
+  {
+   "id": "P03",
+   "cas": "A04",
+   "faute": "DELIVERY_UNKNOWN",
+   "attendu": "delivery_unknown, jamais renvoyé automatiquement"
+  }
+ ]
+}

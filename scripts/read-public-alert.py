@@ -17,12 +17,81 @@ import urllib.request
 from html.parser import HTMLParser
 
 MAX_BYTES = 400_000
+MAX_ARTICLE_CHARS = 100_000
+
+
+def transfer_limit(url):
+    # Next's measured pages contain ~500 KB of HTML, mostly application code.
+    # Keep an independent download ceiling before stripping that code.
+    return 600_000 if urllib.parse.urlsplit(url).hostname == 'nextjs.org' else MAX_BYTES
+
 MONTHS = {name: number for number, name in enumerate(
     ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], 1)}
 
 
 class SourceError(Exception):
     pass
+
+
+def excerpt_evidence(text):
+    """Keep actual substrings, with explicit gaps and honest coverage metadata."""
+    coverage = {"textChars": len(text), "excerptMode": "head", "excerptTruncated": len(text) > 1200}
+    if len(text) <= 1200:
+        return {"excerpt": text, **coverage}
+    cut = text.rfind(" ", 0, 200)
+    cut = cut if cut > 0 else 200
+    boundaries = list(re.finditer(r'[.!?](?=\s|$)', text[:cut]))
+    if boundaries and boundaries[-1].end() >= 40:
+        cut = boundaries[-1].end()
+    head = text[:cut]
+    candidates = []
+    for match in re.finditer(r'.+?(?:[.!?](?=\s|$)|$)', text):
+        sentence = match.group().strip()
+        if match.end() <= cut or not sentence:
+            continue
+        score = 3 * bool(re.search(r'\d', sentence)) + 3 * bool(re.search(
+            r'\b(rate|deposit|inflation|decision|increased|reduced|fix|fixed|release|version|budget|cost|vulnerability|security|taux|décision|correctif)\b', sentence, re.I))
+        if score:
+            candidates.append((score, match.start(), sentence))
+    selected = [head]
+    for _, _, sentence in sorted(candidates, key=lambda entry: (-entry[0], entry[1])):
+        if sentence in selected or head.endswith(sentence):
+            continue
+        available = 1200 - len(' […] '.join(selected)) - len(' […] ')
+        if available < 40:
+            break
+        # Never fabricate a connective or join disjoint passages into one quote.
+        if len(sentence) > min(available, 500):
+            end = sentence.rfind(' ', 0, min(available, 500))
+            sentence = sentence[:end] if end > 0 else sentence[:min(available, 500)]
+        selected.append(sentence)
+    if len(selected) == 1:
+        return {"excerpt": text[:1200], **coverage}
+    return {"excerpt": ' […] '.join(selected), **coverage, "excerptMode": "passages"}
+
+
+def supports_source(value):
+    try:
+        u = urllib.parse.urlsplit(value)
+        if u.scheme != "https" or u.username or u.password or u.port or u.fragment:
+            return False
+        if u.hostname == "simonwillison.net":
+            return bool(re.fullmatch(r"/\d{4}/[A-Z][a-z]{2}/\d{1,2}/[a-z0-9-]+/", u.path)) and not u.query
+        if u.hostname == "huggingface.co":
+            return u.path.startswith("/blog/") and not u.query
+        if u.hostname == "nextjs.org":
+            return u.path.startswith("/blog/") and not u.query
+        if u.hostname == "mistral.ai":
+            return bool(re.fullmatch(r"/news/[a-z0-9-]+/?", u.path)) and not u.query
+        if u.hostname == "developers.cloudflare.com":
+            return bool(re.fullmatch(r"/changelog/post/\d{4}-\d{2}-\d{2}-[a-z0-9-]+/?", u.path)) and not u.query
+        if u.hostname == "www.ecb.europa.eu":
+            return u.path.startswith(("/press/", "//press/")) and u.path.endswith(".html") and not u.query
+        if u.hostname == "news.ycombinator.com":
+            return u.path == "/item" and bool(re.fullmatch(r"id=\d{1,12}", u.query))
+    except ValueError:
+        pass
+    return False
 
 
 def source_url(value):
@@ -50,8 +119,9 @@ def fetch_source(url):
         with urllib.request.build_opener(NoRedirect).open(request, timeout=12) as response:
             if response.status != 200 or response.headers.get_content_type() != "text/html":
                 raise SourceError("PUBLIC_SOURCE_UNAVAILABLE")
-            body = response.read(MAX_BYTES + 1)
-            if len(body) > MAX_BYTES:
+            limit = transfer_limit(url)
+            body = response.read(limit + 1)
+            if len(body) > limit:
                 raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
             return body
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
@@ -76,7 +146,7 @@ class BlogParser(HTMLParser):
             self.title = attrs.get("content")
         if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}:
             return
-        classes = attrs.get("class", "").split()
+        classes = (attrs.get("class") or "").split()
         self.stack.append((self.depth, self.date_depth, self.paragraph_depth, self.ignored))
         if tag == "div" and "entryPage" in classes:
             self.depth = 1
@@ -107,6 +177,97 @@ class BlogParser(HTMLParser):
                 self.parts.append(value)
 
 
+class ArticleParser(HTMLParser):
+    """Extract the explicit content container, never the page's navigation."""
+    def __init__(self, host):
+        super().__init__(convert_charrefs=True)
+        self.host, self.title, self.page_date = host, None, None
+        self.stack, self.parts = [], []
+        self.active, self.ignored = False, False
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "meta":
+            if attrs.get("property") == "og:title": self.title = attrs.get("content")
+            if attrs.get("property") == "article:published_time": self.page_date = attrs.get("content")
+        if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}: return
+        self.stack.append((self.active, self.ignored))
+        classes = set((attrs.get("class") or "").split())
+        starts = ((self.host == "www.ecb.europa.eu" and tag == "main") or
+                  (self.host == "huggingface.co" and "blog-content" in classes) or
+                  (self.host == "nextjs.org" and bool({"prose", "next-prose"}.intersection(classes))) or
+                  (self.host == "developers.cloudflare.com" and "docs-content" in classes) or
+                  (self.host == "mistral.ai" and tag == "div" and {"min-w-0", "lg:gap-10"}.issubset(classes)) or
+                  (self.host == "news.ycombinator.com" and "toptext" in classes))
+        self.active = self.active or starts
+        # HF's blog-content also contains its page heading and controls. Exclude
+        # structural metadata, not matching words from actual article paragraphs.
+        hf_chrome = self.host == "huggingface.co" and (
+            tag in {"header", "time", "h1"} or
+            (tag == "a" and attrs.get("href", "").rstrip("/") == "/blog"))
+        primary_chrome = self.host in {'mistral.ai', 'developers.cloudflare.com'} and tag in {'pre', 'header', 'button'}
+        self.ignored = self.ignored or hf_chrome or primary_chrome or tag in {"script", "style", "nav", "footer", "aside", "noscript"} or "not-prose" in classes
+        if self.active and tag in {"p", "li", "h1", "h2", "h3", "blockquote", "div"}: self.parts.append("\n")
+        if self.host == "news.ycombinator.com" and tag == "span" and "age" in classes and self.page_date is None:
+            self.page_date = attrs.get("title", "").split(" ")[0]
+
+    def handle_endtag(self, tag):
+        if tag in {"meta", "img", "br", "hr", "link", "input", "source", "wbr"}: return
+        if self.stack: self.active, self.ignored = self.stack.pop()
+
+    def handle_data(self, value):
+        if self.active and not self.ignored: self.parts.append(value)
+
+
+def read_article(url, *, published_at, title, topic, producer, fetcher=fetch_source, now=None):
+    if not supports_source(url): raise SourceError("PUBLIC_SOURCE_UNSUPPORTED")
+    host = urllib.parse.urlsplit(url).hostname
+    if host == "simonwillison.net":
+        return read_source(url, topic=topic, producer=producer, fetcher=fetcher, now=now)
+    try:
+        published = dt.datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+        if published.utcoffset() != dt.timedelta(0): raise ValueError()
+    except (ValueError, AttributeError): raise SourceError("PUBLIC_SOURCE_DATE_INVALID")
+    body = fetcher(url)
+    if not isinstance(body, bytes) or len(body) > transfer_limit(url): raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
+    try:
+        parser = ArticleParser(host)
+        parser.feed(body.decode("utf-8", errors="strict"))
+        text = " ".join("".join(parser.parts).split())
+        if len(text) > MAX_ARTICLE_CHARS: raise SourceError("PUBLIC_SOURCE_TOO_LARGE")
+        if len(text) < 40: raise SourceError("PUBLIC_SOURCE_CONTENT_UNAVAILABLE")
+        page_date = parser.page_date
+        if not page_date:
+            match = re.search(r'"datePublished"\s*:\s*"([^"<]+)"', body.decode("utf-8"))
+            page_date = match[1] if match else None
+        precision = 'feed-and-page-day'
+        if host in {'mistral.ai', 'developers.cloudflare.com'}:
+            # A feed may date a repost rather than the primary announcement.
+            # Only these adapters explicitly own a page-date contract.
+            try:
+                page_day = dt.date.fromisoformat(page_date[:10])
+            except (ValueError, TypeError):
+                raise SourceError('PUBLIC_SOURCE_DATE_UNVERIFIED')
+            if host == 'developers.cloudflare.com' and url.split('/post/')[1][:10] != page_day.isoformat():
+                raise SourceError('PUBLIC_SOURCE_DATE_UNVERIFIED')
+            if page_day > (now or dt.datetime.now(dt.timezone.utc)).date():
+                raise SourceError('PUBLIC_SOURCE_DATE_UNVERIFIED')
+            # Day precision is deliberately conservative; never borrow repost time.
+            published_at = page_day.isoformat() + 'T00:00:00Z'
+            precision = 'page-day'
+        elif not page_date or page_date[:10] != published_at[:10]:
+            raise SourceError("PUBLIC_SOURCE_DATE_UNVERIFIED")
+        if not title or len(title) > 200: raise SourceError("PUBLIC_SOURCE_INPUT_INVALID")
+    except (UnicodeError, ValueError): raise SourceError("PUBLIC_SOURCE_CONTENT_UNAVAILABLE")
+    observed = (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    return {"item": {"producer": producer, "url": url, "title": parser.title or title, "topic": topic,
+            "scope": "public", "publishedAt": published_at, "observedAt": observed, "readAt": observed,
+            "sourceStatus": "read", **excerpt_evidence(text)},
+            "sourceReceipt": {"url": url, "readAt": observed, "publicationPrecision": precision,
+            "publishedDay": published_at[:10], "responseSha256": hashlib.sha256(body).hexdigest(),
+            "bodyBytes": len(body), "extractor": "public-article-v1", "coverageVersion": "passages-v3"}}
+
+
 def read_source(url, *, topic="system", producer="sentinelle-pilot", fetcher=fetch_source, now=None):
     url, day = source_url(url)
     if topic not in {"business", "finance", "engineering", "system", "other"} or not re.fullmatch(r"[a-z][a-z0-9-]{1,31}", producer):
@@ -130,9 +291,9 @@ def read_source(url, *, topic="system", producer="sentinelle-pilot", fetcher=fet
     observed = (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
     item = {"producer": producer, "url": url, "title": parser.title, "topic": topic, "scope": "public",
             "publishedAt": day.isoformat() + "T00:00:00Z", "observedAt": observed, "readAt": observed,
-            "sourceStatus": "read", "excerpt": text[:1200]}
+            "sourceStatus": "read", **excerpt_evidence(text)}
     receipt = {"url": url, "readAt": observed, "publicationPrecision": "day", "publishedDay": day.isoformat(),
-               "responseSha256": hashlib.sha256(body).hexdigest(), "bodyBytes": len(body), "extractor": "simon-blog-v1"}
+               "responseSha256": hashlib.sha256(body).hexdigest(), "bodyBytes": len(body), "extractor": "simon-blog-v1", "coverageVersion": "passages-v2"}
     return {"item": item, "sourceReceipt": receipt}
 
 
@@ -141,6 +302,8 @@ if __name__ == "__main__":
     args.add_argument("url")
     args.add_argument("--topic", default="system")
     args.add_argument("--producer", default="sentinelle-pilot")
+    args.add_argument("--published-at")
+    args.add_argument("--title")
     value = args.parse_args()
     # Mac/Linux CLI deadline covers DNS and a server dripping response bytes.
     def deadline(_signum, _frame):
@@ -148,7 +311,10 @@ if __name__ == "__main__":
     signal.signal(signal.SIGALRM, deadline)
     signal.alarm(15)
     try:
-        print(json.dumps(read_source(value.url, topic=value.topic, producer=value.producer), ensure_ascii=False))
+        evidence = read_article(value.url, published_at=value.published_at, title=value.title,
+                    topic=value.topic, producer=value.producer) if value.published_at else read_source(
+                    value.url, topic=value.topic, producer=value.producer)
+        print(json.dumps(evidence, ensure_ascii=False))
     except SourceError as exc:
         print(json.dumps({"error": str(exc)}), file=sys.stderr)
         sys.exit(1)

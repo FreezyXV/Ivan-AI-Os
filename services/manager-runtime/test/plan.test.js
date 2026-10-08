@@ -68,3 +68,20 @@ test("future plans preserve all role definitions but cannot reactivate a paused 
   for(const pausedRoutes of [['unknown'],['career','career'],'career'])
     assert.throws(()=>createManagerPlan({ managers, skills, runtimeRoot:'/synthetic-private-runtime/managers',pausedRoutes }),/INVALID_PAUSED_ROUTES/);
 });
+test('declared external runtimes retain Engineering but cannot pretend a shell-less native worker will implement its task',()=>{
+ const definitions=managers.map(m=>({...m,runtimes:m.route==='engineering'?['codex','claude-code']:['openclaw']}));
+ const plan=createManagerPlan({managers:definitions,skills,runtimeRoot:'/synthetic-runtime',pausedRoutes:['career']});
+ assert.equal(plan.roles.length,7);assert.equal(plan.roles.find(r=>r.route==='engineering').runtime,'external');
+ assert.equal(plan.openclawFragment.agents.entries['ivan-engineering'],undefined);
+ assert.equal(plan.openclawFragment.agents.entries.main.subagents.allowAgents.includes('ivan-engineering'),false);
+ const dispatch=buildDispatchPlan({route:{status:'ROUTED',manager:'engineering',manager_confidence:1},metadata,plan});
+ assert.equal(dispatch.status,'EXTERNAL_MANAGER_HANDOFF');assert.deepEqual(dispatch.runtimes,['codex','claude-code']);
+ assert.equal(dispatch.executable,false);assert.equal(dispatch.spawn,undefined);
+ assert.throws(()=>createManagerPlan({managers:definitions.map(m=>({...m,runtimes:['unknown']})),skills,runtimeRoot:'/synthetic-runtime'}),/INVALID_MANAGER_RUNTIMES/);
+});
+test('runtime compatibility takes precedence over a native tool or an otherwise active skill',()=>{
+ const definitions=managers.map(m=>m.route==='system'?{...m,skills:['system-skill','rapport-telegram']}:m);
+ const filtered=skills.map(s=>s.name==='system-skill'?{...s,compatibility:['codex','claude-code']}:s);
+ const plan=createManagerPlan({managers:definitions,skills:filtered,runtimeRoot:'/synthetic-runtime'});
+ assert.deepEqual(plan.openclawFragment.agents.entries['ivan-system'].skills,['rapport-telegram']);
+});

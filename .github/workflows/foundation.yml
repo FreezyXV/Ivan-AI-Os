@@ -21,7 +21,19 @@ jobs:
           node-version: 22
       - run: npm test
       - run: node --test ../../scripts/inspect-mac-pilot.test.mjs
+      - run: node --test ../../scripts/reload-launch-agent.test.mjs
+      - run: node --test ../../scripts/install-mac-alerts.test.mjs
+      - run: node --test ../../scripts/evaluate-alert-corpus.test.mjs
+      - run: node --test ../../scripts/calibrate-alert-selection.test.mjs
+      - run: node --test ../../scripts/measure-alert-selection.test.mjs
+      - run: node --test ../../scripts/benchmark-alert-architecture.test.mjs
+      - run: node --test ../../scripts/ingest-alert-fairness.test.mjs
+      - run: node --test ../../scripts/generate-alert-editorial-samples.test.mjs
+      - run: node --test ../../scripts/update-claude-hook.test.mjs
+      - run: node --test ../../hooks/codex/pre-tool-use.test.mjs
       - run: python3 ../../scripts/read-public-alert.test.py
+      - run: python3 ../../scripts/test_collector_export.py
+      - run: python3 ../../scripts/test_backup_alert_state.py
 
   jev-gateway:
     runs-on: ubuntu-latest

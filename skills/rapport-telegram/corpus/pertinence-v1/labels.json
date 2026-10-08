@@ -1,0 +1,147 @@
+{
+ "version": 1,
+ "fixturesSha256": "500b1957a4c01563ecabbfda273a8742199a5e98cb5e8f51d5ac75b107118565",
+ "contexte": "mac-alerts-20261005-v3",
+ "etiquetéLe": "2026-10-05",
+ "avertissement": "Labels fixés et argumentés AVANT toute mesure. Ne pas transmettre ce fichier au modèle ni à Jev.",
+ "sourcesDejaUtilisees": [
+  "https://simonwillison.net/2026/Oct/3/default-hard-budget-caps/",
+  "https://simonwillison.net/2026/Oct/1/matthew-green/",
+  "https://simonwillison.net/2026/Sep/29/hn-49898129/",
+  "https://simonwillison.net/2026/Oct/3/newsletter/",
+  "https://www.ecb.europa.eu/press/key/date/2026/html/ecb.sp261005~1d8d998ef4.en.html",
+  "https://www.ecb.europa.eu/press/key/date/2026/html/ecb.sp260930_1~7c6c120482.en.html",
+  "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr260929~050089e922.en.html",
+  "https://www.ecb.europa.eu/press/pr/date/2025/html/ecb.pr250221.en.html",
+  "https://nextjs.org/blog/september-2026-security-release",
+  "https://huggingface.co/blog/microsoft/thinkingbox",
+  "https://www.reuters.com/markets/",
+  "https://news.ycombinator.com/item?id=49934037",
+  "https://example.org/security/openclaw-gateway-advisory",
+  "https://example.org/blog/agent-tooling-update",
+  "https://example.org/offres/product-owner-freelance-paris",
+  "https://data.ecb.europa.eu/data/datasets/HICP/HICP.M.U2.N.000000.4D0.ANR"
+ ],
+ "labels": [
+  {
+   "id": "Q01",
+   "selection": "keep",
+   "livraison": "digest",
+   "raison": null,
+   "argument": "Composant actif du pilote (OpenClaw) ; l'extrait (les Highlights, en entier) annonce des correctifs qui touchent directement System : tours d'agent bloqués, mémoire du Gateway pendant la découverte des sessions Codex, cohérence des aperçus Telegram. Aucune exploitation ni échéance : digest, pas immédiat.",
+   "desaccords": "review si Jev juge les éléments Windows dominants ; en revanche skip serait une erreur."
+  },
+  {
+   "id": "Q02",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": "EXTRAIT_NON_SUBSTANTIEL",
+   "argument": "L'extrait (1200 premiers caractères) ne contient que le constat général : la crise énergétique est la principale menace et pèse sur les prix et la croissance. Aucune décision ni orientation nouvelle. L'indication « may lead us to raise rates » est plus loin, hors extrait.",
+   "desaccords": "keep défendable (avis de la présidente sur la menace principale) ; keep sur la seule phrase hors extrait = erreur de fidélité."
+  },
+  {
+   "id": "Q03",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Statistiques sur l'adoption de l'IA dans les banques (« nine out of ten ») : intérêt plausible (IA et finance), mais aucun usage concret pour la veille macro publique ni pour System.",
+   "desaccords": "skip défendable ; keep = sur-pertinence par mots-clés (IA)."
+  },
+  {
+   "id": "Q04",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Décisions administratives (appels à participation au pilote de l'euro numérique destinés aux commerçants, échéances 27 octobre et 9 novembre). Ivan n'est pas commerçant ; aucun usage pour la veille publique.",
+   "desaccords": "review si Business y voit un signal fintech ; une échéance de candidature n'est pas une urgence pour Ivan."
+  },
+  {
+   "id": "Q05",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Présentation promotionnelle d'un produit (Topscan.me) par son éditeur : ni demande, ni preuve de paiement, ni changement technique.",
+   "desaccords": "Le moteur Business pourrait l'enregistrer comme « offre » (preuve de marché), jamais comme alerte."
+  },
+  {
+   "id": "Q06",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Question spéculative sur le risque existentiel de l'IA ; aucun fait, aucun usage.",
+   "desaccords": "aucun désaccord attendu."
+  },
+  {
+   "id": "Q07",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Question générique (« quel outil paieriez-vous ? »), un point, commentaires non lus : aucune demande précise dans l'extrait.",
+   "desaccords": "review défendable si les commentaires étaient lus ; ils ne le sont pas."
+  },
+  {
+   "id": "Q08",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Anecdote personnelle sur un projet universitaire ; aucun changement ni usage pour Engineering.",
+   "desaccords": "aucun désaccord attendu."
+  },
+  {
+   "id": "Q09",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": "TOPIC_DEFERRED",
+   "argument": "Fil d'offres d'emploi : Career est en pause depuis le 2026-10-05. Écarté par code, sans appel Jev.",
+   "desaccords": "aucun : un appel Jev ici serait une erreur de coût."
+  },
+  {
+   "id": "Q10",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": "SOURCE_STALE",
+   "argument": "Billet très utile sur la sécurité des agents (données privées + contenu non fiable + communication externe), mais publié le 2025-06-16 : hors fenêtre. Sa place est la mémoire ou l'audit K05, pas une alerte.",
+   "desaccords": "keep si la fraîcheur était ignorée : erreur de livraison, pas de pertinence."
+  },
+  {
+   "id": "Q11",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": "SOURCE_STALE",
+   "argument": "Avis de sécurité Node.js du 2026-07-29 : hors fenêtre de fraîcheur. Mais l'inventaire réel montre Node v23.9.0 (fin de vie, absent des lignes corrigées 26.x/24.x/22.x) : constat à remonter par le diagnostic System, pas par une alerte tardive.",
+   "desaccords": "digest défendable comme rattrapage d'un avis manqué ; à décider par Codex/Ivan, pas par Jev."
+  },
+  {
+   "id": "Q12",
+   "selection": "review",
+   "livraison": "silence",
+   "raison": "SOURCE_NOT_READ",
+   "argument": "Page non lue (HTTP 403) : aucune synthèse possible, aucun appel Jev.",
+   "desaccords": "aucun."
+  },
+  {
+   "id": "Q13",
+   "selection": "keep",
+   "livraison": "immediat",
+   "raison": null,
+   "argument": "Synthétique, mais l'inventaire est réel : le pilote exécute Node v23.9.0 (fin de vie) et récupère des URL publiques. Exploitation en cours, composant actif, correctif disponible (changer de ligne), action réalisable : les quatre conditions d'urgence du contrat sont remplies, et la correspondance est faite par code.",
+   "desaccords": "digest si l'inventaire n'est pas branché ; immédiat sur la seule base du texte = erreur."
+  },
+  {
+   "id": "Q14",
+   "selection": "skip",
+   "livraison": "silence",
+   "raison": null,
+   "argument": "Ton alarmiste, mais l'extrait dit lui-même que seuls les hôtes Windows avec le service wrapper sont touchés ; le pilote tourne sur macOS. Ne pas supposer qu'un avis concerne l'installation.",
+   "desaccords": "review acceptable ; urgence = erreur grave."
+  },
+  {
+   "id": "Q15",
+   "selection": null,
+   "livraison": null,
+   "raison": null,
+   "argument": "Trois sujets : OpenClaw 2026.9.8 → synthèse (cf. Q01) ; fil Who is hiring → une ligne « Career en pause depuis le 2026-10-05 », pas d'ajout à la veille ; ETF IA → veille publique seulement (cf. Q03) : aucune hypothèse sur les ETF d'Ivan, aucune recommandation ; la confrontation personnelle se fait en local à sa demande.",
+   "desaccords": "Interdits : un seul paragraphe mêlant les trois, relancer Career, supposer le contenu d'un portefeuille."
+  }
+ ]
+}

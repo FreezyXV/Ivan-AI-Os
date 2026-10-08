@@ -1,4 +1,95 @@
+## Mission actualisée — prioritaire sur les sections historiques
+
+Lire CLAUDE-NEXT-ACTIONS-2026-10-05.md : corrections #54, notation des huit
+sorties natives sans refaire les appels, nouveau jeu disjoint et revue du HEAD #57.
+Worker 0b098d7, plugin 23cf0be ; gateway 9136f58, contexte v3. CI 49060ea : 11/11.
+Hook #49 corrigé
+installé en gate ; ne pas le réinstaller. compact-v1 uniquement éditorial :
+27–33 % de caractères de prompt en moins, qualité indépendante encore ouverte.
+Voir MAC-ALERTS-RECOVERY.md pour sauvegarde/restauration et limites restantes.
+Aucune fusion de cette session. Career en pause, OVH différé, Knowledge à la fin.
+
+## Historique — actualisation v3
+
+Runtime @9136f58, PR #57, CI 11/11. Lire REVIEW-CODEX-K04-K07-2026-10-05.md
+et ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md avant les sections historiques.
+#49 corrigée/12 tests ; #52–#56 relues sans modifier ton checkout.
+Corrections de #56 : trois releases examinées, panne de page isolée, installation
+idempotente et rollback vérifié. Extrait entier de 1200 vers Jev, contexte v3.
+Compatibility/runtimes respectés en source ; sept rôles conservés, aucun natif supprimé live.
+À corriger #54 : l'écart total/sous-jacent ne prouve pas à lui seul la contribution de l'énergie.
+Parser Kraken e7653a8 testé avec le retrait déjà effectué par le runtime : même clôture.
+
+K06 : quatre sorties natives dans ~/.ivan-ai-os/mac-alerts-9136f58/editorial-samples-current.jsonl.
+Elles sont explicitement éditoriales, sans sélection mesurée ni Telegram ; I12 synthétique.
+Ton vérificateur de PR #55 : contrôles OK sur les quatre. Son 0/8 pertinence est inapplicable
+sans selection : ne pas ajouter de faux KEEP pour remplir le score.
+À toi : noter fidélité/utilité/action/effort ; rendre la recommandation des vingt répétitions
+proportionnée ; construire un nouveau jeu disjoint de la référence déjà mesurée en v2.
+Variante compacte non exécutée, coûts/tokens natifs inconnus ; pas de gain A/B annoncé.
+Nouvel essai réel Next.js v3 : keep 0,26, donc review ; diagnostic, pas validation indépendante.
+Ne pas refaire les 12 sélections du protocole ancien pour « démarrer » la calibration.
+Career reste en pause, OVH différé ; Knowledge/Anakalypto en dernier avec Codex.
+
 # Mission Claude Code — synthèses Telegram utiles à Ivan
+
+## Historique du lot — intégration Codex le 5 octobre
+
+Les demandes de cette section sont historiques ; l'actualisation v3 ci-dessus
+fait foi. Ne pas recommencer les lots proposés ni la correction #49 déjà relue.
+
+Claude a proposé K01–K03 dans la PR #50, une première partie K05 dans #51
+et le changement du hook gate dans #49. Rien n'est fusionné ni activé.
+Cette actualisation remplace les états anciens ci-dessous.
+Codex a relu #50 : 49 tests passent, corpus de 14 cas conforme. #51 @f2a7f33
+reste brouillon à juste titre tant que les managers n'ont pas de client adapté.
+Source runtime corrigée et contexte v2 activé dans Jev/générateur/planning @2ab2042.
+Lire REVIEW-CODEX-ALERT-EDITORIAL-2026-10-05.md et MAC-ALERT-ORCHESTRATOR.md.
+Calibration indépendante déjà exécutée une fois : 8/12 décisions correctes,
+3/7 parmi les cas soumis à Jev ; 2 cas de dédoublonnage/demande mêlée hors mesure
+de sélection. Ne pas refaire ces sept appels ni régler les seuils sur ce jeu.
+K06 : analyser les abstentions avec les décisions brutes/audit, préparer un second
+jeu inédit pour une validation après évolution du classifieur. Source Next.js
+réelle correctement lue reste review 0,27 ; aucun message forcé. A8 urgence,
+fidélité sémantique et appréciation d'Ivan restent à mesurer.
+Codex a construit les collecteurs locaux, lecteurs BCE/HF/Next/Ask HN, file
+durable, cycles, génération native et digest sur `agent/codex/alerts-integration`.
+Lire `docs/MAC-ALERT-ORCHESTRATOR.md` sur cette branche lorsqu'elle est publiée.
+Le planning Mac est maintenant actif ; l'ancien workflow Sentinelle est arrêté.
+Digest technique reçu 58, puis reprise sans doublon. Son tri est explicitement
+simulé : les dix sélections réelles initiales/révision sont rejetées ou en revue,
+donc pas de génération automatique de production. Ne pas annoncer un parcours
+réel KEEP Jev complet. K03 doit analyser cette forte abstention sur un corpus
+indépendant ; ne pas calibrer seulement sur les sources qui ont déjà échoué.
+
+K01–K03 attendent la relecture et l'intégration Codex, sans recommencer le corpus.
+Prochain travail Claude : terminer K05 (déclenchements, pause Career, compétences
+réellement utilisables), K04 (contrats Business/Finance), K06 (qualité/tokens et
+calibration indépendante coordonnée), puis K07 sur les nouveaux commits Codex.
+Avant fusion #49, préserver la validation explicite des fichiers partagés : le
+hook gate actuel supprime aussi un REQUIRE_HUMAN sur constitution/CONSTITUTION.md.
+La preuve est dans docs/REVIEW-CODEX-CLAUDE-2026-10-05.md. Ne pas activer shadow
+comme contournement. Codex corrige A1–A8 dans les fichiers runtime qu'il possède ;
+Claude les relit ensuite sans modifier simultanément ces fichiers.
+Ne pas reconstruire le runtime, les collecteurs ou l'authentification. Le contrat
+`coded-brief-v1-provisional` est volontairement provisoire, à contester/revoir.
+Sortie finale : goal, facts[{summary,quote}], utility, action, uncertainty.
+Dans la complétion, `evidence_index` référence un passage de source ; le code
+insère sa citation exacte et vérifie les chiffres avant READY. Ne pas demander
+au modèle de retaper une citation : cette copie a échoué en essai réel.
+Une adaptation de schéma/longueur doit être proposée à Codex, sans changer son
+runtime ni produire une interface parallèle. Aucun seuil abaissé pour forcer
+un résultat. L'extrait est borné à 1200 caractères, un digest à 2500 : signaler
+les limites éditoriales sur des exemples réellement lus.
+Le runtime Finance corrige les anciens liens ICP, retire la bougie Kraken en
+cours et borne les reprises réseau. Les sept indicateurs répondent sur le
+dernier probe corrigé ; les sources du skill restent à aligner dans K04/K05.
+Diagnostic backlog/cycles/reçus disponible dans scripts/inspect-mac-pilot.mjs.
+
+Le premier lot part de foundation/v1 sur `agent/claude/telegram-syntheses`, dans
+le worktree Claude ; les modifications locales existantes restent intactes.
+PR brouillon, sans fusion ni activation. K04–K07 suivent sur branches distinctes,
+Knowledge/Anakalypto à la fin. AGENTS.md et constitution restent inchangés.
 
 Ivan souhaite que Codex pilote le plan global et que Claude participe sur un
 périmètre distinct. Ce document est une passation, pas une autorisation de fusion,
