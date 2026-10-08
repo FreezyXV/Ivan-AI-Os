@@ -8,6 +8,13 @@ Les demandes de provisionnement ci-dessous sont historiques ; ne pas les rejouer
 
 # Human inputs and confirmed decisions
 
+## Decision confirmed on 2026-10-08 — local-first pilot
+
+For the first months, Ivan will run Ivan AI OS on his Mac, using ChatGPT, Cowork, Codex, Claude, OpenClaw and the local Obsidian vault. Jev remains available where it measurably improves classification, selection or review; it is not a mandatory call for every routine task. No OVH, IONOS or other VPS is to be provisioned for this pilot. Preserve the working local Jev and memory integrations; this decision does not revoke their existing bounded use.
+
+Prioritize a few complete local workflows: evidence-backed opportunity briefs, career matching, finance information, and an Obsidian decision record with Telegram delivery. Observe usefulness, false positives, time and token/API costs before adding more agents or services. Jobs that rely on the Mac will stop or defer when it is off; a future 24/7 VPS requires a separate decision and purchase by Ivan. The approval boundary for payments, transactions, external contact and publication still applies.
+
+
 Confirmed on 2026-09-28:
 - Ivan has a TypeSafe/Jev API key. The Mac smoke test succeeded on 2026-09-28 (HTTP 200; Jev returned `ROUTED` for a synthetic engineering request). The script takes the key through a hidden prompt and does not persist it; no always-on runtime is configured yet.
 - OpenClaw 2026.9.5 (commit ec9c1a13) runs as a Mac LaunchAgent, with a local Gateway and a Telegram channel. The effective default model was verified locally: `openai/gpt-5.6-terra`, fallback `openai/gpt-5.6-sol`.
