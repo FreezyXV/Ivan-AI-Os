@@ -3,7 +3,7 @@
 ## Phase 0 — Foundation
 - [x] Private repository, constitution, schemas and policy catalog skeleton
 - [x] Jev Gateway skeleton and Docker control-plane skeleton
-- [ ] VPS provisioned; runtime secrets configured
+- [ ] VPS provisioned; deferred by Ivan on 2026-10-08 for the first months of a local Mac pilot. Reassess only after measured need for 24/7 operation and a separately approved purchase.
 - [x] Prepare a Linux systemd Jev gateway candidate with private credentials, persistent budget and authenticated startup probe; local mock integration tested, VPS not provisioned
 
 ## Phase 1 — Decision plane
