@@ -54,3 +54,40 @@ ni ne fabrique les résultats éventuellement perdus pendant la suspension.
 La preuve après activation et les reçus sont conservés hors Git. Un nouveau
 sommeil réel sous cette version reste à observer ; aucun réglage d'énergie
 du Mac n'est modifié pour fabriquer cette qualification.
+
+## Digest interrompu — 8 octobre 2026
+
+Ivan confirme que le dernier message reçu est celui du 7 octobre à 00:28 Paris
+(reçu 62). La file confirme la même dernière livraison. Le digest suivant a
+réservé deux synthèses le 7 octobre vers 21:41 ; aucun reçu n'est confirmé,
+`delivery_unknown` à 21:47. Le passage a duré 381 secondes malgré un délai
+d'envoi nominal de 25 secondes. `pmset` relève un réveil à 21:40 sur batterie
+1 %, une veille `Low Power Sleep` à 21:41 et le réveil à 21:47. La suspension
+explique le dépassement du délai mural ; elle ne prouve pas à elle seule si
+Telegram a accepté le message. Ces deux tentatives ne sont jamais renvoyées.
+
+Défauts reproduits puis corrigés :
+
+- Une page incertaine bloquait toutes les pages suivantes de la journée. Elle
+  reste désormais isolée avec ses sources ; les autres synthèses peuvent
+  utiliser la page suivante, dans la limite existante de trois pages. Une page
+  encore `sending` empêche toujours un envoi concurrent.
+- Un réveil avant 19:30 n'offrait aucun rattrapage. Le worker utilise maintenant
+  les clés stables de la veille pour les synthèses déjà prêtes avant le début
+  du jour Paris. Les nouvelles synthèses du matin attendent le soir. Aucun
+  ancien jour ni envoi tenté n'est rejoué ; la fraîcheur est contrôlée à nouveau.
+- Un digest incertain était enregistré comme cycle réussi. Il est désormais
+  dégradé. Le diagnostic conserve les trois derniers cycles par activité : les
+  nombreux passages de traitement ne masquent plus la dernière livraison.
+  `CHECK_DIGEST_DELIVERY` s'ajoute aux autres codes actifs.
+
+Tests de reprise sans modèle ni Telegram : lendemain avec anciennes et nouvelles
+synthèses, rejeu idempotent, tentative incertaine préservée, expéditeur vivant,
+limites de pages, changements d'heure Paris et changement d'année. Une fixture
+historique utilisait l'horloge réelle pour des articles du 5 octobre ; elle est
+maintenant fixée au temps du scénario pour ne pas expirer selon le jour du test.
+
+Le Mac ne livre pas pendant une veille profonde ; le rattrapage fonctionne au
+réveil. Aucune modification d'énergie, du destinataire, de Jev, d'OpenClaw ou des
+réglages Claude n'est nécessaire. L'installation et les nouveaux reçus doivent
+être vérifiés séparément ; les tests seuls ne prouvent aucune livraison.

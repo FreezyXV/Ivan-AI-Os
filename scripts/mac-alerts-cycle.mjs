@@ -4,7 +4,7 @@ import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {openLedger} from '../services/alerts-runtime/src/ledger.js';
-import {scheduleSlots} from '../services/alerts-runtime/src/schedule.js';
+import {scheduleSlots,digestWindow,digestEligible} from '../services/alerts-runtime/src/schedule.js';
 import {financeCycle,businessCycle,businessHasPendingEvidence} from '../services/alerts-runtime/src/engines.js';
 import {createNativeSynthesis,createNativeAssessment} from '../services/alerts-runtime/src/synthesis.js';
 import {createNativeVerification} from '../services/alerts-runtime/src/verification.js';
@@ -65,7 +65,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
   try{const result=await fn();
-   const degraded=Boolean(result?.error_code)||(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
+   const degraded=Boolean(result?.error_code)||result?.state==='delivery_unknown'||(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
    results[name]={...result,...(degraded?{degraded:true}:{})};
    ledger.finishCycle(lease,{ok:!degraded,metrics:{durationMs:Date.now()-at,result:results[name]}});}
   catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
@@ -99,16 +99,17 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   }
   return {selectionMode,decisions,nativeCalls,generations,businessFichesCreated,opportunityScoresCreated,states,...(providerError?{error_code:providerError}:{})};
  });
- if(slots.digest&&ledger.list('ready',100).some(r=>prefilter(r.item,{now:now.getTime()}).decision==='select')){
+ const window=digestWindow(now,{digestNow});
+ if(ledger.list('ready',100).some(r=>digestEligible(r,window)&&prefilter(r.item,{now:now.getTime()}).decision==='select')){
   // A source may finish after the day's first page. Reserve the next stable page
   // without replaying a completed cycle or continuing an uncertain delivery.
   let cycleKey;
   for(let page=1;page<=3;page++){
-   const status=ledger.digestStatus(page===1?slots.digest:`${slots.digest}:p${page}`);
-   if(!status){cycleKey=page===1?slots.digest:`${slots.digest}:continuation:p${page}`;break;}
-   if(status.state!=='delivered')break;
+   const status=ledger.digestStatus(page===1?window.key:`${window.key}:p${page}`);
+   if(!status){cycleKey=page===1?window.key:`${window.key}:continuation:p${page}`;break;}
+   if(status.state==='sending')break;
   }
-  if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,key:slots.digest,deliver,now:now.getTime()}));
+  if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,...window,deliver,now:now.getTime()}));
  }
  return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),business:ledger.businessSummary(),retention,policyRevisions,editorialRevisions};
 }

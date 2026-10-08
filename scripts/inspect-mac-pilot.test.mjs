@@ -1,6 +1,7 @@
+import {DatabaseSync} from 'node:sqlite';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { summarizeAutomations, summarizeAlertCycles, inspectPilot } from './inspect-mac-pilot.mjs';
+import { summarizeAutomations, summarizeAlertCycles, inspectPilot, readAlertCycleRows } from './inspect-mac-pilot.mjs';
 
 test('persisted reader failures remain visible after a successful cycle without hiding ready syntheses',()=>{
  const r=summarizeAlertCycles({counts:[{state:'ready',n:1}],cycles:[{name:'feeds',status:'done',metrics:'{}'}],
@@ -98,4 +99,20 @@ test('all active diagnostic actions survive simultaneous refusals, ready work an
  assert.deepEqual(r.diagnoses.map(d=>d.code),['CHECK_DELIVERY_RECEIPT','CHECK_EDITORIAL_REJECTIONS','WAIT_DIGEST','PROCESS_PENDING','EXPAND_READERS']);
  assert.equal(r.diagnosis.code,'CHECK_DELIVERY_RECEIPT');
  const idle=summarizeAlertCycles({});assert.deepEqual(idle.diagnoses,[idle.diagnosis]);
+});
+
+
+test('frequent process cycles cannot hide the latest failed digest from diagnosis',()=>{
+ const db=new DatabaseSync(':memory:');
+ try{
+  db.exec('CREATE TABLE cycles(name TEXT,status TEXT,attempts INTEGER,metrics TEXT,updated INTEGER)');
+  const insert=db.prepare('INSERT INTO cycles VALUES(?,?,?,?,?)');
+  insert.run('digest','done',1,JSON.stringify({result:{state:'delivery_unknown',count:2,deliveredCount:0}}),1);
+  for(let n=2;n<150;n++)insert.run('process','done',1,'{}',n);
+  const rows=readAlertCycleRows(db),summary=summarizeAlertCycles({cycles:rows});
+  assert.ok(rows.some(row=>row.name==='digest'));
+  assert.ok(rows.filter(row=>row.name==='process').length<=3);
+  assert.equal(summary.latest.find(row=>row.name==='digest').degraded,true);
+  assert.ok(summary.diagnoses.some(d=>d.code==='CHECK_DIGEST_DELIVERY'));
+ }finally{db.close();}
 });

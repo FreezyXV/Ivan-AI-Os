@@ -202,14 +202,21 @@ test('a later verified item uses the next digest page after the daily cycle comp
  ledger.ingest(item('third-page'));await runCycle({...options,now:new Date(at+180000)});assert.equal(sends,3);
  ledger.ingest(item('fourth-page'));await runCycle({...options,now:new Date(at+240000)});assert.equal(sends,3);assert.equal(ledger.counts().ready,1);
 });
-test('an uncertain first page prevents automatic digest continuation for later ready items',async t=>{
+test('an uncertain page is never retried but cannot block unrelated ready syntheses',async t=>{
  const {ledger,dir}=fixture(t);let sends=0;
  const options={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(at),processNow:true,
   feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
   assess:async()=>({decision:'keep',brief:brief()}),deliver:async()=>{sends++;return undefined;}};
- ledger.ingest(item('uncertain-page'));await runCycle(options);assert.equal(sends,1);
- ledger.ingest(item('after-uncertain'));await runCycle({...options,now:new Date(at+60000)});assert.equal(sends,1);
- assert.equal(ledger.counts().ready,1);
+ const first=ledger.ingest(item('uncertain-page')).id;
+ const initial=await runCycle(options);assert.equal(sends,1);
+ assert.equal(initial.results.digest.degraded,true);
+ assert.equal(ledger.cycleStatus().find(c=>c.name==='digest').status,'failed');
+ const before=ledger.get(first);
+ const second=ledger.ingest(item('after-uncertain')).id;
+ await runCycle({...options,now:new Date(at+60000),deliver:async()=>{sends++;return{delivered:true,messageId:'63'};}});
+ assert.equal(sends,2);assert.equal(ledger.get(second).state,'delivered');
+ assert.deepEqual(ledger.get(first),before);assert.equal(ledger.counts().delivery_unknown,1);
+ await runCycle({...options,now:new Date(at+120000)});assert.equal(sends,2);
 });
 
 
@@ -236,4 +243,26 @@ test('a short unverified incident is held without either provider call',async t=
   title:'GitHub down again? no PR access',excerpt:"Githubstatus.com currently says everything is working, but it isn't"});
  const titleRumour=await processNext({ledger,now:at,assess:async()=>assert.fail('an unsupported title is not incident evidence')});
  assert.equal(titleRumour.reason,'SOURCE_EVIDENCE_INSUFFICIENT');
+});
+
+
+test('waking next morning catches up yesterday only, while new briefs wait for the evening',async t=>{
+ let clock=at;const {ledger,dir}=fixture(t,()=>clock);let sends=0,calls=0;
+ const previous=ledger.ingest(item('before-sleep')).id,job=ledger.claim();
+ ledger.finish(job.id,job.owner,{state:'ready',reason:'BRIEF_VERIFIED',brief:{message:'Hier : preuve vérifiée avant la veille.'}});
+ clock=Date.parse('2026-10-06T08:00:00Z');
+ const today=ledger.ingest({...item('after-wake'),publishedAt:'2026-10-06T07:00:00Z',observedAt:'2026-10-06T07:10:00Z',readAt:'2026-10-06T07:10:00Z'}).id;
+ const options={ledger,settings:{stateDir:dir,selectionMode:'native-editorial'},now:new Date(clock),
+  feeds:async()=>({}),finance:async()=>({}),business:async()=>({}),hasBusinessEvidence:()=>false,
+  assess:async()=>{calls++;return{decision:'keep',brief:brief()};},
+  deliver:async({text})=>{sends++;assert.match(text,/Hier/);assert.doesNotMatch(text,/Le compteur/);return{delivered:true,messageId:'63'};}};
+ const result=await runCycle(options);
+ assert.equal(result.results.digest.deliveredCount,1);assert.equal(calls,1);assert.equal(sends,1);
+ assert.equal(ledger.get(previous).state,'delivered');assert.equal(ledger.get(today).state,'ready');
+ assert.equal(ledger.digestStatus('digest:2026-10-05').state,'delivered');
+ await runCycle({...options,now:new Date(clock+300000)});assert.equal(sends,1);
+ clock=Date.parse('2026-10-06T18:00:00Z');
+ await runCycle({...options,now:new Date(clock),deliver:async()=>{sends++;return{delivered:true,messageId:'64'};}});
+ assert.equal(sends,2);assert.equal(ledger.get(today).state,'delivered');
+ assert.equal(ledger.digestStatus('digest:2026-10-06').state,'delivered');
 });

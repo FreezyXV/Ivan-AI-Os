@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {openLedger} from '../src/ledger.js';
 import {sendDigest} from '../src/digest.js';
-import {scheduleSlots} from '../src/schedule.js';
+import {scheduleSlots,digestWindow,digestEligible} from '../src/schedule.js';
 const at=Date.parse('2026-10-05T18:00:00Z');
 function fixture(t){const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-digest-'));let time=at;
  const ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>time,leaseMs:1000});t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return {ledger,advance:(ms=1001)=>time+=ms};}
@@ -45,4 +45,28 @@ test('one native digest receipt completes both producers and its key cannot rese
 test('crash after digest reservation never returns children to ready or sends twice',async t=>{
  const {ledger,advance}=fixture(t),id=ready(ledger,'one');const job=ledger.reserveDigest({key:'digest:today',ids:[id],text:'Un message'});assert.ok(job);
  advance();ledger.reconcile();let calls=0;await sendDigest({ledger,key:'digest:today',deliver:async()=>calls++,now:at});assert.equal(calls,0);assert.equal(ledger.get(id).state,'delivery_unknown');
+});
+
+
+test('morning catch-up uses Paris calendar days across both DST transitions and New Year',()=>{
+ for(const [iso,today,yesterday] of [
+  ['2026-10-26T06:00:00Z','2026-10-26','2026-10-25'],
+  ['2026-03-30T05:00:00Z','2026-03-30','2026-03-29'],
+  ['2027-01-01T07:00:00Z','2027-01-01','2026-12-31']]){
+  const window=digestWindow(new Date(iso));
+  assert.deepEqual(window,{key:'digest:'+yesterday,readyBeforeDay:today});
+  assert.equal(digestEligible({updated:Date.parse(yesterday+'T18:00:00Z')},window),true);
+  assert.equal(digestEligible({updated:Date.parse(iso)},window),false);
+  assert.deepEqual(digestWindow(new Date(iso),{digestNow:true}),{key:'digest:'+today});
+ }
+ assert.deepEqual(digestWindow(new Date('2026-10-08T17:30:00Z')),{key:'digest:2026-10-08'});
+});
+
+test('a live sender blocks overlapping pages until its attempt finishes',async t=>{
+ const {ledger}=fixture(t),first=ready(ledger,'live');
+ ledger.reserveDigest({key:'digest:today',ids:[first],text:'An in-flight message'});
+ ready(ledger,'later');let calls=0;
+ await sendDigest({ledger,key:'digest:today',deliver:async()=>{calls++;return{delivered:true,messageId:'100'};},now:at});
+ assert.equal(calls,0);assert.equal(ledger.counts().ready,1);
+ assert.equal(ledger.digestStatus('digest:today:p2'),null);
 });

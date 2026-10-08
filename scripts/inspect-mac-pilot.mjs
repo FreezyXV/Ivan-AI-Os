@@ -11,6 +11,13 @@ import {probeAlertTool} from './probe-alert-tool.mjs';
 const run = promisify(execFile);
 const knownAgents = new Set(['main','ivan-business','ivan-finance','ivan-engineering','ivan-system','ivan-knowledge','ivan-career']);
 const knownStatuses = new Set(['ok','error','skipped']);
+export function readAlertCycleRows(db){
+ // Five-minute processing must not bury the last daily delivery/collection.
+ return db.prepare(`SELECT name,status,attempts,metrics FROM (
+   SELECT *,row_number() OVER(PARTITION BY name ORDER BY updated DESC) AS rank
+   FROM cycles WHERE name IN ('feeds','finance','business','process','digest')
+ ) WHERE rank<=3 ORDER BY updated DESC`).all();
+}
 
 export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejectionChecks=[],sourceReadFailures=[],delivery=null,sourceCommit,selectionMode}){
  const queue=Object.fromEntries(counts.filter(r=>['pending','processing','review','ready','sending','delivered','skipped','delivery_unknown','expired_unsent'].includes(r.state)&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.state,r.n]));
@@ -24,7 +31,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
   const errorCodes=[...new Set([m.error_code,result.error_code,...(Array.isArray(result.sourceErrors)?result.sourceErrors.map(e=>e?.code):[]),...(Array.isArray(result.readerFailures)?result.readerFailures.map(e=>e?.code):[])]
    .filter(code=>typeof code==='string'&&/^[A-Z_]{1,64}$/.test(code)))];
   return {name:r.name,status:['running','done','failed'].includes(r.status)?r.status:'unknown',
-   degraded:result.degraded===true||sourceErrors>0||result.failedFeeds>0||readerErrors>0,sourceErrors,readerErrors,
+   degraded:result.degraded===true||result.state==='delivery_unknown'||sourceErrors>0||result.failedFeeds>0||readerErrors>0,sourceErrors,readerErrors,
    failedFeeds:Number.isSafeInteger(result.failedFeeds)&&result.failedFeeds>=0?result.failedFeeds:0,errorCodes,
    attempts:r.attempts,durationMs:m.durationMs,...(Number.isInteger(result.decisions)?{decisions:result.decisions}:{}),
    ...(Number.isInteger(result.generations)?{generations:result.generations}:{}),
@@ -39,7 +46,8 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  // Preserve the primary action for existing clients, but never hide concurrent work.
  const diagnoses=[];
  const add=(condition,code,message)=>{if(condition)diagnoses.push({code,message});};
- add((queue.delivery_unknown??0)+(queue.sending??0)>0,'CHECK_DELIVERY_RECEIPT','Envoi incertain : vérifier son reçu avant tout nouvel envoi.');
+ add((queue.delivery_unknown??0)+(queue.sending??0)>0,'CHECK_DELIVERY_RECEIPT','Envoi incertain : vérifier son reçu avant de renvoyer cette synthèse ; les autres peuvent continuer.');
+ add(latest.find(r=>r.name==='digest')?.degraded||latest.find(r=>r.name==='digest')?.status==='failed','CHECK_DIGEST_DELIVERY','Le dernier digest a échoué ou reste incertain : vérifier son reçu ; les autres synthèses peuvent continuer sans renvoyer cette tentative.');
  const currentCollections=['feeds','finance','business'].map(name=>latest.find(r=>r.name===name)).filter(Boolean);
  add(currentCollections.some(r=>r.status==='failed'||r.degraded),'CHECK_COLLECTION','Une collecte est dégradée : consulter ses codes de source et vérifier sa reprise au prochain créneau.');
  add(persistentReads.total>0,'CHECK_SOURCE_READS','Des lectures attendent un nouvel essai ou un correctif du lecteur : consulter les codes persistés ; les autres sources continuent.');
@@ -66,7 +74,7 @@ async function inspectAlertCycles(){
   const counts=db.prepare('SELECT state,count(*) AS n FROM alerts GROUP BY state').all();
   const reviewReasons=db.prepare("SELECT reason,count(*) AS n FROM alerts WHERE state='review' GROUP BY reason").all();
   const rejectionChecks=db.prepare("SELECT j.value AS code,count(*) AS n FROM alerts,json_each(json_extract(alerts.brief,'$.nativeFailure.checks')) AS j WHERE alerts.state='review' GROUP BY j.value").all();
-  const cycles=db.prepare('SELECT name,status,attempts,metrics FROM cycles ORDER BY updated DESC LIMIT 20').all();
+  const cycles=readAlertCycleRows(db);
   const last=db.prepare("SELECT updated,receipt FROM alerts WHERE state='delivered' ORDER BY updated DESC LIMIT 1").get();
   const delivery=last?{updated:last.updated,messageId:JSON.parse(last.receipt).messageId}:null;
   const hasReaderFailures=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='source_read_failures'").get();

@@ -8,7 +8,7 @@ import {PILOT_CONTEXT} from '../src/context.js';
 import {runCycle,collectFeeds} from '../../../scripts/mac-alerts-cycle.mjs';
 import {modernFinanceUrl,collectFinance,financeCycle,businessCycle,observationUrl} from '../src/engines.js';
 const now=new Date('2026-10-05T10:00:00Z');
-function fixture(t){const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-cycle-')),ledger=openLedger(path.join(dir,'alerts.sqlite'));
+function fixture(t){const dir=mkdtempSync(path.join(os.tmpdir(),'ivan-cycle-')),ledger=openLedger(path.join(dir,'alerts.sqlite'),{now:()=>now.getTime()});
  t.after(()=>{ledger.close();rmSync(dir,{recursive:true,force:true});});return {dir,ledger};}
 test('collection preserves bounded source failure codes instead of a counter without cause',async t=>{
  const {dir,ledger}=fixture(t);
