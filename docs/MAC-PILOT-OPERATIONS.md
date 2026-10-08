@@ -1,5 +1,61 @@
 # Pilote Mac — diagnostic et pauses vérifiées
 
+## Usage quotidien des alertes (état du 8 octobre 2026)
+
+**Ce qui tourne seul.** Le worker traite la file toutes les cinq minutes : tri natif, rédaction,
+puis seconde lecture indépendante (`NATIVE-ALERT-TRIAGE.md`). Rien n'est envoyé hors du digest
+de 19:30 (Paris). Jour sans synthèse retenue : **aucun message**, c'est normal. Aucune
+confirmation à donner et aucun redémarrage à faire pour qu'un message parte ; les skills ne
+demandent pas de redémarrage du service.
+
+**Lire un message.** Titre, date de publication, 1 à 3 faits, « Utilité pour toi », « À faire »,
+« Limite », puis la source en dernier. « Lecture sur extrait partiel » veut dire que seule une
+partie de la page a été lue : un point absent du message n'est ni confirmé ni démenti.
+
+**Le reçu.** Chaque page de digest envoyée reçoit un numéro de message Telegram (ex. 62), conservé
+dans la file. Un envoi au résultat incertain n'est **jamais** renvoyé automatiquement : mieux
+vaut un message manquant qu'un doublon. En cas de doute, regarder Telegram, puis le diagnostic.
+
+**Noter un message (la seule mesure d'utilité qui compte).** Répondre à la Secrétaire, ou le
+dire à Claude/Codex, sous la forme :
+
+```
+62 utile
+62 inutile — je n'utilise pas le React Compiler
+62 trop vague — il manquait la date de migration
+```
+
+Trois valeurs seulement : `utile`, `inutile`, `trop vague`, plus ce qui manquait si tu le sais.
+Ce n'est pas encore enregistré automatiquement : l'agent qui reçoit la note la consigne. Deux
+semaines de notes sur de vrais messages qualifient le pilote ; aucun test historique ne la remplace.
+
+**Abstentions à étiqueter.** `docs/K10-ABSTENTIONS-A-ETIQUETER.md` liste dix sources réelles que le
+système n'a pas envoyées. Pour chacune : `aurait dû venir`, `bien écartée` ou `indifférent`.
+Claude ne tranche pas à ta place.
+
+**Diagnostic.** En lecture seule, sans modèle ni envoi :
+`/Users/yoanpetrov/.openclaw/tools/node-v24.19.0/bin/node scripts/inspect-mac-pilot.mjs`.
+Plusieurs codes peuvent s'afficher en même temps ; chacun est indépendant :
+
+| Code | Sens | Que faire |
+|---|---|---|
+| `WAIT_DIGEST` | des synthèses relues attendent 19:30 | rien |
+| `PROCESS_PENDING` | des sources attendent le prochain passage | rien, sauf si cela dure des heures |
+| `CHECK_SOURCE_READS` | une page n'a pas pu être lue (taille, date) ; les autres continuent | signaler à Codex si cela persiste |
+| `EXPAND_READERS` | des sources n'ont pas de lecteur | lot Codex |
+| `CHECK_EDITORIAL_REJECTIONS` | un brouillon ou le relecteur a refusé un contenu | normal en petit nombre ; aucune relance payante automatique |
+| `CHECK_NATIVE_GENERATION` | le service de complétion était indisponible | un seul nouvel essai automatique |
+| `CHECK_PROCESS_RECOVERY` | le dernier passage a échoué (veille du Mac, panne) | disparaît au prochain passage réussi |
+| `CHECK_COLLECTION` | une collecte de flux est dégradée | vérifier au créneau suivant |
+
+**Reprise après veille ou panne.** Le Mac qui dort interrompt des passages : ils sont fermés
+(`CYCLE_INTERRUPTED`) et le passage suivant reprend la file durable, sans rejouer les créneaux
+manqués ni rouvrir un envoi déjà tenté. Une panne du fournisseur arrête le passage au premier
+échec ; la file attend le créneau suivant. Restaurer un ancien état seulement avec Codex : une
+restauration aveugle peut effacer un reçu et créer un doublon (`MAC-NATIVE-RECOVERY.md`).
+
+## Historique (5 octobre 2026)
+
 État du 5 octobre 2026 : Jev 4311 et OpenClaw 18789 sains. Career est retiré
 du registre **actif**, des délégations et des tâches planifiées. Sa définition
 complète et son workspace sont conservés ; les sept rôles restent définis dans
