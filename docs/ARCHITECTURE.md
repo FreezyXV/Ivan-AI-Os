@@ -63,12 +63,10 @@ They are peers, not duplicate writers.
 - disagreement triggers a focused second pass;
 - historical performance informs future routing.
 
-## Deployment split
+## Deployment phases
 
-### VPS — always-on control plane
-OpenClaw, Jev Gateway, PostgreSQL + pgvector, Redis/queue, schedulers, policy/memory services and audit logs.
+### Current pilot — Mac only
+For the first months, Ivan runs the system locally with ChatGPT, Cowork, Codex, Claude, OpenClaw and Obsidian. Existing Jev services on the Mac remain available for useful classification/review, not as a mandatory step for every task. The Mac must be on for its background services and local vault access. Prioritize measured, complete workflows before adding infrastructure. No VPS purchase or deployment is authorized by this plan.
 
-### MacBook — workstation
-Claude Code, Codex, Cursor, Obsidian, MLX/Ollama and interactive development.
-
-Connect both through a private encrypted network.
+### Possible later phase — always-on VPS
+If observed workflows need to run while the Mac is off, propose a separately approved VPS deployment for OpenClaw, appropriate gateway, scheduler, private policy/memory services and audit logs. PostgreSQL + pgvector and Redis/queue are optional until justified by measured requirements. Keep interactive development, local Obsidian use and possible MLX/Ollama inference on the Mac. Define private connectivity and vault synchronization before any migration.
