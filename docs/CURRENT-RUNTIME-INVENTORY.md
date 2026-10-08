@@ -1,14 +1,14 @@
-# Inventaire vérifié du pilote Mac — 7 octobre 2026
+# Inventaire vérifié du pilote Mac — 8 octobre 2026
 
-Source Codex : branche agent/codex/alerts-integration ; worker c613533 et plugin alertes 8364b9f actifs,
+Source Codex : branche agent/codex/alerts-integration ; worker 6385c5b et plugin alertes 8364b9f actifs,
 gateway Jev d35963e conservé. Mode natif avec relecture indépendante.
 Référence distante foundation/v1 : 454b21e. Aucune fusion de ce lot.
-CI c613533 : 11/11 succès. Dernier lot : 284 tests Node concernés passent ; les 15 tests Python du lecteur ont passé au lot précédent.
+Historique CI c613533 : 11/11 succès. Lot courant : 196 tests runtime/scripts et 81 skills/agents passent ; lecteur inchangé.
 
 | Composant | Release réellement configurée | Provenance |
 |---|---|---|
 | Gateway Jev 4311 | orchestrator-d35963e | gateway d35963e, runner Mac cc1d2a5 conservé |
-| Worker alertes, toutes les 5 minutes | orchestrator-c613533 | c613533, priorité de file et reprise nocturne ; état/réglages conservés |
+| Worker alertes, toutes les 5 minutes | orchestrator-6385c5b | reprise digest/diagnostic ; file et autres réglages conservés |
 | Plugin ivan-ai-os-alerts | orchestrator-8364b9f | 8364b9f ; rédaction et relecture isolées |
 | Plugin ivan-ai-os-route | fd2ea04 | fd2ea0447ba0b5cd18980704138d6483d0b677a4 |
 | Plugin ivan-ai-os-memory | 8151c01-memory | 8151c01192add035fb8523e8375d6105753962cb |
@@ -38,7 +38,21 @@ au sens GitHub mais uniquement workflow_dispatch sur codex/collector-export,
 sans schedule, sans Jev et sans envoi. Le Mac lit les flux directement, sans
 attendre un artifact et sans second responsable de livraison.
 
-## Contrôle matinal courant
+## Contrôle du 8 octobre
+
+Worker 6385c5b activé seul avec sauvegarde VERIFIED. 196 tests concernés passent.
+Les pages incertaines restent isolées ; les autres continuent. Rattrapage des
+synthèses prêtes la veille avant le digest du jour. Diagnostic par activité.
+Panne réseau Telegram à la première tentative automatique de rattrapage ;
+quatre sources incertaines au total, jamais réessayées. Sonde native du bot OK
+ensuite, sans changement de configuration. Finance fraîche réellement livrée,
+reçu 63, qualification manuelle sans modèle/Jev. Ce n'est pas un digest du soir
+automatique prouvé. À 10:39 UTC : 5 delivered / 4 delivery_unknown / zéro ready,
+Business zéro. Anciens reçus préservés et snapshot final VERIFIED.
+Claude #67 c3b428e repris en 335088a ; revue/docs/skills alignés, horloge de test
+corrigée par Codex. Transport intermittent reste une limite. Lire le haut du relais.
+
+## Historique — contrôle du 7 octobre
 
 c613533 activé à 08:36 UTC, worker seul. Les anciennes abstentions ne passent
 plus avant les nouvelles sources ; les cycles expirés sont fermés ; une panne

@@ -1,3 +1,43 @@
+## État courant — digest repris et Finance livrée, 8 octobre 2026
+
+Worker 6385c5b actif ; plugin alertes 8364b9f, Jev d35963e et hook Claude
+c6ead2c conservés. Mode natif avec seconde lecture ; aucun Jev pour les alertes.
+196 tests runtime/scripts concernés passent. PR Claude #67 c3b428e reprise avec
+provenance en 335088a : revue du message 62, skills/contrat/guide alignés.
+Défaut d'horloge confirmé par Claude déjà corrigé dans le lot 6385c5b.
+
+Ivan confirme aucun message depuis le reçu 62 (7 octobre 00:28 Paris).
+Digest du 7 vers 21:41 interrompu pendant Low Power Sleep, batterie 1 % ;
+aucun reçu, deux sources delivery_unknown. Défauts corrigés : cette page ne
+bloque plus les autres, rattrapage au réveil des seules synthèses prêtes la
+veille, diagnostics conservés par activité, résultat incertain dégradé.
+Tests sur lendemain, DST/année, pages limitées et absence de renvoi.
+
+Rattrapage automatique du 8 à 12:34 Paris : deux autres sources réservées,
+panne réseau native sendMessage, état incertain conservé. IPv4 public et
+sonde bot réussissent ensuite ; IPv6 direct échoue. Aucune configuration
+réseau modifiée : ne pas revendiquer une réparation permanente du transport.
+Qualification manuelle séparée, source Finance fraîche : taux US à 10 ans,
+message 63 confirmé, zéro appel modèle/Jev. Les quatre sources incertaines
+ne sont pas rejouées. Aucun nouveau digest automatique réussi encore prouvé.
+
+À 10:39 UTC : delivered 5, delivery_unknown 4, expired_unsent 16, review 41,
+skipped 25 ; zéro ready/pending/processing. Catalogue Business toujours zéro.
+Anciens reçus et anciennes tentatives intacts. Sauvegarde après reçu 63 VERIFIED.
+Preuves privées mac-alerts-6385c5b/{digest-recovery-activation,
+fresh-finance-qualification,final-digest-proof}.json ; snapshot de reprise
+state-backup-after-message-63. Garder la file actuelle pour un retour de code.
+
+Claude note message 62 à 9/10 (fidélité 2/2), pas une mesure d'utilité Ivan.
+Uceprotect ajoute une précision non portée par sa propre citation ; appartient
+aux tentatives incertaines, ne pas la renvoyer. Ancien discours BCE fidèle
+mais pauvre/expiré ; ne pas le confondre avec la nouvelle observation Finance.
+Reste : digest ordinaire automatique vérifié, qualité Business/Finance,
+transport Telegram intermittent, coût natif, Engineering/mémoire et consolidation,
+puis Knowledge/Anakalypto commun. Career en pause, OVH différé.
+
+## Historique — reprise du 7 octobre
+
 ## État courant — reprise nocturne et priorité des sources, 7 octobre 2026
 
 Worker c613533 actif ; plugin alertes 8364b9f, Jev d35963e et hook Claude

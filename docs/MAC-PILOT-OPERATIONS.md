@@ -4,7 +4,8 @@
 
 **Ce qui tourne seul.** Le worker traite la file toutes les cinq minutes : tri natif, rédaction,
 puis seconde lecture indépendante (`NATIVE-ALERT-TRIAGE.md`). Rien n'est envoyé hors du digest
-de 19:30 (Paris). Jour sans synthèse retenue : **aucun message**, c'est normal. Aucune
+de 19:30 (Paris), sauf qualification manuelle et rattrapage des synthèses déjà prêtes la veille
+au réveil. Les synthèses du matin attendent le soir. Jour sans synthèse retenue : **aucun message**, c'est normal. Aucune
 confirmation à donner et aucun redémarrage à faire pour qu'un message parte ; les skills ne
 demandent pas de redémarrage du service.
 
@@ -39,7 +40,9 @@ Plusieurs codes peuvent s'afficher en même temps ; chacun est indépendant :
 
 | Code | Sens | Que faire |
 |---|---|---|
-| `WAIT_DIGEST` | des synthèses relues attendent 19:30 | rien |
+| `WAIT_DIGEST` | des synthèses relues attendent le soir ou un rattrapage | rien |
+| `CHECK_DELIVERY_RECEIPT` | une tentative reste incertaine | vérifier avant de renvoyer cette synthèse ; les autres continuent |
+| `CHECK_DIGEST_DELIVERY` | le dernier digest est dégradé | consulter le reçu et la connexion Telegram |
 | `PROCESS_PENDING` | des sources attendent le prochain passage | rien, sauf si cela dure des heures |
 | `CHECK_SOURCE_READS` | une page n'a pas pu être lue (taille, date) ; les autres continuent | signaler à Codex si cela persiste |
 | `EXPAND_READERS` | des sources n'ont pas de lecteur | lot Codex |
