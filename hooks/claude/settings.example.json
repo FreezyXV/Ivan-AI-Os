@@ -1,0 +1,20 @@
+{
+  "env": {
+    "IVAN_CLAUDE_HOOK_MODE": "shadow",
+    "IVAN_GATEWAY_URL": "http://127.0.0.1:4311"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/hooks/claude/pre-tool-use.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

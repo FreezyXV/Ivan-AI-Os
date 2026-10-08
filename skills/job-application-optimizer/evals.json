@@ -1,0 +1,20 @@
+{
+  "skill": "job-application-optimizer",
+  "version": 1,
+  "positifs": [
+    "Voici une offre de BA fonctionnel chez un fonds à Luxembourg, est-ce que je postule ?",
+    "Adapte mon CV à cette annonce AMOA à Paris",
+    "La Secrétaire m'a transféré 5 offres, lesquelles valent le coup ?"
+  ],
+  "negatifs": [
+    {
+      "demande": "Prépare-moi à l'entretien RH de jeudi",
+      "attendu": "interview-prep"
+    },
+    {
+      "demande": "Relance le recruteur qui ne m'a pas répondu",
+      "attendu": "recruiter-outreach"
+    }
+  ],
+  "livrable": "Score de fit /10 justifié, avis tranché, écarts avec traitement, aucune expérience ni chiffre inventé."
+}

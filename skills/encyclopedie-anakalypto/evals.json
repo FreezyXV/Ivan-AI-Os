@@ -1,0 +1,20 @@
+{
+  "skill": "encyclopedie-anakalypto",
+  "version": 1,
+  "positifs": [
+    "Lance un nouveau lot Anakalypto",
+    "Trouve des sujets pour les domaines en retard d'Anakalypto",
+    "Fais une fiche de la série après l'apocalypse sur la radio"
+  ],
+  "negatifs": [
+    {
+      "demande": "Vérifie les chiffres de cet article",
+      "attendu": "verification-affirmations"
+    },
+    {
+      "demande": "Fais une recherche sur le marché des ESN",
+      "attendu": "recherche-sourcee"
+    }
+  ],
+  "livrable": "Lot de fiches v2 (150 à 450 mots, un bloc visuel), registre d'affirmations confirmé, décisions Jev sujet et publication présentes, validateur au vert."
+}

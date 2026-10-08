@@ -1,0 +1,20 @@
+{
+  "skill": "orchestrateur-ia",
+  "version": 1,
+  "positifs": [
+    "Quel outil utiliser pour trier 200 offres d'emploi chaque semaine ?",
+    "Ça me coûte trop de tokens, qui devrait faire quoi entre Claude, Codex et Jev ?",
+    "Comment automatiser ma veille quotidienne sans exploser mes quotas ?"
+  ],
+  "negatifs": [
+    {
+      "demande": "Corrige ce test Node qui échoue",
+      "attendu": "dev-studio"
+    },
+    {
+      "demande": "Analyse cette offre de Business Analyst à Luxembourg",
+      "attendu": "job-application-optimizer"
+    }
+  ],
+  "livrable": "Un outil recommandé par tâche, un prompt ou une commande prêt à coller, une estimation de coût (quota ou €)."
+}

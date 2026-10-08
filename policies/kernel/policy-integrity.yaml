@@ -1,0 +1,11 @@
+id: kernel.policy-integrity
+version: 1
+priority: 1000
+scope: global
+effect: require_human
+match:
+  any:
+    - policy_mutation: true
+description: Agents may propose kernel-policy changes but cannot activate or weaken them.
+fail_mode: closed
+mutable_by_agents: false
