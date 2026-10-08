@@ -1,7 +1,9 @@
 # Contrat éditorial des alertes Telegram — `alert-editorial-v1`
 
 Auteur : Claude (lot K01–K02), 2026-10-05. Consommateur : Codex C08–C10.
-Statut : **proposition source**, pas activée et pas vérifiée de bout en bout. Compatible avec le
+Mise à jour 2026-10-08 : tri natif + seconde lecture indépendante (décision d'Ivan du 2026-10-07,
+§ 1) ; version de rédaction active `alert-editorial-v3-business-market`, première vraie synthèse :
+reçu 62. Statut d'origine : **proposition source**, pas activée et pas vérifiée de bout en bout. Compatible avec le
 schéma runtime `coded-brief-v1-provisional` (commit Codex `9572e42`, branche locale
 `agent/codex/alerts-integration`, non publiée au moment de la rédaction). Les évolutions
 demandées sont listées au § 11 ; aucune ne crée un second schéma.
@@ -15,13 +17,15 @@ change pour lui, action éventuelle, limites, puis le lien. Rien de retenu = auc
 |---|---|---|
 | Collecte, lecture effective, extrait, dates, empreinte | code Codex | enveloppe § 2 |
 | Doublons, fraîcheur, périmètre, sujets en pause, injection évidente | code Codex | `skip` / `review` / sélection requise |
-| Pertinence (keep / review / skip) | Jev `alerts.pertinence.mac-v3` (contexte v6) | décision + confiance, **jamais de texte** |
-| Synthèse d'un élément retenu | `ivan_alert_synthesize` (System, complétion isolée sans outils ni historique) | brief § 3 |
+| Pertinence et synthèse (keep / review / skip, puis brief) | `ivan_alert_synthesize` (System, une complétion native isolée sans outils ni historique, contexte v6) | décision + brief § 3 |
+| Seconde lecture indépendante | `ivan_alert_synthesize`, `purpose: verification` (`alert-verification-v1`) | `approve/reject/review` + codes, **jamais de texte**, reçu lié au contenu exact |
 | Contrôles (citations, chiffres, longueurs) puis rendu | code Codex | message § 4 |
 | Silence / digest / immédiat, envoi, reçu | code Codex | § 7 |
 | Qualité éditoriale, corpus, évaluation indépendante | Claude | ce contrat, `skills/rapport-telegram/corpus/` |
 
-Jev classe ; il ne rédige pas. Le générateur synthétise ; il ne refait pas le tri et n'envoie rien.
+Depuis le 2026-10-07 (décision d'Ivan), Jev n'intervient plus dans les alertes ; ce qui suit sur
+Jev dans ce contrat est historique. Le générateur trie et synthétise ; le relecteur ne réécrit
+rien ; aucun des deux n'envoie. Un refus du relecteur ne déclenche pas de seconde rédaction.
 
 ## 2. Entrée : l'enveloppe lue
 

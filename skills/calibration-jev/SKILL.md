@@ -3,7 +3,7 @@ name: calibration-jev
 description: Mesurer la qualité des décisions Jev (routage vers les managers, détails manquants, urgence, avis sur action) sur des cas synthétiques étiquetés, avant de régler un seuil, d'ajouter une question ou de faire confiance à Jev pour un nouvel usage. Utiliser après la bascule du gateway, une fois par mois, quand un routage semble faux, avant tout changement de seuil ou de question, ou quand Ivan demande "Jev est-il fiable ?", "calibre Jev".
 compatibility: "claude-code, codex"
 metadata:
-  version: "0.3.1"
+  version: "0.4.0"
   famille: system
   manager: system
   risque: lecture
@@ -27,7 +27,9 @@ ne jamais calibrer dessus.
 
 Depuis, `/v1/classify` (10 questions) et `/v1/alerts/select` existent ; voir `jev-decision`.
 
-## Sélection des alertes (jeux figés, déjà mesurés : ne pas les repasser)
+## Sélection des alertes — historique (Jev retiré du tri le 2026-10-07 ; ne pas repasser)
+Ces jeux ont mesuré la sélection **Jev**, qui ne trie plus les alertes. Ils ne qualifient pas le tri
+natif ; mesurer celui-ci demanderait un jeu nouveau aux labels fixés par Ivan, pas une repasse.
 | Jeu | Rôle | État |
 |---|---|---|
 | `skills/rapport-telegram/corpus/calibration-jev-v1` | dev 83 + holdout 11 | v3, v4, v5 mesurés |
