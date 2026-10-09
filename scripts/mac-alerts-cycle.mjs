@@ -14,6 +14,7 @@ import {processNext} from '../services/alerts-runtime/src/pipeline.js';
 import {selectionOutcome,DEFAULT_SELECTION_POLICY} from '../services/alerts-runtime/src/pipeline.js';
 import {createHash} from 'node:crypto';
 import {sendDigest} from '../services/alerts-runtime/src/digest.js';
+import {createOpportunityProjection} from '../services/alerts-runtime/src/opportunity-projection.js';
 import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
@@ -109,7 +110,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
    if(!status){cycleKey=page===1?window.key:`${window.key}:continuation:p${page}`;break;}
    if(status.state==='sending')break;
   }
-  if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,...window,deliver,now:now.getTime()}));
+  if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,...window,deliver,now:now.getTime(),prepareRow:createOpportunityProjection(settings.opportunities)}));
  }
  return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),business:ledger.businessSummary(),retention,policyRevisions,editorialRevisions};
 }

@@ -1,4 +1,14 @@
-## État courant — 5 octobre 2026
+## État courant — 9 octobre 2026
+
+Le parcours dossier Obsidian → Telegram → choix explicite Ivan → nouvelle fiche
+est observé pour 6ab5272ce301. Ivan choisit tester, avec recherche publique de
+témoignages indépendants avant toute offre ; reçu dans Codex, pas dans Telegram.
+Les commandes natives /opportunite et /decision sont activées, mais leur entrée
+Telegram réelle reste à vérifier. Voir OPPORTUNITY-DECISION-LOOP.md et le relais.
+Career demeure en pause : la mention career matching du cadrage général
+ci-dessous ne constitue pas une demande de réactivation. Aucun VPS à provisionner.
+
+## Historique — 5 octobre 2026
 
 Le pilote Mac est actif ; aucune nouvelle clé ou reprovisionnement n'est requis
 pour poursuivre les tâches présentes. Voir SESSION_HANDOFF.md pour les versions
@@ -7,6 +17,13 @@ Career est en pause, OVH différé, Knowledge/Anakalypto finalisé en dernier.
 Les demandes de provisionnement ci-dessous sont historiques ; ne pas les rejouer.
 
 # Human inputs and confirmed decisions
+
+## Decision confirmed on 2026-10-08 — local-first pilot
+
+For the first months, Ivan will run Ivan AI OS on his Mac, using ChatGPT, Cowork, Codex, Claude, OpenClaw and the local Obsidian vault. Jev remains available where it measurably improves classification, selection or review; it is not a mandatory call for every routine task. No OVH, IONOS or other VPS is to be provisioned for this pilot. Preserve the working local Jev and memory integrations; this decision does not revoke their existing bounded use.
+
+Prioritize a few complete local workflows: evidence-backed opportunity briefs, career matching, finance information, and an Obsidian decision record with Telegram delivery. Observe usefulness, false positives, time and token/API costs before adding more agents or services. Jobs that rely on the Mac will stop or defer when it is off; a future 24/7 VPS requires a separate decision and purchase by Ivan. The approval boundary for payments, transactions, external contact and publication still applies.
+
 
 Confirmed on 2026-09-28:
 - Ivan has a TypeSafe/Jev API key. The Mac smoke test succeeded on 2026-09-28 (HTTP 200; Jev returned `ROUTED` for a synthetic engineering request). The script takes the key through a hidden prompt and does not persist it; no always-on runtime is configured yet.

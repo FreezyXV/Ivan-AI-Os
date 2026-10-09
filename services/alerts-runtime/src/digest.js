@@ -1,11 +1,12 @@
 import {withDeadline} from './deadline.js';
 import {fail} from './context.js';
 import {digestEligible} from './schedule.js';
-export async function sendDigest({ledger,key,deliver,now=Date.now(),maxItems=2,maxPages=3,readyBeforeDay}){
+export async function sendDigest({ledger,key,deliver,now=Date.now(),maxItems=2,maxPages=3,readyBeforeDay,prepareRow}){
   if(!/^[a-zA-Z0-9:_-]{1,100}$/.test(key)||!Number.isInteger(maxItems)||maxItems<1||maxItems>3||
      !Number.isInteger(maxPages)||maxPages<1||maxPages>3||typeof deliver!=='function'||
+     (prepareRow!==undefined&&typeof prepareRow!=='function')||
      (readyBeforeDay!==undefined&&!/^\d{4}-\d{2}-\d{2}$/.test(readyBeforeDay)))fail('ALERT_DIGEST_INVALID');
-  ledger.reconcile();const settled=ledger.settleReady(now),pages=[];
+  ledger.reconcile();const settled=ledger.settleReady(now),pages=[],projectionErrors=new Map();
   // Stable page keys survive restarts. An attempted page never resends.
   for(let page=1;page<=maxPages;page++){
     const pageKey=page===1?key:`${key}:p${page}`;
@@ -15,13 +16,18 @@ export async function sendDigest({ledger,key,deliver,now=Date.now(),maxItems=2,m
     const rows=ledger.list('ready',100).filter(row=>digestEligible(row,{readyBeforeDay}));if(!rows.length)break;
     let text='Veille utile — Ivan AI OS\n',ids=[];
     for(const row of rows){
-      const next=text+'\n'+row.brief.message+'\n';
+      let message;
+      try{message=prepareRow?prepareRow(row):row.brief.message;
+        if(typeof message!=='string'||!message.trim()||message.length>2500)fail('ALERT_DIGEST_INVALID');}
+      catch(error){projectionErrors.set(row.id,/^DOSSIER_[A-Z_]+$/.test(error.code??'')?error.code:'DOSSIER_PROJECTION_FAILED');continue;}
+      const next=text+'\n'+message+'\n';
       if(next.length>2500){
-        if(!ids.length){text=row.brief.message;ids.push(row.id);}
+        if(!ids.length){text=message;ids.push(row.id);}
         break; // FIFO: the next row starts another page, never disappears.
       }
       text=next;ids.push(row.id);if(ids.length>=maxItems)break;
     }
+    if(!ids.length)break;
     const job=ledger.reserveDigest({key:pageKey,ids,text});if(!job)break;
     let receipt;try{receipt=await withDeadline(signal=>deliver({text:job.text,signal}),25000,'DIGEST_TIMEOUT');}catch{}
     const result=ledger.finishDigest(job.key,job.owner,receipt);pages.push(result);
@@ -30,5 +36,5 @@ export async function sendDigest({ledger,key,deliver,now=Date.now(),maxItems=2,m
   const remaining=ledger.counts().ready??0;
   return {state:pages.some(p=>p.state==='delivery_unknown')?'delivery_unknown':pages.length?(remaining?'partial':'delivered'):'empty',
     count:pages.reduce((n,p)=>n+p.count,0),deliveredCount:pages.filter(p=>p.state==='delivered').reduce((n,p)=>n+p.count,0),
-    remaining,expired:settled.expired,pages};
+    remaining,expired:settled.expired,pages,...(projectionErrors.size?{error_code:'DOSSIER_PROJECTION_FAILED',projectionErrors:[...projectionErrors].map(([id,code])=>({id,code}))}:{})};
 }
