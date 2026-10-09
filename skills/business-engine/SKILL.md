@@ -2,7 +2,7 @@
 name: business-engine
 description: Moteur d'opportunités d'Ivan (Opportunity Manager) - collecter des signaux publics de problèmes monétisables, les dédoublonner, mesurer leur récurrence, noter les opportunités sur preuves et les classer Cash (1er euro en 30 jours) ou Venture, puis livrer un top 3 actionnable. Utiliser pour toute veille business, recherche d'opportunités, d'arbitrages, de services ou de SaaS, "trouve-moi des opportunités", "cycle business", ou quand une alerte Sentinelle business arrive.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   famille: business
   manager: business
   risque: brouillon
@@ -38,7 +38,19 @@ Contrat complet : `workflows/business-engine.md`. Notation d'une idée isolée :
    douleur, monétisation, plan de validation 7 jours à 0 €.
    Règles codées : aucune preuve de paiement = abandon ; ≥ 22 lancer, ≥ 16 creuser.
 6. **Livrer** : `signals.mjs rapport --top 3` → note `decision` via `memoire-obsidian`
-   (sensibilité `interne`) + résumé Telegram via `rapport-telegram`.
+   (sensibilité `interne`) + synthèse Telegram via `rapport-telegram` forme A.
+
+## Synthèse pour Ivan : preuve, hypothèse, recommandation
+- **Preuve** (faits) : ce que des gens disent ou paient, cité depuis la page lue, avec sa date.
+  Une demande (Ask HN, forum) prouve une douleur ; seule une offre payée ou un prix prouve le
+  paiement. Compter les sources **distinctes**, pas les messages.
+- **Hypothèse** (utilité, annoncée comme telle) : le problème monétisable possible, la cible, et
+  pourquoi Ivan serait bien placé — seulement à partir du contexte public, jamais d'un objectif
+  personnel inventé.
+- **Recommandation** : uniquement la décision **codée** de `signals.mjs` (lancer ≥ 22, creuser
+  ≥ 16, abandon sans preuve de paiement) avec son score ; un cycle de veille sans notation dit
+  « exploratoire » et propose la prochaine preuve à chercher, jamais « lancer ».
+- **Limites** : source unique, pas de preuve de paiement, commentaires non lus, biais du forum.
 
 ## Règles
 - Aucun chiffre de marché sans source ; aucune promesse de revenu.

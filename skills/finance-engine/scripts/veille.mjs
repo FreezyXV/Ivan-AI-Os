@@ -13,8 +13,8 @@ const ECB = key => `https://data-api.ecb.europa.eu/service/data/${key}?lastNObse
 // policy rates only change at decisions ("evenement"), so their date is never stale.
 export const SOURCES = [
   { id: "bce_taux_depot", libelle: "BCE — taux de la facilité de dépôt", unite: "%", cadence: "evenement", type: "ecb", url: ECB("FM/B.U2.EUR.4F.KR.DFR.LEV") },
-  { id: "inflation_zone_euro", libelle: "Inflation zone euro (IPCH, sur un an)", unite: "%", cadence: "mois", type: "ecb", url: ECB("ICP/M.U2.N.000000.4.ANR") },
-  { id: "inflation_sous_jacente", libelle: "Inflation sous-jacente zone euro (hors énergie et alimentation)", unite: "%", cadence: "mois", type: "ecb", url: ECB("ICP/M.U2.N.XEF000.4.ANR") },
+  { id: "inflation_zone_euro", libelle: "Inflation zone euro (IPCH, sur un an)", unite: "%", cadence: "mois", type: "ecb", url: ECB("HICP/M.U2.N.000000.4D0.ANR") },
+  { id: "inflation_sous_jacente", libelle: "Inflation sous-jacente zone euro (hors énergie et alimentation)", unite: "%", cadence: "mois", type: "ecb", url: ECB("HICP/M.U2.N.XEF000.4D0.ANR") },
   { id: "eur_usd", libelle: "EUR/USD (référence BCE)", unite: "USD", cadence: "jour", type: "ecb", url: ECB("EXR/D.USD.EUR.SP00.A") },
   { id: "us_10_ans", libelle: "Taux US à 10 ans", unite: "%", cadence: "jour", type: "fred", url: "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10" },
   { id: "btc_eur", libelle: "Bitcoin (BTC/EUR, clôture)", unite: "EUR", cadence: "jour", type: "kraken", url: "https://api.kraken.com/0/public/OHLC?pair=XBTEUR&interval=1440" },
@@ -57,7 +57,12 @@ export const PARSERS = {
     const j = JSON.parse(text);
     if (j.error?.length) fail("PARSE_KRAKEN");
     const key = Object.keys(j.result ?? {}).find(k => k !== "last");
-    const rows = j.result?.[key];
+    // The last OHLC row is the current day, still forming: it is not a close. Kraken's `last`
+    // is the time of the last committed candle; filtering on it is idempotent, so a caller that
+    // already removed the forming row (Codex runtime) does not lose a real close.
+    const all = j.result?.[key];
+    const committed = Number(j.result?.last);
+    const rows = Array.isArray(all) ? (committed > 0 ? all.filter(r => Number(r[0]) <= committed) : all.slice(0, -1)) : all;
     if (!Array.isArray(rows) || rows.length < 31) fail("PARSE_KRAKEN");
     const close = i => Number(rows.at(i)[4]);
     const last = close(-1);
