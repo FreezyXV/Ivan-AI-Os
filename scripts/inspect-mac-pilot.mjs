@@ -46,6 +46,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  // Preserve the primary action for existing clients, but never hide concurrent work.
  const diagnoses=[];
  const add=(condition,code,message)=>{if(condition)diagnoses.push({code,message});};
+ add(latest.find(r=>r.name==='digest')?.errorCodes.includes('DOSSIER_PROJECTION_FAILED'),'CHECK_OPPORTUNITY_MEMORY','Une fiche Business attend son écriture Obsidian ; consulter le code de projection, sans renvoyer une livraison déjà tentée.');
  add((queue.delivery_unknown??0)+(queue.sending??0)>0,'CHECK_DELIVERY_RECEIPT','Envoi incertain : vérifier son reçu avant de renvoyer cette synthèse ; les autres peuvent continuer.');
  add(latest.find(r=>r.name==='digest')?.degraded||latest.find(r=>r.name==='digest')?.status==='failed','CHECK_DIGEST_DELIVERY','Le dernier digest a échoué ou reste incertain : vérifier son reçu ; les autres synthèses peuvent continuer sans renvoyer cette tentative.');
  const currentCollections=['feeds','finance','business'].map(name=>latest.find(r=>r.name===name)).filter(Boolean);
