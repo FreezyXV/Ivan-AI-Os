@@ -12,9 +12,14 @@ export const MANAGER_RESUME_MESSAGE = "La mission reste à terminer : vérifier 
 export const MANAGER_COMPLETION_GUIDANCE = `Après sessions_spawn, attendre via sessions_yield avec ce paramètre exact : ${JSON.stringify({ message: MANAGER_RESUME_MESSAGE })}. Utiliser message, pas acknowledgment. À la reprise, achever la vérification et retourner le rapport au parent.`;
 
 // Input comes from Claude's reviewed registry, never a model-provided role list.
-export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace }) {
+export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace, availableToolsByRoute = {} }) {
   if (!path.isAbsolute(runtimeRoot) || !Array.isArray(managers) || managers.length !== 7 || !Array.isArray(skills)) throw new Error("INVALID_MANAGER_REGISTRY");
   if (mainWorkspace !== undefined && (typeof mainWorkspace !== "string" || !path.isAbsolute(mainWorkspace))) throw new Error("INVALID_MAIN_WORKSPACE");
+  const nativeReadTools = { business: ["ivan_business_brief"], finance: ["ivan_finance_brief"],
+    system: ["ivan_memory_search", "ivan_memory_read"], knowledge: ["ivan_memory_search", "ivan_memory_read"] };
+  if (!availableToolsByRoute || typeof availableToolsByRoute !== "object" || Array.isArray(availableToolsByRoute) ||
+      Object.entries(availableToolsByRoute).some(([route, tools]) => !Array.isArray(tools) ||
+        !nativeReadTools[route] || tools.some(name => !nativeReadTools[route].includes(name)))) throw new Error("INVALID_TOOL_CAPABILITIES");
   const expected = new Set(["orchestrator", ...ROUTES]);
   const known = new Map(skills.map(skill => [skill.name, skill]));
   const roles = managers.map(manager => {
@@ -22,9 +27,12 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
     const publicFinance = manager.route === "finance";
     // Ivan explicitly chose public Finance on OpenClaw plus private context on
     // Claude. Reuse public research/report skills, never the personal finance skill.
-    const candidates = publicFinance ? ["recherche-sourcee", "rapport-telegram"] : manager.skills;
+    const candidates = publicFinance ? [
+      ...(manager.skills.includes("finance-engine") ? ["finance-engine"] : []),
+      "recherche-sourcee", "rapport-telegram"] : manager.skills;
     if (candidates.some(name => !known.has(name))) throw new Error("INVALID_MANAGER_REGISTRY");
-    const allowed = candidates.filter(name => isOpenClawSkillAvailable(known.get(name)));
+    const availableTools = [...new Set(availableToolsByRoute[manager.route] ?? [])];
+    const allowed = candidates.filter(name => isOpenClawSkillAvailable(known.get(name), { availableTools }));
     if (!allowed.length) throw new Error("MANAGER_WITHOUT_SKILLS");
     return {
       role: manager.route === "orchestrator" ? "chief-of-staff" : manager.route,
@@ -32,7 +40,7 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
       runtime: "openclaw", workspace: manager.route === "orchestrator" && mainWorkspace
         ? mainWorkspace : path.join(runtimeRoot, manager.route === "orchestrator" ? "chief-of-staff" : manager.route),
       ...(manager.route === "orchestrator" && mainWorkspace ? { preparedWorkspace: path.join(runtimeRoot, "chief-of-staff") } : {}),
-      skills: allowed, description: publicFinance ? "Veille financière publique : macro, taux, évolutions et opportunités sourcées pour éclairer les décisions d'Ivan." : manager.description,
+      skills: allowed, availableTools, description: publicFinance ? "Veille financière publique : macro, taux, évolutions et opportunités sourcées pour éclairer les décisions d'Ivan." : manager.description,
       publicContextOnly: publicFinance, status: "PREPARED_NOT_ACTIVATED"
     };
   });
@@ -42,7 +50,7 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
   const agentEntries = Object.fromEntries(native.map(role => [role.agentId, {
     ...(role.agentId === "main" ? { default: true } : {}),
     workspace: role.workspace, skills: role.skills,
-    tools: { deny: role.agentId === "main" ? ["exec", "process", "gateway", "plugins", "cron"] : deniedTools,
+    tools: { ...(role.availableTools.length ? { alsoAllow: role.availableTools } : {}), deny: role.agentId === "main" ? ["exec", "process", "gateway", "plugins", "cron"] : deniedTools,
       ...(role.publicContextOnly ? { allow: ["read", "web_search", "web_fetch", "sessions_spawn", "sessions_yield", "subagents", "sessions_list", "sessions_history"] } : {}),
       fs: { workspaceOnly: true } },
     subagents: { allowAgents: role.agentId === "main" ? native.filter(r => r.agentId !== "main").map(r => r.agentId) : [role.agentId], delegationMode: "prefer" }
