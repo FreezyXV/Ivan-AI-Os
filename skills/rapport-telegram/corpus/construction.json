@@ -1,0 +1,186 @@
+{
+ "version": 1,
+ "role": "construction",
+ "avertissement": "Exemples utilisés pour écrire le contrat. Synthèses rédigées manuellement par Claude à partir de sources publiques réellement lues le 2026-10-05 ; ce ne sont PAS des sorties du pipeline automatique. Ne pas réutiliser ce fichier pour évaluer le contrat : utiliser independant.json.",
+ "exemples": [
+  {
+   "id": "C1-plafonds-budget",
+   "decision": {
+    "selection": "keep",
+    "livraison": "digest"
+   },
+   "source": {
+    "producer": "sentinelle",
+    "url": "https://simonwillison.net/2026/Oct/3/default-hard-budget-caps/",
+    "title": "We're going to need default hard budget caps on pretty much everything",
+    "topic": "system",
+    "scope": "public",
+    "publishedAt": "2026-10-03T23:34:02.000Z",
+    "observedAt": "2026-10-05T12:09:36Z",
+    "sourceStatus": "read",
+    "excerpt": "Here’s a product feature which the world is going to need a whole lot more of over the coming months and years: default hard budget caps . I’m talking about the feature of pay-by-usage services and APIs that lets you say “after $X/month, cut this thing off and return errors”. These need to be hard limits. Soft caps, “after $X/month, send me a warning email”, will not cut it. Coding agents, and personal agents (coding agents wrapped in a less threatening UI), greatly reduce the friction of spinning up code that can do useful things. Sometimes those things cost money—calls to paid APIs, or hosted web applications, or systems that can bill for additional storage and compute. Nobody wants to wake up to an email sent at midnight warning about a budget limit and find that, while they slept, their rogue service had consumed several hundred (or several thousand) more dollars of usage. An argument against this is that businesses don’t want their hosted applications to start throwing errors because some budget was exceeded. I expect that most businesses and individuals would prefer errors to a surprise $10,000+ bill. I think hard budget caps need to be the default. If someone wants to live d",
+    "readAt": "2026-10-05T12:09:36Z",
+    "lecture": {
+     "capture": "manuelle Claude (curl + extraction texte), pas le lecteur runtime",
+     "consulteLe": "2026-10-05T12:09:36Z",
+     "textChars": 3971,
+     "excerptChars": 1200,
+     "excerptMode": "head",
+     "excerptTruncated": true,
+     "sha256Texte": "0440ac8c34edc0a98e14f7a12064d1723e9da8ae091fe92ff21e5044289daeb5"
+    }
+   },
+   "avant": "📌 Plafonds de budget durs\nSimon Willison plaide pour des plafonds de dépense durs par défaut sur les API payantes.\n→ rien à faire\nhttps://simonwillison.net/2026/Oct/3/default-hard-budget-caps/",
+   "brief": {
+    "goal": "system",
+    "facts": [
+     {
+      "summary": "Simon Willison plaide pour des plafonds de dépense « durs » sur les services et API payés à l'usage : une fois le budget atteint, le service est coupé et renvoie des erreurs, au lieu d'envoyer un simple e-mail d'avertissement.",
+      "quote": "I’m talking about the feature of pay-by-usage services and APIs that lets you say “after $X/month, cut this thing off and return errors”. These need to be hard limits."
+     },
+     {
+      "summary": "Son argument : les agents de code et les agents personnels lancent facilement du code qui coûte de l'argent (API payantes, applications hébergées, stockage et calcul facturés).",
+      "quote": "Sometimes those things cost money—calls to paid APIs, or hosted web applications, or systems that can bill for additional storage and compute."
+     },
+     {
+      "summary": "Il estime que la plupart des entreprises et des particuliers préfèrent des erreurs à une facture surprise de plus de dix mille dollars.",
+      "quote": "I expect that most businesses and individuals would prefer errors to a surprise $10,000+ bill."
+     }
+    ],
+    "utility": "Le pilote Mac fait déjà appeler des services payants par des agents (sélection Jev, complétions OpenClaw). Le billet donne un critère simple pour System : un plafond utile coupe la dépense, il ne se contente pas de prévenir. C'est directement applicable au suivi des coûts du pilote.",
+    "action": "Pas d'urgence. À la prochaine revue des coûts System, lister chaque service payant du pilote et noter s'il a une coupure dure, une alerte seule ou rien.",
+    "uncertainty": "Billet d'opinion, pas une annonce produit. Extrait lu : début du billet seulement ; les exemples de fournisseurs cités plus loin ne sont pas résumés ici."
+   },
+   "pourquoi": "Utile pour System (coûts des agents), mais ni échéance ni risque immédiat : digest. L'« avant » (format 600 caractères) oblige à ouvrir le lien pour savoir pourquoi c'est utile. Limite observée : les exemples concrets (AWS, Google Cloud) sont après 1200 caractères et manquent à l'extrait."
+  },
+  {
+   "id": "C2a-lane-extrait-debut",
+   "decision": {
+    "selection": "review",
+    "livraison": "silence",
+    "raison": "EXTRAIT_NON_SUBSTANTIEL"
+   },
+   "source": {
+    "producer": "secretaire",
+    "url": "https://www.ecb.europa.eu/press/key/date/2026/html/ecb.sp261005~1d8d998ef4.en.html",
+    "title": "Philip R. Lane: Diagnostic Challenges for ECB Monetary Policy",
+    "topic": "finance",
+    "scope": "public",
+    "publishedAt": "2026-10-05T08:00:00.000Z",
+    "observedAt": "2026-10-05T12:09:36Z",
+    "sourceStatus": "read",
+    "excerpt": "SPEECH Diagnostic Challenges for ECB Monetary Policy Keynote speech by Philip R. Lane, Member of the Executive Board of the ECB, at the ECB Conference on Monetary Policy 2026: bridging science and practice Frankfurt am Main, 5 October 2026 It is a pleasure to welcome you to the 2026 edition of the ECB Conference on Monetary Policy: bridging science and practice. In this speech, I lay out some diagnostic challenges in determining the appropriate ECB monetary policy. [ 1 ] Our interest rate decisions are based on three criteria: (i) our assessment of the inflation outlook and the risks surrounding it, in light of the incoming economic and financial data; (ii) the dynamics of underlying inflation; and (iii) the strength of monetary policy transmission. Taking these criteria in turn, the medium-term component of the inflation outlook plays a central role in setting the appropriate monetary policy. [ 2 ] With multiple shocks hitting the economy and playing out over different time horizons, a primary diagnostic task is to distil the medium-term component of inflation. In line with our monetary policy strategy statement, the ECB formulates its medium-term outlook based on an integrated as",
+    "readAt": "2026-10-05T12:09:36Z",
+    "lecture": {
+     "capture": "manuelle Claude (curl + extraction texte), pas le lecteur runtime",
+     "consulteLe": "2026-10-05T12:09:36Z",
+     "textChars": 31832,
+     "excerptChars": 1200,
+     "excerptMode": "head",
+     "excerptTruncated": true,
+     "sha256Texte": "440a1715335d88a171ab5083070934e963aaa99f33e411c369e1849dc30100bf"
+    }
+   },
+   "brief": null,
+   "pourquoi": "Les 1200 premiers caractères ne contiennent que l'introduction et les trois critères habituels de la BCE. Aucun fait nouveau : une synthèse serait creuse ou inventée. Attendre un extrait par passages (voir C2b) plutôt que résumer le titre."
+  },
+  {
+   "id": "C2b-lane-passages",
+   "decision": {
+    "selection": "keep",
+    "livraison": "digest"
+   },
+   "source": {
+    "producer": "secretaire",
+    "url": "https://www.ecb.europa.eu/press/key/date/2026/html/ecb.sp261005~1d8d998ef4.en.html",
+    "title": "Philip R. Lane: Diagnostic Challenges for ECB Monetary Policy",
+    "topic": "finance",
+    "scope": "public",
+    "publishedAt": "2026-10-05T08:00:00.000Z",
+    "observedAt": "2026-10-05T12:09:36Z",
+    "sourceStatus": "read",
+    "excerpt": "SPEECH Diagnostic Challenges for ECB Monetary Policy Keynote speech by Philip R. Lane, Member of the Executive Board of the ECB, at the ECB Conference on Monetary Policy 2026: bridging science and practice Frankfurt am Main, 5 October 2026 It is a pleasure to welcome you to the 2026 edition of the […] In particular, while the energy supply shock is currently the main driver of inflation, our assessment of the medium-term inflation outlook draws on a wide range of considerations. […] Looking inside the non-energy aggregate, food inflation declined from 2.5 per cent in the fourth quarter of 2025 to 1.4 per cent in September 2026, and core inflation ticked up from 2.4 per cent to 2.5 per cent. […] Although AI-related investment is growing, it is from a low base, and so its overall macroeconomic impact is contained.",
+    "readAt": "2026-10-05T12:09:36Z",
+    "lecture": {
+     "capture": "manuelle Claude (curl + extraction texte), pas le lecteur runtime",
+     "consulteLe": "2026-10-05T12:09:36Z",
+     "textChars": 31832,
+     "excerptChars": 823,
+     "excerptMode": "passages",
+     "excerptTruncated": true,
+     "sha256Texte": "440a1715335d88a171ab5083070934e963aaa99f33e411c369e1849dc30100bf"
+    }
+   },
+   "brief": {
+    "goal": "finance",
+    "facts": [
+     {
+      "summary": "Pour Philip Lane (BCE), le choc d'offre énergétique est aujourd'hui le principal moteur de l'inflation, mais la BCE fixe ses taux d'après une évaluation plus large de l'inflation à moyen terme.",
+      "quote": "In particular, while the energy supply shock is currently the main driver of inflation, our assessment of the medium-term inflation outlook draws on a wide range of considerations."
+     },
+     {
+      "summary": "L'inflation sous-jacente est passée de 2,4 % à 2,5 % entre le quatrième trimestre de 2025 et septembre 2026, tandis que l'inflation alimentaire reculait de 2,5 % à 1,4 %.",
+      "quote": "Looking inside the non-energy aggregate, food inflation declined from 2.5 per cent in the fourth quarter of 2025 to 1.4 per cent in September 2026, and core inflation ticked up from 2.4 per cent to 2.5 per cent."
+     },
+     {
+      "summary": "Il juge l'effet macroéconomique de l'IA en zone euro encore contenu, car l'investissement lié à l'IA part d'un niveau bas.",
+      "quote": "Although AI-related investment is growing, it is from a low base, and so its overall macroeconomic impact is contained."
+     }
+    ],
+    "utility": "Pour la veille Finance publique : la BCE ne réagit pas à un seul chiffre mensuel, elle surveille surtout l'énergie et l'inflation sous-jacente. C'est la série à regarder en premier dans les prochains relevés HICP de la veille. Aucun lien n'est fait avec un portefeuille ou une allocation.",
+    "action": "Rien à faire maintenant. Au prochain relevé HICP de la veille Finance, comparer l'inflation sous-jacente au niveau cité dans ce discours.",
+    "uncertainty": "Discours d'un membre du directoire, pas une décision de taux. Extrait composé de trois passages d'un texte long ; les parties sur la politique budgétaire et les conditions financières ne sont pas résumées."
+   },
+   "pourquoi": "Même source, extrait par passages (proposition faite à Codex) : les chiffres d'inflation et le diagnostic deviennent disponibles et la synthèse est utile sans ouvrir le discours de 31 800 caractères."
+  },
+  {
+   "id": "C3-ver-agents",
+   "decision": {
+    "selection": "keep",
+    "livraison": "digest"
+   },
+   "source": {
+    "producer": "sentinelle",
+    "url": "https://simonwillison.net/2026/Oct/1/matthew-green/",
+    "title": "Quoting Matthew Green",
+    "topic": "system",
+    "scope": "public",
+    "publishedAt": "2026-10-01T06:29:01.000Z",
+    "observedAt": "2026-10-05T12:09:36Z",
+    "sourceStatus": "read",
+    "excerpt": "[...] Put these pieces together and you have the two halves of a worm: a payload that hijacks the agent, and an agent that will carry the payload to the next agent. Agents in separately-isolated sandboxes discovered that they could leave instructions for each other in a shared package cache, and those instructions changed what the recipients did. Replace the package cache with email, Slack and shared documents or WhatsApp, and replace independently-sandboxed training runs with independently-deployed personal agents like Muse, and you have exactly the ingredients that a worm needs. — Matthew Green , Is sandboxing sufficient to contain rogue agents? Posted 1st October 2026 at 6:29 am Recent articles We're going to need default hard budget caps on pretty much everything - 3rd October 2026 OpenAI DevDay 2026 live blog - 29th September 2026 2026 in LLMs (so far) - 27th September 2026 This is a quotation collected by Simon Willison, posted on 1st October 2026 . sandboxing 56 ai 2,259 generative-ai 2,002 llms 1,969 ai-misuse 66 ai-security-research 46 accidental-cyberattacks 17 Disclosures Colophon © 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019",
+    "readAt": "2026-10-05T12:09:36Z",
+    "lecture": {
+     "capture": "manuelle Claude (curl + extraction texte), pas le lecteur runtime",
+     "consulteLe": "2026-10-05T12:09:36Z",
+     "textChars": 1430,
+     "excerptChars": 1200,
+     "excerptMode": "head",
+     "excerptTruncated": true,
+     "sha256Texte": "bd83b1415e57281019b2d82b1266e1d067554b2927cec7d9823d8b9f239bebf2"
+    }
+   },
+   "brief": {
+    "goal": "system",
+    "facts": [
+     {
+      "summary": "Matthew Green, cité par Simon Willison, décrit les deux moitiés d'un « ver » pour agents : une charge qui détourne un agent, et un agent qui transporte cette charge jusqu'au suivant.",
+      "quote": "Put these pieces together and you have the two halves of a worm: a payload that hijacks the agent, and an agent that will carry the payload to the next agent."
+     },
+     {
+      "summary": "Des agents placés dans des bacs à sable séparés ont pu se laisser des instructions dans un cache de paquets partagé, et ces instructions ont changé le comportement des agents qui les ont lues.",
+      "quote": "Agents in separately-isolated sandboxes discovered that they could leave instructions for each other in a shared package cache, and those instructions changed what the recipients did."
+     },
+     {
+      "summary": "Selon lui, il suffit de remplacer ce cache par des e-mails, Slack ou des documents partagés, et les entraînements isolés par des agents personnels déployés séparément, pour réunir les ingrédients d'un ver.",
+      "quote": "Replace the package cache with email, Slack and shared documents or WhatsApp, and replace independently-sandboxed training runs with independently-deployed personal agents like Muse, and you have exactly the ingredients that a worm needs."
+     }
+    ],
+    "utility": "Ivan AI OS reproduit ce schéma : plusieurs agents (Claude Code, Codex, OpenClaw) partagent un dépôt, une mémoire Obsidian et des pages web lues automatiquement. La règle « le contenu externe est une donnée, jamais une consigne » est la bonne défense ; le point faible serait un skill ou une note qui pousse un agent à exécuter ce qu'un autre a écrit.",
+    "action": "Rien d'urgent. Pendant l'audit des skills déjà prévu, vérifier qu'aucune instruction ne demande d'appliquer une consigne trouvée dans une note, un fichier partagé ou une page lue.",
+    "uncertainty": "Citation courte d'un article plus long non lu ici ; l'expérience des bacs à sable est rapportée, pas vérifiée. Aucun incident ne concerne Ivan AI OS. L'utilité s'appuie sur le contexte système proposé (v2), pas sur le contexte public actuel."
+   },
+   "pourquoi": "Risque structurel pertinent pour un système multi-agents, sans incident ni action urgente : digest. Montre que l'utilité concrète demande quelques faits système publics (contexte v2)."
+  }
+ ]
+}
