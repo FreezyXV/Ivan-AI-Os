@@ -1,4 +1,29 @@
-## État courant — digest repris et Finance livrée, 8 octobre 2026
+## 2026-10-09 — Codex — parcours opportunité et décision
+
+État : branche agent/codex/opportunity-loop ; code b846907 actif, pas fusionné.
+Mac Darwin confirmé, dépôt initial propre ; fetch sans écrasement, trois commits
+documentaires foundation/v1 repris avec provenance jusqu'à c44c441.
+Fait : 187/187 tests runtime/scripts, dont huit cas dossier/décision/reprise ;
+plugin natif chargé (/opportunite, /decision), worker b846907, services sains.
+Fait : digests automatiques 64 et 65 confirmés le 9 au soir ; message 66 depuis
+une qualification séparée, dossier public exploratoire préparé par Codex et
+approuvé par une relecture native (15,561 s). Pas de découverte Business automatique.
+Décision réelle Ivan : tester, chercher des témoignages indépendants avant offre ;
+origine codex-explicit-user, fiche Obsidian 6ab5272ce301 v1, v0 préservée.
+Recherche gratuite supplémentaire : trois auteurs, friction technique plausible,
+aucun achat prouvé ; journal ciblé dans Obsidian, aucun contact/installation.
+Ouvert : vraie entrée des commandes Telegram non testée (UI noWindowsAvailable),
+coût natif non exposé, temps gagné/utilité non mesurés, Business automatique zéro.
+File production : delivered 7, unknown 4, expired 37, review 40, skipped 36 ;
+ne pas rejouer les quatre envois incertains, ni restaurer un vieux snapshot.
+Ne pas toucher : notes personnelles/profils privés, autres services/plugins ;
+Career reste en pause, aucun VPS ; Knowledge/Anakalypto finalisation commune après pilote.
+Preuves : mac-opportunity-ffd71b3/research-qualification et mac-opportunity-b846907
+sous ~/.ivan-ai-os ; voir OPPORTUNITY-DECISION-LOOP.md et CLAUDE-NEXT-OPPORTUNITY-LOOP.md.
+Prochaine action : vérifier une vraie entrée /opportunite 6ab5272ce301 dans le DM
+de la Secrétaire, sans simuler une nouvelle décision d'Ivan ; revue Claude parallèle.
+
+## Historique — digest repris et Finance livrée, 8 octobre 2026
 
 Worker 6385c5b actif ; plugin alertes 8364b9f, Jev d35963e et hook Claude
 c6ead2c conservés. Mode natif avec seconde lecture ; aucun Jev pour les alertes.

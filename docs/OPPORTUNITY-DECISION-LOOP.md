@@ -1,6 +1,13 @@
 # Parcours opportunité, Obsidian et décision
 
-## Source préparée — 9 octobre 2026
+## Source et activation — 9 octobre 2026
+
+Code `b846907` activé sur le Mac : plugin natif chargé avec `opportunite` et
+`decision`, worker du même commit, services sains après bascule sauvegardée.
+187/187 tests runtime/scripts passent, dont huit cas du parcours opportunité.
+Les commandes n'ont pas encore été exercées par une vraie entrée Telegram :
+le contrôle graphique renvoie `noWindowsAvailable` malgré la fenêtre visible.
+Le chargement natif et les contrôles d'identité sont vérifiés séparément.
 
 Le parcours de veille actuel est conservé : source publique lue, jugement natif,
 contrôles déterministes, seconde lecture indépendante, file SQLite puis digest.
@@ -15,7 +22,7 @@ Obsidian conserve cette proposition en `ready`, compte son code et laisse les
 autres synthèses partir. Les faits vérifiés ne sont jamais tronqués pour ajouter
 un identifiant : si la page est pleine, `/opportunite` donne la liste des dossiers.
 
-## Usage prévu après activation
+## Usage des commandes activées
 
 Dans le Telegram privé de la Secrétaire :
 
@@ -65,3 +72,33 @@ de chaque note, reçu Telegram et décision réellement reçue. Ne jamais invent
 la décision d'Ivan pour fermer le test. Mesurer le nombre de dossiers acceptés,
 en veille/écartés et les raisons ; demander une estimation du temps gagné. La
 valeur quotidienne et le coût natif restent inconnus avant ces observations.
+
+## Premier parcours réel observé
+
+Le dossier `6ab5272ce301` concerne une hypothèse exploratoire de qualification
+des mises à jour OpenClaw. Codex l'a recherché et préparé à partir d'un ticket
+public frais ; ce n'est pas une découverte automatique du catalogue Business.
+Une seconde lecture native a approuvé le contenu lié à sa source en 15,561 s,
+avec une complétion. La projection v0 a précédé l'envoi confirmé du message 66
+depuis une file de qualification séparée ; la file de production est intacte.
+
+Ivan a répondu dans Codex : « Tester — chercher des témoignages indépendants
+avant de construire une offre ». La décision est persistée avec l'origine
+`codex-explicit-user`, et la fiche v1 conserve son choix, sa raison et le lien
+vers v0. La relecture et la reprojection depuis le registre ont réussi après
+activation. Latence observée livraison–décision : 209264 ms, pas un temps gagné.
+
+Une recherche publique supplémentaire, sans modèle ni contact, a trouvé trois
+comptes auteurs distincts rapportant des difficultés. L'incident initial est
+désormais fermé et l'éditeur propose déjà une reprise après mise à jour :
+friction technique plausible, demande commerciale et volonté de payer inconnues.
+Le compte rendu est dans `Ivan AI OS/journal/2026-10-09-test-public-du-dossier-6ab5272ce301.md`.
+Les fiches sont `Ivan AI OS/inbox/opportunite-6ab5272ce301-v0.md` et `-v1.md`.
+Le choix reste tester ; une recommandation ultérieure n'est pas une décision Ivan.
+
+Preuves privées : `~/.ivan-ai-os/mac-opportunity-ffd71b3/research-qualification/`
+(source, brief, relecture, reçu, décision) et `mac-opportunity-b846907/`
+(candidat, empreinte, sauvegarde, contrôle final). Ne pas les committer.
+Le coût fournisseur natif n'est pas exposé ; aucun coût nul n'est revendiqué.
+Le catalogue Business automatique reste à zéro. L'échantillon d'un dossier ne
+mesure pas la fiabilité générale, la pertinence quotidienne ou le temps gagné.

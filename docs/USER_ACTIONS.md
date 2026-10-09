@@ -1,4 +1,14 @@
-## État courant — 5 octobre 2026
+## État courant — 9 octobre 2026
+
+Le parcours dossier Obsidian → Telegram → choix explicite Ivan → nouvelle fiche
+est observé pour 6ab5272ce301. Ivan choisit tester, avec recherche publique de
+témoignages indépendants avant toute offre ; reçu dans Codex, pas dans Telegram.
+Les commandes natives /opportunite et /decision sont activées, mais leur entrée
+Telegram réelle reste à vérifier. Voir OPPORTUNITY-DECISION-LOOP.md et le relais.
+Career demeure en pause : la mention career matching du cadrage général
+ci-dessous ne constitue pas une demande de réactivation. Aucun VPS à provisionner.
+
+## Historique — 5 octobre 2026
 
 Le pilote Mac est actif ; aucune nouvelle clé ou reprovisionnement n'est requis
 pour poursuivre les tâches présentes. Voir SESSION_HANDOFF.md pour les versions
