@@ -1,5 +1,4 @@
-import {openDossiers} from '../../../shared/opportunity-dossier.mjs';
-export function handleOpportunityCommand(ctx,config,kind){
+export async function handleOpportunityCommand(ctx,config,kind){
   // These fields come from OpenClaw's native command dispatcher, never a tool
   // argument or a message interpreted by an LLM. Only Ivan's private DM.
   if(ctx?.channel!=='telegram'||ctx.isAuthorizedSender!==true||
@@ -9,6 +8,9 @@ export function handleOpportunityCommand(ctx,config,kind){
     ctx.threadParentId!==undefined)return {text:'Commande réservée au Telegram privé d’Ivan.'};
   let store;
   try{
+    // The native loader is synchronous. Load CLI-backed engine validation only
+    // after dispatch, so their conditional top-level awaits cannot break startup.
+    const {openDossiers}=await import('../../../shared/opportunity-dossier.mjs');
     store=openDossiers(config);
     if(kind==='read'){
       const id=(ctx.args??'').trim();

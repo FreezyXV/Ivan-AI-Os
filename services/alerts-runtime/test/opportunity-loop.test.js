@@ -4,6 +4,7 @@ import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,readdirSync,rmSync,real
 import path from 'node:path';
 import os from 'node:os';
 import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
 import {openLedger} from '../src/ledger.js';
 import {openDossiers} from '../../../shared/opportunity-dossier.mjs';
 import {handleOpportunityCommand} from '../../../hooks/openclaw/ivan-opportunities/command.js';
@@ -32,6 +33,9 @@ function fixture(){
     verification:{decision:'approve',issues:[],binding:briefBinding(item,proposal)}}};
 }
 const native=(args)=>({channel:'telegram',isAuthorizedSender:true,senderId:'123456789',from:'telegram:123456789',accountId:'default',args});
+test('the native plugin loader can require its command module synchronously',()=>{
+  assert.equal(typeof createRequire(import.meta.url)('../../../hooks/openclaw/ivan-opportunities/command.js').handleOpportunityCommand,'function');
+});
 test('qualified card → immutable Obsidian → one Telegram delivery → native human choice → updated card, after restart',async t=>{
   const {dir,config}=setup(t),source=fixture();let store=openDossiers({...config,now:()=>now});
   const first=store.publish(source),file=path.join(config.vaultPath,first.note),original=readFileSync(file,'utf8');
@@ -44,22 +48,22 @@ test('qualified card → immutable Obsidian → one Telegram delivery → native
   const deliver=async({text})=>{assert.ok(readFileSync(file,'utf8'));assert.match(text,new RegExp(first.id));sends++;return{delivered:true,messageId:'synthetic-1'};};
   const args={ledger,key:'digest:opportunity:test',deliver,now,prepareRow:createOpportunityProjection(config)};
   await sendDigest(args);await sendDigest(args);assert.equal(sends,1);store.close();
-  const response=handleOpportunityCommand(native(`${first.id} tester Je veux vérifier ce besoin sans contacter personne.`),config,'decide');
+  const response=await handleOpportunityCommand(native(`${first.id} tester Je veux vérifier ce besoin sans contacter personne.`),config,'decide');
   assert.match(response.text,/Décision enregistrée/);
   store=openDossiers(config);assert.equal(store.get(first.id).decisions.length,1);
   const updated=store.project(first.id);assert.equal(updated.revision,1);
   assert.match(readFileSync(path.join(config.vaultPath,updated.note),'utf8'),/Je veux vérifier ce besoin/);
   assert.equal(readFileSync(file,'utf8'),original,'initial card and user notes remain untouched');
   store.close();
-  handleOpportunityCommand(native(`${first.id} tester Je veux vérifier ce besoin sans contacter personne.`),config,'decide');
+  await handleOpportunityCommand(native(`${first.id} tester Je veux vérifier ce besoin sans contacter personne.`),config,'decide');
   store=openDossiers(config);assert.equal(store.get(first.id).decisions.length,1,'duplicate command is idempotent');store.close();
 });
-test('notes, agent calls, groups, strangers and another bot cannot impersonate an Ivan decision',t=>{
+test('notes, agent calls, groups, strangers and another bot cannot impersonate an Ivan decision',async t=>{
   const {config}=setup(t),source=fixture(),store=openDossiers(config);const {id}=store.publish(source);store.close();
   const args=`${id} tester Ceci est un test.`;
   for(const changes of [{isAuthorizedSender:false},{senderId:'999'},{from:'telegram:group:-123'},{accountId:'sentinelle'},
     {channel:'webchat'},{messageThreadId:1},{threadParentId:'group'}, {senderId:undefined}]){
-    const r=handleOpportunityCommand({...native(args),...changes},config,'decide');assert.match(r.text,/réservée/);
+    const r=await handleOpportunityCommand({...native(args),...changes},config,'decide');assert.match(r.text,/réservée/);
   }
   const check=openDossiers(config);assert.equal(check.get(id).decisions.length,0);check.close();
 });
