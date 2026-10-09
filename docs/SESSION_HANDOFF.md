@@ -1,6 +1,8 @@
 ## 2026-10-09 — Codex — parcours opportunité et décision
 
-État : branche agent/codex/opportunity-loop ; code b846907 actif, pas fusionné.
+État : branche agent/codex/opportunity-loop poussée ; PR #68 brouillon vers
+agent/codex/alerts-integration, pas fusionnée ; code b846907 actif sur Mac.
+CI du commit documentaire d274bcd : 11/11 jobs réussis.
 Mac Darwin confirmé, dépôt initial propre ; fetch sans écrasement, trois commits
 documentaires foundation/v1 repris avec provenance jusqu'à c44c441.
 Fait : 187/187 tests runtime/scripts, dont huit cas dossier/décision/reprise ;

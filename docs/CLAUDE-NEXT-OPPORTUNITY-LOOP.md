@@ -1,6 +1,7 @@
 # Revue du parcours opportunité — 9 octobre 2026
 
-Codex pilote l'intégration. Revoir le lot `agent/codex/opportunity-loop` contre
+Codex pilote l'intégration. Lot livré dans la PR brouillon #68, CI d274bcd verte
+sur 11/11 jobs. Revoir `agent/codex/opportunity-loop` contre
 `origin/agent/codex/alerts-integration` ; aucune installation ni campagne modèle.
 Lire le relais actuel et OPPORTUNITY-DECISION-LOOP.md ; ignorer les anciennes
 demandes de clés, VPS et activation déjà closes. Travailler dans un checkout
