@@ -49,6 +49,7 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
   db.exec(`PRAGMA busy_timeout=1000; PRAGMA journal_mode=WAL;
     CREATE TABLE IF NOT EXISTS dossiers(id TEXT PRIMARY KEY,source_id TEXT UNIQUE NOT NULL,payload TEXT NOT NULL,created INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS choices(id TEXT NOT NULL,revision INTEGER NOT NULL,choice TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(id,revision));`);
+  if(!db.prepare('PRAGMA table_info(choices)').all().some(c=>c.name==='origin'))db.exec("ALTER TABLE choices ADD COLUMN origin TEXT NOT NULL DEFAULT 'telegram-native'");
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const value=fn();db.exec('COMMIT');return value;}catch(e){db.exec('ROLLBACK');throw e;}};
   const row=id=>{if(!safeId(id))reject('DOSSIER_ID_INVALID');const r=db.prepare('SELECT * FROM dossiers WHERE id=?').get(id);if(!r)reject('DOSSIER_NOT_FOUND');return {...r,payload:JSON.parse(r.payload)};};
   const choices=id=>db.prepare('SELECT * FROM choices WHERE id=? ORDER BY revision').all(id);
@@ -73,7 +74,7 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
       `Coût direct du test proposé : ${f.prochainTest.coutEur} € ; coût des appels de préparation non exposé par le fournisseur natif, à mesurer séparément.`,
       'Test réversible et sans contact de tiers.','',
       '## Décision et prochaine action',
-      ...(last?[`Choix d’Ivan : ${choice}.`,`Raison : ${last.reason}`,`Reçue via commande Telegram autorisée le ${new Date(last.created).toISOString()}.`]:['Choix : en attente. Raison : non fournie.']),
+      ...(last?[`Choix d’Ivan : ${choice}.`,`Raison : ${last.reason}`,`Reçue via ${last.origin==='codex-explicit-user'?'réponse explicite d’Ivan dans Codex':'commande Telegram autorisée'} le ${new Date(last.created).toISOString()}.`]:['Choix : en attente. Raison : non fournie.']),
       last?.choice==='tester'?'Prochaine action : préparer le test décrit, sans l’exécuter hors du périmètre autorisé.':last?.choice==='veille'?'Prochaine action : attendre de nouvelles preuves avant de reproposer.':last?.choice==='ecarter'?'Prochaine action : fermer cette proposition ; conserver les preuves.':'Prochaine action : Ivan choisit tester, veille ou écarter et donne sa raison.',
       '',...Array.from({length:revision},(_,v)=>`Version précédente : [[opportunite-${id}-v${v}]].`),''];
     const content=paragraphs.join('\n');if(content.length>24000||secret.test(content))reject('DOSSIER_CONTENT_REFUSED');
@@ -109,11 +110,14 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
       return {dossiers:total,awaitingDecision:total-current.reduce((n,r)=>n+r.n,0),choices:choicesCount,firstDecisionMeanMs:latency??null,
         nativeCostEur:null,timeSavedMinutes:null};
     },
-    decide(id,choice,reason){
+    decide(id,choice,reason,{origin='telegram-native'}={}){
+      // The Telegram plugin always uses its native origin. The separate local
+      // Codex perimeter may transcribe an explicit human reply with provenance.
+      if(!['telegram-native','codex-explicit-user'].includes(origin))reject('DOSSIER_DECISION_INVALID');
       if(!['tester','veille','ecarter'].includes(choice)||typeof reason!=='string'||!reason.trim()||reason.length>400||/[\x00-\x1f\x7f]/.test(reason)||secret.test(reason))reject('DOSSIER_DECISION_INVALID');
       row(id);reason=reason.trim();
       tx(()=>{const prior=choices(id).at(-1);if(prior?.choice===choice&&prior.reason===reason)return;
-        db.prepare('INSERT INTO choices VALUES(?,?,?,?,?)').run(id,(prior?.revision??0)+1,choice,reason,now());});
+        db.prepare('INSERT INTO choices(id,revision,choice,reason,created,origin) VALUES(?,?,?,?,?,?)').run(id,(prior?.revision??0)+1,choice,reason,now(),origin);});
       // Choice is committed even if the projection fails. A repeated identical
       // command retries the same version without recording another decision.
       try{return {...project(id),projected:true};}catch(e){return {id,recorded:true,projected:false,error_code:/^DOSSIER_[A-Z_]+$/.test(e.code??'')?e.code:'DOSSIER_PROJECTION_FAILED'};}

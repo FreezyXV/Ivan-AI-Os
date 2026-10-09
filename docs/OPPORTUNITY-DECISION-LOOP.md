@@ -29,6 +29,9 @@ Ces commandes sont natives, sans modèle. L'identité, l'autorisation de l'expé
 le compte Telegram et la conversation privée sont contrôlés par le code à partir
 du contexte fourni par OpenClaw. Aucun outil agent ne permet d'écrire une décision.
 Un choix `tester` n'autorise ni paiement, contact, publication ni lancement.
+Dans le périmètre local Codex, une réponse explicite d'Ivan peut aussi être
+transcrite avec l'origine `codex-explicit-user`. Cette origine n'est pas accessible
+aux arguments du plugin Telegram ; elle ne prouve pas une entrée Telegram réelle.
 
 ## Mémoire et reprise
 

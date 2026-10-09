@@ -21,8 +21,8 @@ try{
   writeFileSync(path.join(release,'ivan-release.json'),JSON.stringify({sourceCommit:commit,activated:false}),{flag:'wx',mode:0o600});
   const opportunities={directory:path.join(root,'opportunities'),vaultPath,ownerId,accountId:'default'};
   const id='ivan-ai-os-opportunities';config.plugins??={};config.plugins.load??={};
-  config.plugins.load.paths=[...(config.plugins.load.paths??[]),path.join(release,'hooks/openclaw/ivan-opportunities')];
-  if(config.plugins.allow)config.plugins.allow=[...config.plugins.allow,id];
+  config.plugins.load.paths=[...(config.plugins.load.paths??[]).filter(v=>!v.endsWith('/hooks/openclaw/ivan-opportunities')),path.join(release,'hooks/openclaw/ivan-opportunities')];
+  if(config.plugins.allow)config.plugins.allow=[...new Set([...config.plugins.allow,id])];
   config.plugins.entries??={};config.plugins.entries[id]={enabled:true,config:opportunities};
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});

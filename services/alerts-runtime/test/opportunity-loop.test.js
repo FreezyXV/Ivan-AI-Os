@@ -75,6 +75,12 @@ test('a modified user note is preserved, and later choices produce new versions'
   assert.deepEqual(store.summary().choices,{veille:1});assert.equal(store.summary().nativeCostEur,null);
   assert.equal(readFileSync(file,'utf8'),'My personal annotations');store.close();
 });
+test('an explicit human reply in Codex is recorded with its real origin, not claimed as Telegram ingress',t=>{
+  const {config}=setup(t),store=openDossiers(config),r=store.publish(fixture());
+  const result=store.decide(r.id,'tester','Chercher des témoignages indépendants.',{origin:'codex-explicit-user'});
+  assert.match(readFileSync(path.join(config.vaultPath,result.note),'utf8'),/réponse explicite d’Ivan dans Codex/);
+  assert.equal(store.get(r.id).decisions[0].origin,'codex-explicit-user');store.close();
+});
 test('projection interrupted after durable choice can resume without duplicate or lost choice',t=>{
   const {config}=setup(t),store=openDossiers(config),r=store.publish(fixture());
   const file=path.join(config.vaultPath,`Ivan AI OS/inbox/opportunite-${r.id}-v1.md`);writeFileSync(file,'user-owned content');
