@@ -1,6 +1,7 @@
 ---
 name: usine-logicielle
 description: Usine logicielle d'Ivan AI OS (Engineering Manager) - découper une tâche de code, choisir qui construit entre Claude Code et Codex selon le propriétaire des fichiers puis les résultats mesurés sur les PR relues, faire relire par l'autre agent, classer les constats, repasser en cas de désaccord et enregistrer le résultat pour améliorer le routage. Utiliser pour toute tâche de code qui mérite une PR, "qui doit coder ça ?", "Claude ou Codex ?", "bilan de l'usine", ou après la fusion d'une PR pour enregistrer son issue.
+compatibility: "claude-code, codex"
 metadata:
   version: "1.0.0"
   famille: engineering

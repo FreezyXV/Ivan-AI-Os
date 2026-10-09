@@ -1,6 +1,7 @@
 ---
 name: system-steward
 description: Entretien d'Ivan AI OS par le System Manager - jardinier de mémoire (doublons, contradictions possibles, propositions périmées, notes incomplètes, sources récurrentes dans le coffre Obsidian) et auditeur des skills et de la configuration (coût en contexte des descriptions, règles dupliquées, skills trop longs ou peu utilisés, fichiers d'instructions qui grossissent). Utiliser chaque semaine, avant d'ajouter un skill, quand les sessions deviennent lentes ou coûteuses, ou quand Ivan dit "fais le ménage", "audit du système", "état de la mémoire".
+compatibility: "claude-code, codex"
 metadata:
   version: "1.0.0"
   famille: system
