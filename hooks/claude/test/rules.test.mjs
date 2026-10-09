@@ -70,7 +70,7 @@ test("paths: secrets are never written, guardrails need an opinion", () => {
   assert.match(classifyPath("/repo/constitution/CONSTITUTION.md").raison, /garde-fou/);
 });
 
-test("gate mode: never is refused without network, autonome skips the gateway, never 'allow'", async () => {
+test("gate mode: never is refused without network, the rest never asks, never 'allow'", async () => {
   let calls = 0;
   const fetchImpl = async () => { calls++; return { ok: true, json: async () => ({ decision: "REQUIRE_HUMAN", reason_code: "SHELL_REQUIRES_REVIEW", executable: false }) }; };
   const env = { IVAN_CLAUDE_HOOK_MODE: "gate", IVAN_DECISION_TOKEN: "t".repeat(40), IVAN_GATEWAY_URL: "http://127.0.0.1:4311" };
@@ -80,9 +80,11 @@ test("gate mode: never is refused without network, autonome skips the gateway, n
   assert.match(denied.hookSpecificOutput.permissionDecisionReason, /niveau 0.*git stash/);
   assert.equal(await run(bash("git status"), { env, fetchImpl }), null);
   assert.equal(calls, 0, "no gateway call for never/autonome");
-  const asked = await run(bash("npm install left-pad"), { env, fetchImpl });
-  assert.equal(asked.hookSpecificOutput.permissionDecision, "ask");
+  // Gate never asks Ivan: a negative gateway opinion is audited, not a prompt (autonomy, 2026-09-29).
+  assert.equal(await run(bash("npm install left-pad"), { env, fetchImpl }), null);
   assert.equal(calls, 1);
+  const asked = await run(bash("npm install left-pad"), { env: { ...env, IVAN_CLAUDE_HOOK_MODE: "ask" }, fetchImpl });
+  assert.equal(asked.hookSpecificOutput.permissionDecision, "ask");
   const shadow = await run(bash("git stash"), { env: { ...env, IVAN_CLAUDE_HOOK_MODE: "shadow" }, fetchImpl });
   assert.equal(shadow, null, "shadow never influences, even for a never rule");
   for (const out of [denied, asked]) assert.notEqual(out.hookSpecificOutput.permissionDecision, "allow");
@@ -101,4 +103,29 @@ test("quoted prose and heredoc bodies that merely mention a forbidden command ar
   }
   // Secret paths stay protected even when quoted.
   assert.equal(classifyCommand('cat ".env"').verdict, "never");
+});
+
+test("gate mode: guardrail files still need validation (Codex review of #49)", async () => {
+  // Reproduced by Codex: an edit of the constitution got REQUIRE_HUMAN but the hook stayed silent.
+  let calls = 0;
+  const opinion = decision => async () => { calls++; return { ok: true, json: async () => ({ decision, reason_code: "GUARDRAIL", executable: false }) }; };
+  const env = { IVAN_CLAUDE_HOOK_MODE: "gate", IVAN_DECISION_TOKEN: "t".repeat(40), IVAN_GATEWAY_URL: "http://127.0.0.1:4311" };
+  const edit = file_path => ({ tool_name: "Edit", tool_input: { file_path } });
+  const bash = command => ({ tool_name: "Bash", tool_input: { command } });
+  for (const input of [edit("/repo/constitution/CONSTITUTION.md"), edit("/repo/AGENTS.md"), edit("/repo/.claude/settings.local.json"),
+    bash("sed -i '' 's/a/b/' AGENTS.md"), bash("echo x >> constitution/CONSTITUTION.md"), bash("cp /tmp/x policies/kernel/base.yaml")]) {
+    const out = await run(input, { env, fetchImpl: opinion("REQUIRE_HUMAN") });
+    assert.equal(out?.hookSpecificOutput.permissionDecision, "ask", JSON.stringify(input.tool_input));
+  }
+  const write = file_path => ({ tool_name: "Write", tool_input: { file_path } });
+  for (const decision of ["DENY", "ESCALATE"]) for (const input of [write("/repo/hooks/claude/rules.mjs"), write("/repo/constitution/CONSTITUTION.md"), edit("/repo/.codex/config.toml")])
+    assert.equal((await run(input, { env, fetchImpl: opinion(decision) }))?.hookSpecificOutput.permissionDecision, "ask", `${decision} ${input.tool_input.file_path}`);
+  // Fail closed for guardrails: no opinion available means Ivan is asked.
+  const down = async () => { throw new Error("ECONNREFUSED"); };
+  assert.equal((await run(edit("/repo/AGENTS.md"), { env, fetchImpl: down })).hookSpecificOutput.permissionDecision, "ask");
+  assert.equal((await run(edit("/repo/AGENTS.md"), { env: { ...env, IVAN_DECISION_TOKEN: "" }, readToken: () => "" })).hookSpecificOutput.permissionDecision, "ask");
+  // A positive opinion on a guardrail stays silent; ordinary files never ask.
+  assert.equal(await run(edit("/repo/AGENTS.md"), { env, fetchImpl: opinion("ALLOW") }), null);
+  assert.equal(await run(edit("/repo/skills/x/SKILL.md"), { env, fetchImpl: opinion("REQUIRE_HUMAN") }), null);
+  assert.equal(classifyCommand("cat constitution/CONSTITUTION.md").verdict, "autonome", "reading a guardrail is free");
 });

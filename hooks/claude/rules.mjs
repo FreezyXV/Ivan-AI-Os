@@ -2,7 +2,9 @@
 // neutral: Claude Code uses it in pre-tool-use.mjs; Codex can import it for its own hook.
 //   never     → refuse, with the reason, without any network call (constitution, secrets, shared repo)
 //   autonome  → reversible or read-only work Ivan already delegated: no question, no gateway call
-//   evaluer   → the gateway (kernel + Jev) gives an opinion; only a negative one asks Ivan
+//   garde-fou → change to the agents' own guardrails (constitution, AGENTS.md, kernel policies,
+//               hook/settings): the gateway decides; a negative or missing opinion asks Ivan
+//   evaluer   → the gateway (kernel + Jev) gives an audited opinion; in gate mode it never asks Ivan
 // No rule ever grants permission: the runtime's own permission system stays in charge.
 
 const NEVER = [
@@ -54,6 +56,10 @@ export function commandWords(command) {
   return command.replace(/<<-?\s*'?(\w+)'?[\s\S]*?\n\1\b/g, "<<HEREDOC").replace(/'[^']*'|"(?:\\.|[^"\\])*"/g, "''");
 }
 
+// A non-read-only command that names a guardrail file is treated like editing that file.
+const guardrailOr = (segment, raison) => GUARDRAIL_IN_COMMAND.test(segment)
+  ? { verdict: "garde-fou", raison: "garde-fou des agents : avis requis" } : { verdict: "evaluer", raison };
+
 export function classifyCommand(command) {
   if (typeof command !== "string" || !command.trim()) return { verdict: "evaluer", raison: "commande vide" };
   const words = commandWords(command);
@@ -63,20 +69,22 @@ export function classifyCommand(command) {
   for (let i = 0; i < parts.length; i++) {
     const p = parts[i].replace(/^cd\s+\S+$/, "pwd");
     const piped = i > 0 && ops[i - 1] === "|";
-    if (writes(p)) return { verdict: "evaluer", raison: "redirection ou sous-commande" };
+    if (writes(p)) return guardrailOr(p, "redirection ou sous-commande");
     if (piped && FILTERS.test(p)) continue;
     if (READ_ONLY.test(p)) continue;
     if (AUTONOMOUS.test(p)) { level = "autonome"; continue; }
-    return { verdict: "evaluer", raison: `commande non classée : ${p.split(/\s+/).slice(0, 3).join(" ")}` };
+    return guardrailOr(p, `commande non classée : ${p.split(/\s+/).slice(0, 3).join(" ")}`);
   }
   return { verdict: "autonome", raison: level === "read_only" ? "lecture seule" : "travail réversible sur branche d'agent" };
 }
 
 // Files whose change would weaken the agents' own guardrails.
-const GUARDRAIL_FILES = /(?:^|\/)(?:\.claude\/settings(?:\.local)?\.json$|\.codex\/config\.toml$|hooks\/claude\/(?:rules|pre-tool-use)\.mjs$|constitution\/|policies\/kernel\/|AGENTS\.md$)/;
+const GUARDRAIL = "\\.claude\\/settings(?:\\.local)?\\.json|\\.codex\\/config\\.toml|hooks\\/claude\\/(?:rules|pre-tool-use)\\.mjs|constitution\\/|policies\\/kernel\\/|AGENTS\\.md";
+const GUARDRAIL_FILES = new RegExp(`(?:^|\\/)(?:${GUARDRAIL})(?:$|(?<=\\/))`);
+const GUARDRAIL_IN_COMMAND = new RegExp(`(?:^|[\\s'"=/])(?:${GUARDRAIL})`);
 export function classifyPath(file) {
   if (typeof file !== "string") return { verdict: "evaluer", raison: "chemin absent" };
   if (/(?:^|\/)\.env(?:\.[\w-]+)?$/.test(file) && !/\.env\.example$/.test(file)) return { verdict: "never", raison: "écriture d'un fichier de secrets" };
-  if (GUARDRAIL_FILES.test(file)) return { verdict: "evaluer", raison: "garde-fou des agents : avis requis" };
+  if (GUARDRAIL_FILES.test(file)) return { verdict: "garde-fou", raison: "garde-fou des agents : avis requis" };
   return { verdict: "evaluer", raison: "fichier du projet" };
 }

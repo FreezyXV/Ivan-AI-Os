@@ -4,7 +4,9 @@
 //   ask              — a DENY/REQUIRE_HUMAN/ESCALATE opinion asks Ivan to confirm the call.
 //   gate             — level-0 rules first (rules.mjs): "never" is refused with its reason (no
 //                      network), "autonome" skips the gateway, the rest goes to the gateway (kernel
-//                      + Jev) and only a negative opinion asks Ivan.
+//                      + Jev) for audit only: Ivan delegated autonomy (2026-09-29, 2026-10-05), so
+//                      ordinary calls never ask. Guardrail files (constitution, AGENTS.md, kernel
+//                      policies, hook/settings) fail closed: a negative or missing opinion asks Ivan.
 // No mode ever returns "allow": the runtime's own permission system stays in charge.
 // Any failure (no token, gateway down, timeout, bad response) leaves Claude Code unaffected.
 import { existsSync, realpathSync } from "node:fs";
@@ -82,19 +84,24 @@ export async function run(input, { env = process.env, fetchImpl = fetch, readTok
   const call = toToolCall(input);
   if (!call) return null;
   const mode = ["ask", "gate"].includes(env.IVAN_CLAUDE_HOOK_MODE) ? env.IVAN_CLAUDE_HOOK_MODE : "shadow";
+  let guardrail = false;
   if (mode === "gate") {
     const rule = call.tool === "exec" ? classifyCommand(call.arguments.command) : classifyPath(call.arguments.path);
     // A refusal with its reason spares the agent retries: the rule is decided by code, not a model.
     if (rule.verdict === "never") return denyOutput(rule.raison);
     if (rule.verdict === "autonome") return null;
+    guardrail = rule.verdict === "garde-fou";
   }
+  // Ordinary calls: the opinion is audited only. Guardrails: Ivan decides when no positive opinion.
+  const askMode = mode === "ask" || guardrail ? "ask" : "shadow";
+  const unavailable = guardrail ? hookOutput({ decision: "REQUIRE_HUMAN", reason_code: "GUARDRAIL_NO_OPINION" }, "ask") : null;
   let token;
-  try { token = readToken(env); } catch { return null; }
-  if (!token) return null;
+  try { token = readToken(env); } catch { return unavailable; }
+  if (!token) return unavailable;
   try {
     const result = await evaluate(call, { gatewayUrl: env.IVAN_GATEWAY_URL, token, fetchImpl, timeoutMs: Number(env.IVAN_CLAUDE_HOOK_TIMEOUT_MS) || 3000 });
-    return hookOutput(result, mode === "shadow" ? "shadow" : "ask");
-  } catch { return null; }
+    return hookOutput(result, askMode);
+  } catch { return unavailable; }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
