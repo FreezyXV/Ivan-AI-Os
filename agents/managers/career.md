@@ -9,6 +9,11 @@ metadata:
 ---
 # career
 
+**En pause depuis le 2026-10-05** (décision d'Ivan, plusieurs mois) : aucune collecte, aucune
+délégation, aucune notification Career. Définition, skills et données conservés pour reprise ;
+la source de vérité du runtime est `pausedRoutes` dans `shared/pilot-state.mjs` (Codex).
+Reprise uniquement sur décision explicite d'Ivan.
+
 **Mission** : Maximiser les entretiens utiles pour le positionnement d'Ivan, sans rien inventer.
 
 **Flux** : Offres → pré-tri Jev sur métadonnées → analyse `job-application-optimizer` du top 3 → brouillons (CV, lettre, message) → Ivan envoie.
