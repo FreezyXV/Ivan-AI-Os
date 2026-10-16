@@ -1,6 +1,7 @@
 ## 2026-10-16 — Codex — résultats utiles et première fiche Business automatique
 
-État : agent/codex/weekly-value-recovery ; code cb2696e activé, pas fusionné.
+État : agent/codex/weekly-value-recovery poussée ; PR #69 brouillon vers #68,
+pas fusionnée ; code cb2696e activé. CI 9c5e7e1 : 11/11 jobs réussis.
 Reprise Mac Darwin, checkout propre, fetch sans écrasement ; aucun avis Claude
 nouveau sur #68. Lire WEEKLY-OUTCOMES-2026-10-16.md, pas tout l'historique.
 Fait : bilan semaine avant correction : 111 candidats, un digest confirmé sur

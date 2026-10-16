@@ -1,6 +1,7 @@
 # Lot Claude — revue des résultats utiles, 16 octobre 2026
 
-Codex reprend après une semaine de fonctionnement. Lire le relais courant et
+Codex reprend après une semaine de fonctionnement. Livraison en PR brouillon #69,
+CI 9c5e7e1 : 11/11 verte. Lire le relais courant et
 WEEKLY-OUTCOMES-2026-10-16.md ; comparer agent/codex/weekly-value-recovery à
 agent/codex/opportunity-loop. Travail isolé dans un worktree propre ; fetch sans
 écraser de fichiers. Nouvelle branche agent/claude/weekly-value-review.
