@@ -1,3 +1,32 @@
+## 2026-10-16 — Codex — utilité et horizons d’investissement
+
+État : branche agent/codex/advisory-value ; code de104ba activé sur Mac Darwin,
+publication en cours. Base PR #69, aucune fusion foundation/v1/main.
+Décisions explicites Ivan : messages peu utiles ; pistes Finance, douleurs Business,
+techniques applicables à Jarvis/code/apps/sites. Court/moyen/long terme ouverts.
+Fait : contexte v8, proposition + fait justificatif + invalidation obligatoires,
+horizon/risque pour Finance ; second jugement indépendant. 201/201 tests passent.
+Fait : simple avis SEO désormais review, relevé de taux seul skip, reprise OpenClaw
+keep puis approve ; essai isolé unique, 4 appels natifs, zéro envoi de qualification.
+Ce n’est ni un benchmark indépendant ni une mesure d’utilité quotidienne.
+Worker et plugins de104ba coordonnés, services sains, planning 300 s chargé.
+File : delivered 12, unknown 6, expired 129, review 32, skipped 63 ; dernier reçu 70.
+Les 18 sources déjà livrées/incertaines et le choix tester sont inchangés.
+Message 70 automatique v5/v7 : demande d’avis SEO, pas douleur prouvée ; trop faible.
+Retour qualitatif peu utile enregistré et auditable ; aucune note chiffrée inventée.
+Note Obsidian ajoutée : inbox/2026-10-16-horizons-investissement-et-pistes-utiles.md.
+Ouvert : recherche multi-source Business/Finance encore absente du worker ;
+à approfondir conserve la piste mais ne réalise pas encore cette recherche.
+Pas de nouvelle opportunité Finance revendiquée ; coût natif non exposé, pas nul.
+Jev inchangé 761 appels, hors tri des alertes ; pas d’upgrade OpenClaw effectué.
+Ne pas toucher : notes/choix, profils privés, reçus unknown ; Career/VPS différés,
+Knowledge final commun. Preuves privées mac-opportunity-de104ba, backups vérifiés.
+Lire ADVISORY-VALUE-2026-10-16.md et CLAUDE-NEXT-ADVISORY-VALUE.md seulement.
+Prochaine action : assembler des preuves croisées avant de proposer un dossier,
+avec revue Claude des sources Business hors HN et des pistes Finance.
+
+## Historique — avant le retour d’utilité du 16 octobre
+
 ## 2026-10-16 — Codex — résultats utiles et première fiche Business automatique
 
 État : agent/codex/weekly-value-recovery poussée ; PR #69 brouillon vers #68,

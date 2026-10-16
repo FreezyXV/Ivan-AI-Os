@@ -55,3 +55,36 @@ La qualification de cette modification doit distinguer tests automatisés,
 réponses natives isolées, activation et livraison réelle. Une nouvelle formulation
 ou une réponse approuvée n'établit pas le gain d'utilité pour Ivan. Le coût natif
 reste non exposé, pas nul ; l'abonnement ne démontre pas une gratuité API.
+
+## Résultat observé après activation
+
+Code `de104ba` actif avec worker, writer et verifier coordonnés, contexte v8.
+Services sains, planning chargé toutes les cinq minutes. 201/201 tests runtime
+et scripts concernés ; sauvegardes de la file et des décisions vérifiées.
+Les 12 sources livrées et 6 sources incertaines restent intactes ; dernier message
+70, avant ce lot. Aucun message de qualification supplémentaire n'a été envoyé.
+
+Le message 70, produit automatiquement par v5/v7, demandait seulement des retours
+sur SERPSpur face à Ahrefs/Semrush. Fidèle à sa source, mais sans douleur vécue
+prouvée : cela confirme le retour « peu utile ». Pas de nouvelle décision de dossier.
+
+Essai isolé unique sur trois sources déjà lues, attentes consignées avant appel,
+quatre complétions natives au total :
+
+| Source | Nouveau résultat |
+| --- | --- |
+| Demande d'avis SEO du message 70 | review : pas de livraison |
+| Un relevé du taux US à dix ans | skip : pas de piste d'investissement démontrée |
+| Correctifs officiels OpenClaw de reprise après veille | keep puis approve indépendant : test réversible de compatibilité proposé |
+
+Ce sont des cas de régression connus, pas un benchmark indépendant ni une nouvelle
+livraison de production. Aucune mise à jour d'OpenClaw n'a été exécutée. Le coût
+natif reste inconnu. Jev inchangé : 761 appels mensuels, aucun pour ces essais.
+
+Le retour explicite « peu utile » est enregistré une fois dans le registre privé
+et visible dans l'audit ; note chiffrée nulle au sens inconnue (`null`), pas zéro.
+Choix tester antérieur conservé. Note Obsidian ajoutée sans écrasement :
+`Ivan AI OS/inbox/2026-10-16-horizons-investissement-et-pistes-utiles.md`.
+Preuves privées : `~/.ivan-ai-os/mac-opportunity-de104ba/` :
+`activation-proof.json`, `feedback-proof.json`, `isolated-qualification.json` et
+les sauvegardes avant bascule. Pour un retour de code, conserver la file actuelle.
