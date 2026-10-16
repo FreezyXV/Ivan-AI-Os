@@ -14,9 +14,10 @@ test('collection preserves bounded source failure codes instead of a counter wit
  const {dir,ledger}=fixture(t);
  const result=await collectFeeds({directory:dir,ledger,
   runImpl:async(_binary,args)=>writeFileSync(args[args.indexOf('--output')+1],JSON.stringify({items:[],excluded:{},errors:[{feedId:'a'.repeat(16),code:'FEED_UNAVAILABLE',detail:'PRIVATE OUTPUT'}]})),
-  ingestImpl:async()=>({read:0}),officialImpl:async()=>({errors:[{code:'OFFICIAL_RELEASE_CONTENT_MISMATCH',detail:'PRIVATE CONTENT'}]})});
- assert.deepEqual(result.sourceErrors,[{code:'FEED_UNAVAILABLE',feedId:'a'.repeat(16)},{code:'OFFICIAL_RELEASE_CONTENT_MISMATCH'}]);
- assert.equal(result.failedFeeds,2);assert.doesNotMatch(JSON.stringify(result.sourceErrors),/PRIVATE/);
+  ingestImpl:async()=>({read:0}),officialImpl:async()=>({errors:[{code:'OFFICIAL_RELEASE_CONTENT_MISMATCH',detail:'PRIVATE CONTENT'}]}),
+  demandImpl:async()=>({ingested:1,errors:[{code:'PUBLIC_DEMAND_SEARCH_UNAVAILABLE',detail:'PRIVATE INDEX'}]})});
+ assert.deepEqual(result.sourceErrors,[{code:'FEED_UNAVAILABLE',feedId:'a'.repeat(16)},{code:'OFFICIAL_RELEASE_CONTENT_MISMATCH'},{code:'PUBLIC_DEMAND_SEARCH_UNAVAILABLE'}]);
+ assert.equal(result.demand.ingested,1);assert.equal(result.failedFeeds,3);assert.doesNotMatch(JSON.stringify(result.sourceErrors),/PRIVATE/);
 });
 test('Mac resume runs only present slots and a second process cannot replay collections or spend',async t=>{
  const {dir,ledger}=fixture(t);let calls=0;

@@ -1,4 +1,14 @@
-## État courant — 9 octobre 2026
+## État courant — 16 octobre 2026
+
+Le bilan d'une semaine et les ajustements sont dans WEEKLY-OUTCOMES-2026-10-16.md.
+Première fiche Business générée à partir de la collecte réelle : dossier Unity
+1e662e4641f1, message 69 confirmé, sans choix enregistré à la place d'Ivan.
+Le signal reste exploratoire ; une solution de récupération officielle existe
+déjà. Le coût natif et le temps gagné ne sont pas mesurés. L'avis d'Ivan sur
+l'utilité des messages a été demandé, aucune note n'est inventée en son absence.
+Le choix tester du dossier 6ab5272ce301 reste intact. Career et VPS toujours en pause.
+
+## Historique — 9 octobre 2026
 
 Le parcours dossier Obsidian → Telegram → choix explicite Ivan → nouvelle fiche
 est observé pour 6ab5272ce301. Ivan choisit tester, avec recherche publique de

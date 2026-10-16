@@ -46,7 +46,9 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     CREATE TABLE IF NOT EXISTS evidence_keys(key TEXT PRIMARY KEY,id TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS business_fiches(id TEXT PRIMARY KEY,fiche TEXT NOT NULL,score TEXT,created INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS source_read_failures(id TEXT PRIMARY KEY,revision TEXT NOT NULL,
-      code TEXT NOT NULL,attempts INTEGER NOT NULL,updated INTEGER NOT NULL,next_attempt INTEGER);`);
+      code TEXT NOT NULL,attempts INTEGER NOT NULL,updated INTEGER NOT NULL,next_attempt INTEGER);
+    CREATE TABLE IF NOT EXISTS discovery_checks(id TEXT PRIMARY KEY,revision TEXT NOT NULL,
+      code TEXT NOT NULL,updated INTEGER NOT NULL,next_attempt INTEGER NOT NULL);`);
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='retries'))db.exec('ALTER TABLE alerts ADD COLUMN retries INTEGER NOT NULL DEFAULT 0');
   if(!db.prepare('PRAGMA table_info(alerts)').all().some(c=>c.name==='archive'))db.exec('ALTER TABLE alerts ADD COLUMN archive TEXT');
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}};
@@ -68,6 +70,8 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
   for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all())remember(evidenceKeys(JSON.parse(row.item)),row.id);
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
+    peekSource(id){const r=db.prepare('SELECT state,item FROM alerts WHERE id=?').get(id);
+      return r?{state:r.state,sourceStatus:JSON.parse(r.item).sourceStatus}:null;},
     resolveUnreadAliases(){return tx(()=>{
       let resolved=0;
       // Retire only old, unprocessed aliases of a proven active source. Keep
@@ -212,6 +216,15 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
     });},
     list(state,limit=100){if(!['pending','review','ready','delivered','skipped','delivery_unknown','expired_unsent'].includes(state)||!Number.isInteger(limit)||limit<1||limit>100)fail('ALERT_LIST_INVALID');
       return db.prepare('SELECT id FROM alerts WHERE state=? ORDER BY created,id LIMIT ?').all(state,limit).map(r=>get(r.id));},
+    discoveryDeferred(id,revision,at=now()){
+      const r=db.prepare('SELECT * FROM discovery_checks WHERE id=?').get(id);
+      return Boolean(r&&r.revision===revision&&r.next_attempt>at);
+    },
+    recordDiscoveryCheck(id,{revision,code,retryAt,at=now()}){
+      if(!/^[a-f\d]{64}$/.test(id)||!/^hn-demand-v\d+$/.test(revision)||!/^PUBLIC_DEMAND_[A-Z_]+$/.test(code)||
+        !Number.isSafeInteger(at)||!Number.isSafeInteger(retryAt)||retryAt<=at||retryAt>at+14*86400000)fail('ALERT_DISCOVERY_CHECK_INVALID');
+      db.prepare('INSERT OR REPLACE INTO discovery_checks VALUES(?,?,?,?,?)').run(id,revision,code,at,retryAt);
+    },
     reserveDigest({key,ids,text}){if(!/^[a-zA-Z0-9:_-]{1,120}$/.test(key)||!Array.isArray(ids)||ids.length<1||ids.length>3||new Set(ids).size!==ids.length||typeof text!=='string'||!text.trim()||text.length>2500)fail('ALERT_DIGEST_INVALID');
       return tx(()=>{
         if(db.prepare('SELECT key FROM digests WHERE key=?').get(key))return null;

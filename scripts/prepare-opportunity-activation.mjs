@@ -24,6 +24,13 @@ try{
   config.plugins.load.paths=[...(config.plugins.load.paths??[]).filter(v=>!v.endsWith('/hooks/openclaw/ivan-opportunities')),path.join(release,'hooks/openclaw/ivan-opportunities')];
   if(config.plugins.allow)config.plugins.allow=[...new Set([...config.plugins.allow,id])];
   config.plugins.entries??={};config.plugins.entries[id]={enabled:true,config:opportunities};
+  // Worker and isolated writer/verifier must share the same evidence contract.
+  // Pin both together when deploying an updated public context or prompt.
+  const alerts='ivan-ai-os-alerts';
+  if(config.plugins.entries[alerts]?.enabled===true){
+   config.plugins.load.paths=config.plugins.load.paths.filter(v=>!v.endsWith('/hooks/openclaw/ivan-alerts'));
+   config.plugins.load.paths.push(path.join(release,'hooks/openclaw/ivan-alerts'));
+  }
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
   writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities},null,2),{flag:'wx',mode:0o600});

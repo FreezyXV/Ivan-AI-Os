@@ -43,6 +43,10 @@ test('a negative or unavailable verifier prevents delivery; only its outage gets
   const r=await processNext({ledger,now:at,assess:async()=>({decision:'keep',brief}),
    verify:async(i,b)=>({...result,binding:briefBinding(i,b)})});
   assert.equal(r.state,state);assert.equal(r.brief.verification.decision,result.decision);
+  if(state!=='ready'){
+   assert.match(r.brief.rejectedDraft.message,/reprise/);
+   assert.equal(r.brief.rejectedDraft.binding,r.brief.verification.binding);
+  }
  }
  ledger.ingest({...item,url:item.url+'/unavailable',excerpt:item.excerpt+' unique pending example'});
  const r=await processNext({ledger,now:at,assess:async()=>({decision:'keep',brief}),verify:async()=>{throw Error('private details');}});

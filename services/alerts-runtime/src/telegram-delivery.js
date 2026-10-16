@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { fail } from './context.js';
+import { fail,AlertError } from './context.js';
 
 const run = promisify(execFile);
 const messageId = value => typeof value === 'string' && /^[1-9]\d{0,19}$/.test(value);
@@ -27,13 +27,13 @@ export function parseTelegramReceipt(output, target) {
 }
 
 export function createTelegramDelivery({ target, account, binary = 'openclaw',
-  timeoutMs = 20000, silent = true, runImpl = run } = {}) {
+  timeoutMs = 40000, silent = true, runImpl = run } = {}) {
   // The caller supplies Ivan's one authorized private chat from private config.
   // No usernames, groups, model-selected recipients or caller-supplied command.
   if (typeof target !== 'string' || !/^[1-9]\d{4,15}$/.test(target) ||
       (account !== undefined && !/^[a-zA-Z0-9_-]{1,64}$/.test(account)) ||
       typeof binary !== 'string' || !binary || typeof runImpl !== 'function' ||
-      !Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 25000 ||
+      !Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 45000 ||
       typeof silent !== 'boolean') fail('ALERT_TELEGRAM_CONFIG_INVALID');
   return async ({ text, signal }) => {
     if (typeof text !== 'string' || !text.trim() || text.length > 2500 || /\x00/.test(text))
@@ -42,12 +42,18 @@ export function createTelegramDelivery({ target, account, binary = 'openclaw',
     const args = ['message', 'send', '--channel', 'telegram', '--target', target,
       '--message', text, '--json', ...(account ? ['--account', account] : []),
       ...(silent ? ['--silent'] : [])];
+    const started=Date.now();let stage='NATIVE_EXIT';
     try {
       // Native CLI resolves SecretRefs and channel policies; no raw bot token.
       const { stdout } = await runImpl(binary, args, {
         timeout: timeoutMs, signal, maxBuffer: 1024 * 1024, windowsHide: true
       });
-      return parseTelegramReceipt(stdout, target);
-    } catch { fail('ALERT_TELEGRAM_DELIVERY_UNKNOWN'); }
+      stage='RECEIPT_INVALID';return parseTelegramReceipt(stdout, target);
+    } catch(error) {
+      const failure=new AlertError('ALERT_TELEGRAM_DELIVERY_UNKNOWN');
+      failure.deliveryFailure={stage:signal?.aborted?'ABORTED':error?.killed?'NATIVE_TIMEOUT':stage,
+        durationMs:Math.max(0,Date.now()-started)};
+      throw failure;
+    }
   };
 }
