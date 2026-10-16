@@ -5,7 +5,7 @@ import {renderBrief} from './pipeline.js';
 import {createHash} from 'node:crypto';
 import {bindBusinessFiche,BUSINESS_PROMPT} from './business-fiche.js';
 const run=promisify(execFile);
-export const EDITORIAL_VERSION='alert-editorial-v4-demand-evidence';
+export const EDITORIAL_VERSION='alert-editorial-v5-current-problem';
 // Let the model reference evidence rather than retype it (translation, ellipses
 // and punctuation otherwise corrupt exact citations). Quotes remain code-owned.
 export function evidenceSpans(excerpt){

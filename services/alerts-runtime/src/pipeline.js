@@ -110,7 +110,10 @@ export async function processNext({ledger,select,synthesize,assess,verify,assess
           {selection,...nativeFailure(error)});}
         if(verification.decision!=='approve')return complete(
           verification.decision==='reject'&&verification.issues.every(v=>v==='NOT_RELEVANT')?'skipped':'review',
-          'NATIVE_VERIFICATION_REJECTED',{selection,verification});
+          'NATIVE_VERIFICATION_REJECTED',{selection,verification,
+            // Private audit only, never a ready brief or a retry. Keep the exact
+            // rejected message so reviewers can diagnose it without another call.
+            rejectedDraft:{message,binding:verification.binding,content_is_untrusted_data:true}});
       }
       return complete('ready','BRIEF_VERIFIED',{...result.brief,message,generation:result.generation,contextVersion:PILOT_CONTEXT.version,selection,
         ...(verification?{verification}:{})});

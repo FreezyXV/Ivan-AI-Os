@@ -21,6 +21,7 @@ jobs:
           node-version: 22
       - run: npm test
       - run: node --test ../../scripts/inspect-mac-pilot.test.mjs
+      - run: node --test ../../scripts/audit-mac-outcomes.test.mjs
       - run: node --test ../../scripts/reload-launch-agent.test.mjs
       - run: node --test ../../scripts/install-mac-alerts.test.mjs
       - run: node --test ../../scripts/evaluate-alert-corpus.test.mjs
