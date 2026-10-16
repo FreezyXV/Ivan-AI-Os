@@ -1,4 +1,33 @@
-## 2026-10-09 — Codex — parcours opportunité et décision
+## 2026-10-16 — Codex — résultats utiles et première fiche Business automatique
+
+État : agent/codex/weekly-value-recovery ; code cb2696e activé, pas fusionné.
+Reprise Mac Darwin, checkout propre, fetch sans écrasement ; aucun avis Claude
+nouveau sur #68. Lire WEEKLY-OUTCOMES-2026-10-16.md, pas tout l'historique.
+Fait : bilan semaine avant correction : 111 candidats, un digest confirmé sur
+trois tentatives, deux sources Engineering, zéro fiche Business automatique.
+Fait : collecteur de demandes branché au planning ; recherche par index, lecture
+API HN officielle, refus/échecs mémorisés, archive absente non bloquante.
+Qualification réelle f4346f4 déclenchée par Codex : 2 demandes lues en 2,543 s,
+4 complétions natives, une fiche approuvée et une rejetée, cycle 56,245 s.
+Messages 68 (System déjà prêt) et 69 (Unity Business) confirmés ; dossier Unity
+1e662e4641f1 v0 écrit avant envoi, aucun choix Ivan inventé. Pas un digest du soir revendiqué.
+Complément actif cb2696e : prompt v5 sur le problème actuel, brouillons refusés
+conservés pour diagnostic privé, fenêtre native 40 s/global 50 s sans nouvel essai.
+194/194 tests runtime/scripts ; le message 69 reste v4/v7, qualité v5 non mesurée.
+Avis Codex : Unity exploratoire ; récupération de compte officielle existante,
+pas de marché ni paiement prouvés. Journal Obsidian du 16, aucune note remplacée.
+File : delivered 11, unknown 6, expired 119, review 41, skipped 60. Six sources
+incertaines conservées, pas six messages : ne pas les rejouer ni restaurer une vieille file.
+Ouvert : utilité Ivan et coût natif inconnus ; commandes Telegram UI non vérifiées,
+Mac verrouillé. OpenClaw 2026.9.5 confirmé ; ne pas déployer 2026.10.4 sans compatibilité.
+Jev inchangé 761 appels / 0,029489 € estimé ; aucun Jev pour les alertes.
+Ne pas toucher : profils privés, notes personnelles, ancien choix tester 6ab5272ce301 ;
+Career en pause, aucun VPS, Knowledge final commun. Preuves : mac-opportunity-f4346f4
+et mac-opportunity-cb2696e sous ~/.ivan-ai-os, backups SQLite VERIFIED.
+Prochaine action : revue Claude selon CLAUDE-NEXT-WEEKLY-VALUE-2026-10-16.md,
+en ciblant l'utilité commerciale et deux familles de sources hors HN.
+
+## Historique — 2026-10-09 — Codex — parcours opportunité et décision
 
 État : branche agent/codex/opportunity-loop poussée ; PR #68 brouillon vers
 agent/codex/alerts-integration, pas fusionnée ; code b846907 actif sur Mac.
