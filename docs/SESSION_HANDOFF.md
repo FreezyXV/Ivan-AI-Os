@@ -1,7 +1,7 @@
 ## 2026-10-16 — Codex — utilité et horizons d’investissement
 
-État : branche agent/codex/advisory-value ; code de104ba activé sur Mac Darwin,
-publication en cours. Base PR #69, aucune fusion foundation/v1/main.
+État : branche agent/codex/advisory-value poussée ; code de104ba actif sur Mac Darwin.
+PR #70 brouillon vers #69 : https://github.com/FreezyXV/Ivan-AI-Os/pull/70 ; aucune fusion.
 Décisions explicites Ivan : messages peu utiles ; pistes Finance, douleurs Business,
 techniques applicables à Jarvis/code/apps/sites. Court/moyen/long terme ouverts.
 Fait : contexte v8, proposition + fait justificatif + invalidation obligatoires,
