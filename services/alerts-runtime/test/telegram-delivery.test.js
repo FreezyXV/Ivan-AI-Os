@@ -23,7 +23,7 @@ test('delivery uses an argument array, native credential resolution and one boun
   const send=createTelegramDelivery({target,account:'default',runImpl:async(...args)=>{seen=args;calls++;return{stdout:JSON.stringify(core)};}});
   assert.deepEqual(await send({text:'Résumé public avec un lien à la fin.',signal:controller.signal}),{delivered:true,messageId:'42'});
   assert.equal(calls,1);assert.equal(seen[0],'openclaw');assert.equal(seen[2].signal,controller.signal);
-  assert.equal(seen[2].timeout,20000);assert.ok(seen[1].includes('--silent'));
+  assert.equal(seen[2].timeout,40000);assert.ok(seen[1].includes('--silent'));
   assert.deepEqual(seen[1].slice(0,6),['message','send','--channel','telegram','--target',target]);
   assert.ok(!seen[1].some(x=>/token|retry|dry-run/.test(x)));
 });
@@ -33,4 +33,14 @@ test('timeouts and partial failures are unknown and never retried',async()=>{
   await assert.rejects(send({text:'Un résumé public.'}),{code:'ALERT_TELEGRAM_DELIVERY_UNKNOWN'});assert.equal(calls,1);
   for(const target of ['@someone','-100123456789','123','*'])assert.throws(()=>createTelegramDelivery({target}),{code:'ALERT_TELEGRAM_CONFIG_INVALID'});
   const blocked=new AbortController();blocked.abort();await assert.rejects(send({text:'Un résumé public.',signal:blocked.signal}));assert.equal(calls,1);
+});
+test('uncertain sends preserve a bounded failure phase without exposing CLI output or retrying',async()=>{
+ let calls=0;const send=createTelegramDelivery({target,runImpl:async()=>{calls++;throw Object.assign(Error('private transport diagnostic'),{killed:true,stderr:'private bearer credential'});}});
+ try{await send({text:'Un résumé public.'});assert.fail();}catch(error){
+  assert.equal(error.code,'ALERT_TELEGRAM_DELIVERY_UNKNOWN');assert.equal(error.deliveryFailure.stage,'NATIVE_TIMEOUT');
+  assert.ok(error.deliveryFailure.durationMs>=0);assert.doesNotMatch(JSON.stringify(error.deliveryFailure),/private|bearer/);
+ }
+ assert.equal(calls,1);
+ const malformed=createTelegramDelivery({target,runImpl:async()=>({stdout:'not a receipt'})});
+ await assert.rejects(malformed({text:'Un résumé public.'}),e=>e.deliveryFailure.stage==='RECEIPT_INVALID');
 });

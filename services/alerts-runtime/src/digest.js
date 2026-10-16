@@ -29,8 +29,15 @@ export async function sendDigest({ledger,key,deliver,now=Date.now(),maxItems=2,m
     }
     if(!ids.length)break;
     const job=ledger.reserveDigest({key:pageKey,ids,text});if(!job)break;
-    let receipt;try{receipt=await withDeadline(signal=>deliver({text:job.text,signal}),25000,'DIGEST_TIMEOUT');}catch{}
-    const result=ledger.finishDigest(job.key,job.owner,receipt);pages.push(result);
+    let receipt,deliveryFailure;
+    try{receipt=await withDeadline(signal=>deliver({text:job.text,signal}),50000,'DIGEST_TIMEOUT');}
+    catch(error){
+      const f=error?.deliveryFailure;
+      deliveryFailure={stage:['NATIVE_TIMEOUT','NATIVE_EXIT','RECEIPT_INVALID','ABORTED'].includes(f?.stage)?f.stage:
+        error?.code==='DIGEST_TIMEOUT'?'DIGEST_TIMEOUT':'UNAVAILABLE',
+        ...(Number.isSafeInteger(f?.durationMs)&&f.durationMs>=0?{durationMs:f.durationMs}:{})};
+    }
+    const result=ledger.finishDigest(job.key,job.owner,receipt);pages.push({...result,...(deliveryFailure?{deliveryFailure}:{})});
     if(result.state!=='delivered')break;
   }
   const remaining=ledger.counts().ready??0;

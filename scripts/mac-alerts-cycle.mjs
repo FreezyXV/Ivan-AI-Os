@@ -17,11 +17,12 @@ import {sendDigest} from '../services/alerts-runtime/src/digest.js';
 import {createOpportunityProjection} from '../services/alerts-runtime/src/opportunity-projection.js';
 import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
+import {collectPublicDemand} from '../services/alerts-runtime/src/public-demand.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
 const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
 const providerFailures=new Set(['SELECTION_UNAVAILABLE','SELECTION_TIMEOUT','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT',
  'NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT','NATIVE_VERIFICATION_UNAVAILABLE','NATIVE_VERIFICATION_TIMEOUT']);
-export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=ingestCandidates,officialImpl=collectOfficialRelease}){
+export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=ingestCandidates,officialImpl=collectOfficialRelease,demandImpl=collectPublicDemand}){
  const temp=mkdtempSync(path.join(directory,'feed-'));
  try{
   const output=path.join(temp,'candidates.json');
@@ -29,10 +30,12 @@ export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=inge
   const envelope=JSON.parse(readFileSync(output));
   const result=await ingestImpl({ledger,envelope,readLimit:8});
   let official;try{official=await officialImpl({ledger});}catch{official={error_code:'OFFICIAL_RELEASE_UNAVAILABLE'};}
-  const sourceErrors=[...envelope.errors,...(official.errors??[]),...(official.error_code?[{code:official.error_code}]:[])].map(error=>({
+  let demand;try{demand=await demandImpl({ledger});}catch{demand={error_code:'PUBLIC_DEMAND_UNAVAILABLE'};}
+  const sourceErrors=[...envelope.errors,...(official.errors??[]),...(official.error_code?[{code:official.error_code}]:[]),
+   ...(demand.errors??[]),...(demand.error_code?[{code:demand.error_code}]:[])].map(error=>({
    code:/^[A-Z_]{1,64}$/.test(error?.code??'')?error.code:'FEED_UNAVAILABLE',
    ...(/^[a-f\d]{16}$/.test(error?.feedId??'')?{feedId:error.feedId}:{})}));
-  return {...result,official,sourceErrors,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:sourceErrors.length};
+  return {...result,official,demand,sourceErrors,exported:envelope.items.length,excluded:envelope.excluded,failedFeeds:sourceErrors.length};
  }finally{rmSync(temp,{recursive:true,force:true});}
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
