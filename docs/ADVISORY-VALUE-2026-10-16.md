@@ -6,6 +6,13 @@ une solution, et des techniques utilisables dans Jarvis, le code, les applicatio
 ou les sites. Court, moyen et long terme sont tous ouverts. Cette préférence
 n'indique ni allocation, ni tolérance au risque, ni position existante.
 
+Précision ultérieure d'Ivan : Finance couvre aussi les tokens et autres actifs,
+le prix intéressant sous hypothèses, le projet, la macro et une contre-analyse
+« avocat du diable », ainsi que les événements économiques France/Europe/monde
+utiles à une décision sans achat immédiat. Voir FINANCE-RESEARCH-MANDATE.md.
+Ce mandat complète le prochain lot ; il ne prétend pas que la valorisation ou
+la recherche Finance multi-source est déjà activée dans le runtime v8 décrit ici.
+
 ## Changement ciblé
 
 Le contexte public v8 et le contrat advisory-v1 exigent une proposition précise,

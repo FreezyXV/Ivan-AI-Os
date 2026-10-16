@@ -4,6 +4,8 @@
 PR #70 brouillon vers #69 : https://github.com/FreezyXV/Ivan-AI-Os/pull/70 ; aucune fusion.
 Décisions explicites Ivan : messages peu utiles ; pistes Finance, douleurs Business,
 techniques applicables à Jarvis/code/apps/sites. Court/moyen/long terme ouverts.
+Précision Finance : tokens/autres actifs, projet/prix/valorisation et contradicteur ;
+macro France/Europe/monde utile sans achat immédiat. FINANCE-RESEARCH-MANDATE.md fait foi.
 Fait : contexte v8, proposition + fait justificatif + invalidation obligatoires,
 horizon/risque pour Finance ; second jugement indépendant. 201/201 tests passent.
 Fait : simple avis SEO désormais review, relevé de taux seul skip, reprise OpenClaw
