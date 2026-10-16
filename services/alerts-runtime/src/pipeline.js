@@ -3,6 +3,7 @@ import { withDeadline } from './deadline.js';
 import {createHash} from 'node:crypto';
 import {businessParagraphs} from './business-fiche.js';
 import {validateVerification,briefBinding} from './verification.js';
+import {validateAdvisory,advisoryParagraphs} from './advisory.js';
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(value);
 const unsupported=check=>{throw Object.assign(new AlertError('ALERT_FACT_UNSUPPORTED'),{validationChecks:[check]});};
 const numbers=value=>(value.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)/g)??[]).map(n=>{
@@ -38,10 +39,13 @@ export function renderBrief(item,brief){
   const grounded=brief.facts.flatMap(f=>numbers(f.quote));
   if(numbers(brief.utility).some(n=>!grounded.includes(n)))unsupported('UTILITY_NUMBER_NOT_IN_FACT_QUOTES');
   if(numbers(brief.action).some(n=>!grounded.includes(n)))unsupported('ACTION_NUMBER_NOT_IN_FACT_QUOTES');
+  const advisory=validateAdvisory(brief);
+  if(advisory&&numbers(advisory.proposal+' '+advisory.invalidation).some(n=>!grounded.includes(n)))unsupported('ADVISORY_NUMBER_NOT_IN_FACT_QUOTES');
   const partial=item.excerptTruncated!==false||item.excerptMode==='passages';
-  const limits=[...(partial?['Lecture sur extrait partiel ; les passages omis ne sont pas vérifiés.']:[]),...(brief.uncertainty?[brief.uncertainty]:[])].join(' ');
+  const limits=[...(partial?['Lecture sur extrait partiel ; les passages omis ne sont pas vérifiés.']:[]),
+    ...new Set([...(brief.uncertainty?[brief.uncertainty]:[]),...(advisory&&brief.business_fiche?[brief.business_fiche.limites]:[])])].join(' ');
   const paragraphs=[item.title,`${item.producer==='finance-watch'?'Relevé':'Publié'} le ${item.publishedAt.slice(0,10)}.`,...brief.facts.map(f=>`• ${f.summary}`),
-    `\nUtilité pour toi : ${brief.utility}`,...(brief.business_fiche?businessParagraphs(item,brief.business_fiche):[`\nÀ faire : ${brief.action}`]),
+    ...advisoryParagraphs(brief),`\nUtilité pour toi : ${brief.utility}`,...(brief.business_fiche?businessParagraphs(item,brief.business_fiche,{compact:Boolean(advisory)}):[`\nÀ faire : ${brief.action}`]),
     ...(limits?[`\nLimite : ${limits}`]:[]),`\nSource : ${item.url}`];
   const message=paragraphs.join('\n');if(message.length>2500)fail('ALERT_BRIEF_TOO_LONG');return message;
 }
@@ -63,15 +67,16 @@ export function selectionOutcome(selection,policy=DEFAULT_SELECTION_POLICY){
   return 'review';
 }
 const nativeFailure=error=>({nativeFailure:{
-  code:/^(?:ALERT_|NATIVE_)[A-Z_]+$/.test(error?.code??'')?error.code:'NATIVE_ASSESSMENT_UNAVAILABLE',
+  code:/^(?:ALERT_|NATIVE_|ADVISORY_)[A-Z_]+$/.test(error?.code??'')?error.code:'NATIVE_ASSESSMENT_UNAVAILABLE',
   ...(['COMPLETE','PARSE','VALIDATE'].includes(error?.failureStage)?{stage:error.failureStage}:{}),
   ...(Array.isArray(error?.validationChecks)?{checks:error.validationChecks.filter(c=>/^[A-Z_0-9]{1,64}$/.test(c)).slice(0,8)}:{})
 }});
-export async function processNext({ledger,select,synthesize,assess,verify,assessmentAfterSelection=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
+export async function processNext({ledger,select,synthesize,assess,verify,assessmentAfterSelection=false,requireAdvisory=false,now=Date.now(),maxAgeHours,stageTimeoutMs=30000,selectionPolicy=DEFAULT_SELECTION_POLICY}){
   selectionOutcome({decision:'review',confidence:0},selectionPolicy); // invalid configuration fails before any claim
   if(typeof assessmentAfterSelection!=='boolean'||(assessmentAfterSelection&&typeof assess!=='function'))fail('ALERT_ASSESSMENT_CONFIG_INVALID');
   if(assess!==undefined&&typeof assess!=='function')fail('ALERT_ASSESSMENT_CONFIG_INVALID');
   if(verify!==undefined&&(typeof verify!=='function'||!assess||assessmentAfterSelection))fail('ALERT_VERIFICATION_CONFIG_INVALID');
+  if(typeof requireAdvisory!=='boolean'||(requireAdvisory&&(!assess||!verify||assessmentAfterSelection)))fail('ALERT_ADVISORY_CONFIG_INVALID');
   if(!Number.isInteger(stageTimeoutMs)||stageTimeoutMs<10||stageTimeoutMs>60000)fail('ALERT_DEADLINE_CONFIG_INVALID');
   const job=ledger.claim();if(!job)return {state:'idle'};
   const complete=(state,reason,brief)=>{
@@ -87,6 +92,7 @@ export async function processNext({ledger,select,synthesize,assess,verify,assess
     let result;
     try{result=await withDeadline(signal=>assess(job.item,PILOT_CONTEXT,{signal}),stageTimeoutMs,'NATIVE_ASSESSMENT_TIMEOUT');}
     catch(error){return complete('review',error?.code==='NATIVE_ASSESSMENT_TIMEOUT'?'NATIVE_ASSESSMENT_TIMEOUT':
+      error?.code==='ADVISORY_RESEARCH_REQUIRED'?error.code:
       error?.code==='ALERT_FACT_UNSUPPORTED'?'ALERT_FACT_UNSUPPORTED':
       ['ALERT_ASSESSMENT_INVALID','ALERT_BUSINESS_FICHE_INVALID','ALERT_BRIEF_INVALID','ALERT_BRIEF_TOO_LONG'].includes(error?.code)?'NATIVE_ASSESSMENT_INVALID':'NATIVE_ASSESSMENT_UNAVAILABLE',nativeFailure(error));}
     if(!result||!['keep','review','skip'].includes(result.decision)||
@@ -94,9 +100,10 @@ export async function processNext({ledger,select,synthesize,assess,verify,assess
     const selection={decision:result.decision,provider:'native-editorial',context_version:PILOT_CONTEXT.version,itemSha256,
       ...(result.generation?{generation:result.generation}:{})};
     if(result.decision==='skip')return complete('skipped','NATIVE_EDITORIAL_REJECTED',{selection});
-    if(result.decision==='review')return complete('review','NATIVE_EDITORIAL_UNCERTAIN',{selection});
+    if(result.decision==='review')return complete('review',requireAdvisory?'ADVISORY_RESEARCH_REQUIRED':'NATIVE_EDITORIAL_UNCERTAIN',{selection});
     if(!ledger.ownsLease(job.id,job.owner))return{id:job.id,state:'lease_lost'};
     try{
+      validateAdvisory(result.brief,{required:requireAdvisory});
       const message=renderBrief(job.item,result.brief);
       let verification;
       if(verify){
@@ -117,7 +124,7 @@ export async function processNext({ledger,select,synthesize,assess,verify,assess
       }
       return complete('ready','BRIEF_VERIFIED',{...result.brief,message,generation:result.generation,contextVersion:PILOT_CONTEXT.version,selection,
         ...(verification?{verification}:{})});
-    }catch(error){return complete('review',error?.code==='ALERT_FACT_UNSUPPORTED'?error.code:'NATIVE_ASSESSMENT_INVALID',{selection});}
+    }catch(error){return complete('review',['ALERT_FACT_UNSUPPORTED','ADVISORY_RESEARCH_REQUIRED'].includes(error?.code)?error.code:'NATIVE_ASSESSMENT_INVALID',{selection});}
   }
   const recorded=(job.brief?.selectionReplay?.itemSha256===itemSha256||job.brief?.selection?.itemSha256===itemSha256)&&
     job.brief?.selection?.provider==='jev'&&job.brief.selection.context_version===PILOT_CONTEXT.version;

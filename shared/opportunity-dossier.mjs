@@ -48,7 +48,8 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
   const db=new DatabaseSync(file);
   db.exec(`PRAGMA busy_timeout=1000; PRAGMA journal_mode=WAL;
     CREATE TABLE IF NOT EXISTS dossiers(id TEXT PRIMARY KEY,source_id TEXT UNIQUE NOT NULL,payload TEXT NOT NULL,created INTEGER NOT NULL);
-    CREATE TABLE IF NOT EXISTS choices(id TEXT NOT NULL,revision INTEGER NOT NULL,choice TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(id,revision));`);
+    CREATE TABLE IF NOT EXISTS choices(id TEXT NOT NULL,revision INTEGER NOT NULL,choice TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(id,revision));
+    CREATE TABLE IF NOT EXISTS user_feedback(id TEXT PRIMARY KEY,scope TEXT NOT NULL,verdict TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,origin TEXT NOT NULL);`);
   if(!db.prepare('PRAGMA table_info(choices)').all().some(c=>c.name==='origin'))db.exec("ALTER TABLE choices ADD COLUMN origin TEXT NOT NULL DEFAULT 'telegram-native'");
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const value=fn();db.exec('COMMIT');return value;}catch(e){db.exec('ROLLBACK');throw e;}};
   const row=id=>{if(!safeId(id))reject('DOSSIER_ID_INVALID');const r=db.prepare('SELECT * FROM dossiers WHERE id=?').get(id);if(!r)reject('DOSSIER_NOT_FOUND');return {...r,payload:JSON.parse(r.payload)};};
@@ -67,6 +68,8 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
       ...(p.brief.businessEditorialWarnings?.length?[`Contrôles éditoriaux à revoir : ${p.brief.businessEditorialWarnings.join(', ')}.`]:[]),'',
       '## Hypothèse et inconnues',f.hypothese,f.limites,...(p.brief.uncertainty?[p.brief.uncertainty]:[]),'',
       '## Intérêt pour Ivan',p.brief.utility,'',
+      ...(p.brief.advisory?['## Piste à éprouver (hypothèse)',p.brief.advisory.proposal,
+        `Fait justificatif : ${p.brief.advisory.basis_fact+1}.`,`Invalider si : ${p.brief.advisory.invalidation}`,'']:[]),
       '## Objections et critère d’abandon',...f.objections.map(v=>`- ${v}`),
       'Abandon du test si les preuves publiques supplémentaires ne confirment pas le besoin ; aucun marché ni paiement présumé.','',
       '## Plus petit test, effort et coût',f.prochainTest.description,
@@ -108,7 +111,17 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
       const choicesCount=Object.fromEntries(current.map(r=>[r.choice,r.n]));
       const latency=db.prepare(`SELECT avg(c.created-d.created) AS meanMs FROM dossiers d JOIN choices c ON c.id=d.id AND c.revision=1`).get().meanMs;
       return {dossiers:total,awaitingDecision:total-current.reduce((n,r)=>n+r.n,0),choices:choicesCount,firstDecisionMeanMs:latency??null,
-        nativeCostEur:null,timeSavedMinutes:null};
+        nativeCostEur:null,timeSavedMinutes:null,usefulnessRating:null,
+        feedback:db.prepare('SELECT scope,verdict,reason,created,origin FROM user_feedback ORDER BY created DESC,id DESC LIMIT 10').all()};
+    },
+    recordFeedback({scope,verdict,reason,origin}){
+      // Local transcription of an explicit human reply only. No agent tool or
+      // automatic feedback endpoint is exposed; no individual choice is inferred.
+      if(scope!=='pilot'||!['low-usefulness','useful','mixed'].includes(verdict)||origin!=='codex-explicit-user'||
+        typeof reason!=='string'||!reason.trim()||reason.length>1000||/[\x00-\x1f\x7f]/.test(reason)||secret.test(reason))reject('DOSSIER_FEEDBACK_INVALID');
+      reason=reason.trim();const id=hash(JSON.stringify([scope,verdict,reason,origin]));
+      db.prepare('INSERT OR IGNORE INTO user_feedback VALUES(?,?,?,?,?,?)').run(id,scope,verdict,reason,now(),origin);
+      return {id,recorded:true};
     },
     decide(id,choice,reason,{origin='telegram-native'}={}){
       // The Telegram plugin always uses its native origin. The separate local

@@ -37,13 +37,13 @@ export function validateBusinessFiche(item,fiche){
  }
  return {fiche,editorialWarnings:qualiteFiche(fiche),...(score?{score}:{}),engine:'signals.mjs#scoreOpportunity',scored:score!==null};
 }
-export function businessParagraphs(item,fiche){
+export function businessParagraphs(item,fiche,{compact=false}={}){
  const {score}=validateBusinessFiche(item,fiche);
  return [`Acheteur envisagé (${fiche.acheteur.statut}) : ${fiche.acheteur.profil}`,
-  fiche.hypothese,`Objections : ${fiche.objections.join(' ')}`,
+  ...(compact?[]:[fiche.hypothese]),`Objections : ${fiche.objections.join(' ')}`,
   `Test proposé (${fiche.prochainTest.dureeJours} jours, gratuit, local) : ${fiche.prochainTest.description}`,
   `Statut : ${fiche.decision}${score?` — score recalculé ${score.total}/30`:' — aucune recommandation de lancement'}.`,
-  `Limites Business : ${fiche.limites}`];
+  ...(compact?[]:[`Limites Business : ${fiche.limites}`])];
 }
 
 export const BUSINESS_PROMPT=`Si goal vaut business, ajoute à brief un champ business_fiche. Même appel, pas de recherche ni d'action.

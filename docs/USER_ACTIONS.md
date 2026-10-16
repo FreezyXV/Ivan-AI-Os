@@ -1,4 +1,18 @@
-## État courant — 16 octobre 2026
+## État courant — 16 octobre 2026, après retour d'utilité
+
+Ivan juge les messages peu utiles. Décision : rechercher des pistes Finance,
+des douleurs Business à résoudre et des techniques applicables à Jarvis/code/apps/sites.
+Investissement : court, moyen et long terme ouverts ; aucun horizon à redemander.
+Périmètre précisé : tokens et autres actifs, projet/valorisation/prix, macro et
+avocat du diable ; événements France/Europe/monde utiles à une décision, même
+sans achat immédiat. Voir FINANCE-RESEARCH-MANDATE.md (mandat, pas activation).
+Contexte v8 et contrat de proposition/invalidation actifs, code de104ba ;
+voir ADVISORY-VALUE-2026-10-16.md pour les preuves et les limites.
+Retour qualitatif conservé sans note inventée ; choix tester antérieur intact.
+La prochaine étape est la recherche de preuves croisées ; aucun nouveau service
+payant, portefeuille privé ou transaction n'est autorisé par cette décision.
+
+## Historique — 16 octobre 2026, avant retour d'utilité
 
 Le bilan d'une semaine et les ajustements sont dans WEEKLY-OUTCOMES-2026-10-16.md.
 Première fiche Business générée à partir de la collecte réelle : dossier Unity

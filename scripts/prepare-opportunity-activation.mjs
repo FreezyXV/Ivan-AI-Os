@@ -12,6 +12,7 @@ try{
   const short=commit.slice(0,7),root=path.join(home,'.ivan-ai-os'),release=path.join(root,'releases','orchestrator-'+short),out=path.join(root,'mac-opportunity-'+short);
   if(existsSync(release)||existsSync(out))throw Error('OPPORTUNITY_CANDIDATE_EXISTS');
   const live=path.join(home,'.openclaw/openclaw.json'),bytes=readFileSync(live),config=JSON.parse(bytes),old=JSON.parse(readFileSync(previousSettings));
+  if(old.selectionMode!=='native-editorial'||old.verifyNativeBrief!==true)throw Error('OPPORTUNITY_EDITORIAL_CONFIG_REQUIRED');
   const ownerId=old.target;
   if(!/^[1-9]\d{4,15}$/.test(ownerId??'')||!config.channels?.telegram?.allowFrom?.some(v=>String(v).replace(/^telegram:/,'')===ownerId)||config.channels.telegram.accounts)throw Error('OPPORTUNITY_OWNER_CONFIG_UNSUPPORTED');
   mkdirSync(release,{mode:0o700});mkdirSync(out,{mode:0o700});
@@ -33,7 +34,7 @@ try{
   }
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
-  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities},null,2),{flag:'wx',mode:0o600});
+  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true},null,2),{flag:'wx',mode:0o600});
   const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,
     expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};
   writeFileSync(path.join(out,'prepared.json'),JSON.stringify(proof,null,2),{flag:'wx',mode:0o600});

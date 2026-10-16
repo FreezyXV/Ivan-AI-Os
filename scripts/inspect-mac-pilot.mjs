@@ -41,7 +41,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  });
  const contentReasons=Object.fromEntries(Object.entries(reasons).filter(([code])=>['ALERT_FACT_UNSUPPORTED','NATIVE_ASSESSMENT_INVALID','SYNTHESIS_INVALID','NATIVE_VERIFICATION_REJECTED','NATIVE_VERIFICATION_INVALID'].includes(code)));
  const contentRefusals={total:Object.values(contentReasons).reduce((sum,n)=>sum+n,0),reasons:contentReasons,code:'CHECK_EDITORIAL_REJECTIONS'};
- const checks=Object.fromEntries(rejectionChecks.filter(r=>/^(?:FACT_[1-3]_|UTILITY_|ACTION_)[A-Z_]{1,50}$/.test(r.code??'')&&Number.isSafeInteger(r.n)&&r.n>0).map(r=>[r.code,r.n]));
+ const checks=Object.fromEntries(rejectionChecks.filter(r=>/^(?:FACT_[1-3]_|UTILITY_|ACTION_|ADVISORY_)[A-Z_]{1,50}$/.test(r.code??'')&&Number.isSafeInteger(r.n)&&r.n>0).map(r=>[r.code,r.n]));
  if(Object.keys(checks).length)contentRefusals.checks=checks;
  // Preserve the primary action for existing clients, but never hide concurrent work.
  const diagnoses=[];
@@ -59,6 +59,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  add(['NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT','NATIVE_VERIFICATION_UNAVAILABLE','NATIVE_VERIFICATION_TIMEOUT'].some(code=>reasons[code]>0),'CHECK_NATIVE_GENERATION','Vérifier le service de complétion et son unique nouvel essai.');
  add(selectionMode!=='native-editorial'&&reasons.SELECTION_UNCERTAIN>0,'CALIBRATE_RELEVANCE','La sélection retient des cas incertains : améliorer et mesurer la pertinence avant de forcer des messages.');
  add(reasons.SOURCE_NOT_READ>0,'EXPAND_READERS','Des sources restent non lues : compléter leur lecture avant la synthèse.');
+ add(reasons.ADVISORY_RESEARCH_REQUIRED>0,'DEEPEN_OPPORTUNITY_RESEARCH','Des pistes manquent de preuves ou de proposition exploitable : approfondir avant de livrer.');
  if(!diagnoses.length)diagnoses.push({code:'NO_SELECTED_NEWS',message:'Aucune nouvelle synthèse retenue ; ce silence ne prouve pas une panne.'});
  const diagnosis=diagnoses[0];
  return {sourceCommit:/^[a-f\d]{40}$/.test(sourceCommit??'')?sourceCommit:undefined,

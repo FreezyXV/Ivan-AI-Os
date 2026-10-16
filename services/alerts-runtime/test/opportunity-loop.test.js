@@ -33,6 +33,16 @@ function fixture(){
     verification:{decision:'approve',issues:[],binding:briefBinding(item,proposal)}}};
 }
 const native=(args)=>({channel:'telegram',isAuthorizedSender:true,senderId:'123456789',from:'telegram:123456789',accountId:'default',args});
+test('qualitative pilot feedback survives restart without inventing a rating or changing a dossier choice',t=>{
+ const {config}=setup(t);let store=openDossiers({...config,now:()=>now});const {id}=store.publish(fixture());
+ store.decide(id,'tester','Chercher des preuves indépendantes.',{origin:'codex-explicit-user'});
+ const value={scope:'pilot',verdict:'low-usefulness',reason:'Je veux des douleurs Business et des pistes Finance concrètes.',origin:'codex-explicit-user'};
+ const feedback=store.recordFeedback(value);assert.equal(store.recordFeedback(value).id,feedback.id);store.close();
+ store=openDossiers(config);assert.equal(store.summary().feedback.length,1);
+ assert.equal(store.summary().feedback[0].verdict,'low-usefulness');assert.equal(store.summary().usefulnessRating,null);
+ assert.equal(store.get(id).decisions.length,1);assert.equal(store.get(id).decisions[0].choice,'tester');
+ assert.throws(()=>store.recordFeedback({...value,origin:'model'}),{code:'DOSSIER_FEEDBACK_INVALID'});store.close();
+});
 test('the native plugin loader can require its command module synchronously',()=>{
   assert.equal(typeof createRequire(import.meta.url)('../../../hooks/openclaw/ivan-opportunities/command.js').handleOpportunityCommand,'function');
 });

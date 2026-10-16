@@ -51,8 +51,11 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  if(settings.verifyNativeBrief!==undefined&&typeof settings.verifyNativeBrief!=='boolean'||
     settings.verifyNativeBrief&&selectionMode!=='native-editorial')throw Error('ALERT_VERIFICATION_CONFIG_INVALID');
  if(settings.verifyNativeBrief)verify??=createNativeVerification({binary:settings.openclawBinary});
+ if(settings.requireAdvisory!==undefined&&typeof settings.requireAdvisory!=='boolean'||
+   settings.requireAdvisory&&(!verify||selectionMode!=='native-editorial'))throw Error('ALERT_ADVISORY_CONFIG_INVALID');
  selectionOutcome({decision:'review',confidence:0},selectionPolicy);
  const started=Date.now(),slots=scheduleSlots(now,{digestNow}),results={};ledger.reconcile();ledger.settleReady(now.getTime());ledger.retryTransient();
+ if(settings.requireAdvisory)results.advisory={heldForResearch:ledger.holdLegacyAdvisories()};
  let editorialRevisions=0;
  let policyRevisions=0;
  if(settings.selectionPolicy&&selectionMode!=='native-editorial'){
@@ -92,7 +95,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   let decisions=0,generations=0,nativeCalls=0,businessFichesCreated=0,opportunityScoresCreated=0,providerError;const states={};
   const modelBudget=verify?4:2,requiredCalls=verify?2:1;
   for(let i=0;i<100&&decisions<8&&nativeCalls+requiredCalls<=modelBudget;i++){
-   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,selectionPolicy,
+   const result=await processNext({ledger,now:now.getTime(),stageTimeoutMs:60000,selectionPolicy,requireAdvisory:settings.requireAdvisory??false,
     select:async(...args)=>{decisions++;return select(...args);},
     ...(selectionMode!=='jev'?{assessmentAfterSelection:selectionMode==='jev-native-editorial',assess:async(...args)=>{nativeCalls++;const result=await assess(...args);if(result.decision==='keep')generations++;return result;}}:{}),
     ...(verify?{verify:async(...args)=>{nativeCalls++;return verify(...args);}}:{}),
