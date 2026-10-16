@@ -18,6 +18,7 @@ import {createOpportunityProjection} from '../services/alerts-runtime/src/opport
 import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
 import {collectPublicDemand} from '../services/alerts-runtime/src/public-demand.js';
+import {researchTick} from '../services/alerts-runtime/src/research-runtime.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
 const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
 const providerFailures=new Set(['SELECTION_UNAVAILABLE','SELECTION_TIMEOUT','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT',
@@ -40,7 +41,7 @@ export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=inge
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
  feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger,useJev:(settings.selectionMode??'jev')==='jev'}),business=()=>businessCycle({ledger,useJev:(settings.selectionMode??'jev')==='jev'}),
- hasBusinessEvidence=()=>businessHasPendingEvidence(ledger),
+ hasBusinessEvidence=()=>businessHasPendingEvidence(ledger),research=researchTick,
  select,assess,verify,synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
  const selectionPolicy=settings.selectionPolicy??DEFAULT_SELECTION_POLICY;
@@ -72,7 +73,9 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   const lease=ledger.claimCycle(name,key);if(!lease)return;
   const at=Date.now();
   try{const result=await fn();
-   const degraded=Boolean(result?.error_code)||result?.state==='delivery_unknown'||(Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
+   const degraded=Boolean(result?.error_code)||Boolean(result?.projection_error)||result?.state==='delivery_unknown'||result?.deliveryUnknown>0||
+    (result?.discovery?.errors?.length??0)>0||(result?.coverage?.errors?.length??0)>0||
+    (Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
    results[name]={...result,...(degraded?{degraded:true}:{})};
    ledger.finishCycle(lease,{ok:!degraded,metrics:{durationMs:Date.now()-at,result:results[name]}});}
   catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
@@ -106,6 +109,8 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   }
   return {selectionMode,decisions,nativeCalls,generations,businessFichesCreated,opportunityScoresCreated,states,...(providerError?{error_code:providerError}:{})};
  });
+ if(settings.research?.enabled)await perform('research',`research:${Math.floor(now.getTime()/1800000)}`,
+  ()=>research({settings,ledger,now}));
  const window=digestWindow(now,{digestNow});
  if(ledger.list('ready',100).some(r=>digestEligible(r,window)&&prefilter(r.item,{now:now.getTime()}).decision==='select')){
   // A source may finish after the day's first page. Reserve the next stable page
