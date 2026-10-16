@@ -16,7 +16,7 @@ function receipt(decision='keep'){
 test('assessment is explicit, current-only, documentary, and uses the fixed public stack and goals',()=>{
  const prompt=assessmentPrompt(item);assert.equal(synthesisPrompt(item,{purpose:'assessment'}),prompt);
  assert.ok(prompt.includes(PILOT_CONTEXT.version));assert.match(prompt,/Node.js/);assert.match(prompt,/aucun outil/i);
- assert.match(prompt,/Une vérification d'applicabilité/);assert.match(prompt,/pas une opération/);
+ assert.match(prompt,/Court, moyen et long terme sont tous ouverts/);assert.match(prompt,/pas une opération/);
  assert.throws(()=>synthesisPrompt(item,{purpose:'assessment',promptVariant:'compact-v1'}),{code:'ALERT_SYNTHESIS_PURPOSE_INVALID'});
  assert.throws(()=>createNativeSynthesis({purpose:'assessment'}),{code:'ALERT_SYNTHESIS_PURPOSE_INVALID'});
  assert.throws(()=>assessmentPrompt({...item,sourceStatus:'title-only'}),{code:'ALERT_SOURCE_NOT_READ'});

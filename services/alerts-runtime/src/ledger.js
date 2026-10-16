@@ -5,6 +5,7 @@ import {gzipSync,gunzipSync} from 'node:zlib';
 import path from 'node:path';
 import { validateItem, prefilter, fail, PILOT_CONTEXT, canonicalUrl } from './context.js';
 import {validateBusinessFiche} from './business-fiche.js';
+import {validateAdvisory} from './advisory.js';
 
 // SQLite owns transaction locks: process crashes cannot leave an application
 // lock file blocking all producers. Provider calls occur outside transactions.
@@ -194,6 +195,17 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
         .run(now(),JSON.stringify({error_code:'CYCLE_INTERRUPTED'}),now());
       db.prepare("UPDATE digests SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now());
       return db.prepare("UPDATE alerts SET state='delivery_unknown',updated=? WHERE state='sending' AND expires<=?").run(now(),now()).changes;
+    });},
+    holdLegacyAdvisories(){return tx(()=>{
+      let held=0;
+      for(const r of db.prepare("SELECT id,brief FROM alerts WHERE state='ready'").all()){
+        try{validateAdvisory(JSON.parse(r.brief),{required:true});}
+        catch{
+          // Never reopen an attempted send; preserve the original brief as audit.
+          db.prepare("UPDATE alerts SET state='review',reason='ADVISORY_RESEARCH_REQUIRED',updated=? WHERE id=?").run(now(),r.id);held++;
+        }
+      }
+      return held;
     });},
     settleReady(at=now()){return tx(()=>{
       let expired=0,reviewed=0;

@@ -1,10 +1,11 @@
 import { PILOT_STATE } from '../../../shared/pilot-state.mjs';
 // Public, compact operator context. No profile, portfolio or caller policy.
 export const PILOT_CONTEXT = Object.freeze({
-  version: 'mac-alerts-20261016-v7',
+  version: 'mac-alerts-20261016-v8',
   active: Object.freeze(['business', 'finance', 'engineering', 'system']),
   deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.deferredProjects]),
   priorities: Object.freeze(['system','business','finance','engineering']),
+  investmentHorizons: Object.freeze(['short','medium','long']),
   stack: Object.freeze(['Mac','Node.js','TypeScript','Next.js','Git','Codex','Claude Code','OpenClaw','Jev','TypeSafe','Obsidian','Telegram']),
   facts: Object.freeze([
     'Le pilote fonctionne sur un Mac ; aucun serveur permanent n’est activé.',
@@ -13,12 +14,13 @@ export const PILOT_CONTEXT = Object.freeze({
     'Le besoin immédiat est un système utile sur Mac : résumés autonomes avec faits, utilité concrète et prochaine étape proportionnée, sans devoir ouvrir chaque lien.',
     'Jev (TypeSafe) a un plafond dur mensuel appliqué par le gateway. Les complétions natives et les autres services payants ne sont ni plafonnés ni mesurés par Ivan AI OS.',
     'Les nouveaux projets web partent par défaut sur Next.js et TypeScript ; l’inventaire des projets existants et de leurs versions n’est pas connu du système. Les services sont en Node.js.',
-    'La veille Finance porte sur les données publiques BCE, inflation et taux, sans portefeuille.'
+    'Ivan juge la veille actuelle peu utile : il veut des pistes d’investissement argumentées, des douleurs Business à résoudre, et des techniques utilisables dans Jarvis ou ses projets de code, applications et sites.',
+    'Finance : court, moyen et long terme sont ouverts. Rechercher sur données publiques ; aucune allocation, tolérance au risque, position existante ni décision d’investissement n’est présumée.'
   ]),
   goals: Object.freeze({
-    business: 'Identifier des problèmes monétisables étayés par des preuves.',
-    finance: 'Comprendre les évolutions macro et marchés publics, sans transaction ni portefeuille.',
-    engineering: 'Construire Ivan AI OS et rendre le travail logiciel plus efficace.',
+    business: 'Trouver une douleur précise, un acheteur plausible et une solution à éprouver ; vérifier la demande et les alternatives avant de construire.',
+    finance: 'Étudier des pistes d’investissement à court, moyen ou long terme : thèse, faits, déclencheur, risques, inconnues et invalidation ; sans portefeuille ni transaction.',
+    engineering: 'Identifier des techniques applicables à Jarvis, au code, aux applications et aux sites avec un composant ciblé et un test concret.',
     system: 'Fiabiliser le pilote Mac et réduire les coûts, doublons et interruptions.'
   })
 });

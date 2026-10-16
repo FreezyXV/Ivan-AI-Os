@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import {summarizeOutcomes} from './audit-mac-outcomes.mjs';
 const since=Date.parse('2026-10-09T21:00:00Z'),until=since+7*86400000;
 const alert=(topic,goal,state='delivered')=>({created:since+10,updated:since+20,state,item:JSON.stringify({topic}),brief:JSON.stringify({goal})});
+test('explicit qualitative feedback is reported independently from a numeric rating',()=>{
+ const feedback=[{scope:'pilot',verdict:'low-usefulness',reason:'Peu utile',created:until,origin:'codex-explicit-user'}];
+ const s=summarizeOutcomes({since,until,alerts:[],digests:[],cycles:[],feedback});
+ assert.deepEqual(s.opportunities.feedback,feedback);assert.equal(s.opportunities.usefulnessRating,null);
+});
 test('two sources in one message are one delivery, not two successes; missing costs and ratings stay unknown',()=>{
  const s=summarizeOutcomes({since,until,alerts:[alert('business','engineering'),alert('finance','finance')],
   digests:[{key:'digest:1',state:'delivered'},{key:'digest:2',state:'delivery_unknown'}],
