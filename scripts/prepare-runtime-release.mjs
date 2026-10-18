@@ -4,7 +4,7 @@ import { existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, realpath
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 const [repository, commit, output] = process.argv.slice(2);
-const sources = ["services/jev-gateway/src", "services/jev-gateway/package.json", "policies/kernel", "hooks/openclaw/ivan-route", "hooks/openclaw/ivan-observer", "scripts/mac-jev-runtime.mjs", "scripts/mac-jev-smoke.sh", "scripts/verify-secure-routing.mjs", "scripts/verify-openclaw-observer.mjs", "scripts/verify-openclaw-observer-registration.mjs"];
+const sources = ["services/jev-gateway/src", "services/jev-gateway/package.json", "services/mac-runtime/src", "policies/kernel", "hooks/openclaw/ivan-route", "hooks/openclaw/ivan-observer", "scripts/mac-jev-runtime.mjs", "scripts/mac-jev-background.mjs", "scripts/mac-jev-keychain.mjs", "scripts/prepare-mac-background.mjs", "scripts/mac-jev-smoke.sh", "scripts/verify-secure-routing.mjs", "scripts/verify-openclaw-observer.mjs", "scripts/verify-openclaw-observer-registration.mjs"];
 function run(command, args, cwd) {
   const result = spawnSync(command, args, { cwd, encoding: "utf8", timeout: 60000,
     env: { PATH: process.env.PATH, HOME: process.env.HOME }, stdio: "pipe" });

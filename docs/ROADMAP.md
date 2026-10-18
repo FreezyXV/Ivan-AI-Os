@@ -6,6 +6,8 @@
 - [ ] VPS provisioned; deferred by Ivan on 2026-10-08 for the first months of a local Mac pilot. Reassess only after measured need for 24/7 operation and a separately approved purchase.
 - [x] Prepare a Linux systemd Jev gateway candidate with private credentials, persistent budget and authenticated startup probe; local mock integration tested, VPS not provisioned
 
+- [x] Activate a private Mac LaunchAgent with Keychain-backed credential, six tests and native isolated/live restart proof; shared budget preserved (services/mac-runtime/README.md)
+
 ## Phase 1 — Decision plane
 - [x] Correct TypeSafe System One request/response adapter for Choice
 - [x] Batched Choice/Noul/Score request router for the six domains
