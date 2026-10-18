@@ -83,7 +83,7 @@ export async function run(input, { env = process.env, fetchImpl = fetch, readTok
   if (!call) return null;
   const mode = ["ask", "gate"].includes(env.IVAN_CLAUDE_HOOK_MODE) ? env.IVAN_CLAUDE_HOOK_MODE : "shadow";
   if (mode === "gate") {
-    const rule = call.tool === "exec" ? classifyCommand(call.arguments.command) : classifyPath(call.arguments.path);
+    const rule = call.tool === "exec" ? classifyCommand(call.arguments.command, env) : classifyPath(call.arguments.path);
     // A refusal with its reason spares the agent retries: the rule is decided by code, not a model.
     if (rule.verdict === "never") return denyOutput(rule.raison);
     if (rule.verdict === "autonome") return null;
