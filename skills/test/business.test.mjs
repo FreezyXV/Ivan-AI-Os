@@ -82,3 +82,14 @@ test("Jev triage: demand signals only, offers counted apart, hesitation band kep
   assert.deepEqual(await triage(d, { classifyImpl: fake }), { tries: 1, en_attente_jev: 0, deja_tries: 3 });
   assert.equal(calls, 5, "triaged signals are never sent twice");
 });
+
+test("report flags a demand score that the Jev-triaged ledger does not back", async t => {
+  const d = dir(t);
+  addSignals(d, [signal("https://a.org/1", { titre: "t1" }), signal("https://b.org/2", { titre: "t2", type: "offre" })]);
+  await triage(d, { classifyImpl: async () => ({ decision: 0.9, confidence: 0.8, request_id: "r" }) });
+  recordOpportunity(d, opportunity());
+  assert.match(report(d, 3), /Demande notée 4\/5 mais seulement 1 signal\(aux\) de demande confirmé\(s\) par Jev/);
+  addSignals(d, [signal("https://c.org/3", { titre: "t3" })]);
+  await triage(d, { classifyImpl: async () => ({ decision: 0.9, confidence: 0.8, request_id: "r2" }) });
+  assert.doesNotMatch(report(d, 3), /à revoir/);
+});

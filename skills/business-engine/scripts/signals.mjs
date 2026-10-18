@@ -158,6 +158,9 @@ export function report(dir, top = 3) {
   const latest = new Map();
   for (const o of readJsonl(path.join(dir, "opportunites.jsonl"))) latest.set(o.sujet, o);
   const ranked = [...latest.values()].filter(o => o.decision !== "abandonner").sort((a, b) => b.total - a.total).slice(0, top);
+  // A demand score must be backed by the triaged ledger: confident demand signals (Jev >= 0.6 or
+  // untriaged are not enough). Otherwise the score is flagged, never silently trusted.
+  const backing = new Map(subjects(dir, 1).map(g => [g.sujet, g.signaux - g.incertains - g.non_tries]));
   const lines = ["# Business Engine — opportunités", ""];
   for (const h of ["cash", "venture"]) {
     const list = ranked.filter(o => o.horizon === h);
@@ -165,6 +168,8 @@ export function report(dir, top = 3) {
     if (!list.length) lines.push("Aucune opportunité retenue.", "");
     for (const o of list) {
       lines.push(`### ${o.sujet} — ${o.total}/30 → ${o.decision}`, `- Cible : ${o.cible}`, `- Douleur : ${o.douleur}`);
+      const confirmed = backing.get(o.sujet) ?? 0;
+      if (o.criteres.demande.note >= 3 && confirmed < 2) lines.push(`- ⚠ Demande notée ${o.criteres.demande.note}/5 mais seulement ${confirmed} signal(aux) de demande confirmé(s) par Jev : à revoir`);
       if (o.monetisation) lines.push(`- Monétisation : ${o.monetisation}`);
       if (o.validation_7j) lines.push(`- Validation 7 j : ${o.validation_7j}`);
       lines.push(`- Preuves : ${[...new Set(CRITERES.map(c => o.criteres[c].preuve).filter(p => p && p !== "profil"))].join(" · ")}`, "");
