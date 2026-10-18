@@ -1,0 +1,665 @@
+{
+ "inputsSha256": "0b0b71b4793827ac3de1ff621341a52ba68d909c7a33c178e28f7a9d251c70a3",
+ "figéLe": "2026-10-05",
+ "grille": "keep = fait nouveau précis + usage concret pour Business/Finance/Engineering/System ; review = lien plausible non établi ; skip = bruit, promotion, hors sujet, opinion sans usage.",
+ "labels": [
+  {
+   "id": "J01",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J02",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J03",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Seuil de capacité offensive franchi : intérêt sécurité plausible, usage concret non établi."
+  },
+  {
+   "id": "J04",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J05",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Lancement Codex Security Cloud (scans planifiés, CLI open source) : outil applicable au dépôt construit par Codex/Claude."
+  },
+  {
+   "id": "J06",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J07",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Agent qui a affirmé à tort une présence : leçon de vérification, sans usage établi."
+  },
+  {
+   "id": "J08",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Récapitulatif de keynote ; incident HF de juillet ancien."
+  },
+  {
+   "id": "J09",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J10",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J11",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J12",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J13",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J14",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J15",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J16",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J17",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J18",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J19",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J20",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Baisse de prix GPT-6 et hausse programmée de 25 % de GPT-5.6 en novembre : coût des agents (System)."
+  },
+  {
+   "id": "J21",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J22",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J23",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J24",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Plugin llm-typesafe pour Jev : outillage direct du décideur utilisé par le pilote."
+  },
+  {
+   "id": "J25",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J26",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J27",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Inflation d'août 3,2 %, énergie 14,3 %, projections BCE : évolution macro publique."
+  },
+  {
+   "id": "J28",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J29",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Problème payé (liste noire, 30 $/mois) mais opportunité et éthique non établies."
+  },
+  {
+   "id": "J30",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J31",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J32",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J33",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J34",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J35",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J36",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J37",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J38",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J39",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J40",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J41",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Codex embarque 1,7 Go de runtimes : impact disque possible sur le Mac, non établi."
+  },
+  {
+   "id": "J42",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J43",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J44",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J45",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J46",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J47",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Agents communiquant via des wikis publics : risque structurel, extrait surtout historique."
+  },
+  {
+   "id": "J48",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J49",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J50",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J51",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J52",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J53",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J54",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Sortie de Fable 5.1 avec scores de benchmark : modèle utilisé par l'usine logicielle (désaccord : review)."
+  },
+  {
+   "id": "J55",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J56",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J57",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J58",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J59",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Codex : allocation divisée par deux au 30 octobre — capacité et coût du constructeur principal du pilote."
+  },
+  {
+   "id": "J60",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J61",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J62",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J63",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": "Agents Codex lancés sans autorisation, 78 000 USD consommés : coût non plafonné, risque System direct."
+  },
+  {
+   "id": "J64",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J65",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J66",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J67",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J68",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": "Offre à 500 $ repérée dans l'API, non confirmée."
+  },
+  {
+   "id": "J69",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "J70",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": "Bruit, hors sujet ou sans usage concret établi."
+  },
+  {
+   "id": "I01",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I02a",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I02b",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I03",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I08",
+   "set": "dev",
+   "label": "review",
+   "tolere": "skip",
+   "pourquoi": null
+  },
+  {
+   "id": "I10",
+   "set": "dev",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I11",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I12",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "I13",
+   "set": "dev",
+   "label": "keep",
+   "tolere": "review",
+   "pourquoi": null
+  },
+  {
+   "id": "C1-plafonds-budget",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "C2a-lane-extrait-debut",
+   "set": "dev",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "C2b-lane-passages",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "C3-ver-agents",
+   "set": "dev",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q01",
+   "set": "holdout",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q02",
+   "set": "holdout",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q03",
+   "set": "holdout",
+   "label": "review",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q04",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q05",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q07",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q08",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q10",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q11",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q13",
+   "set": "holdout",
+   "label": "keep",
+   "tolere": null,
+   "pourquoi": null
+  },
+  {
+   "id": "Q14",
+   "set": "holdout",
+   "label": "skip",
+   "tolere": null,
+   "pourquoi": null
+  }
+ ]
+}
