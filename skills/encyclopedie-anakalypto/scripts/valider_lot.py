@@ -36,6 +36,12 @@ def verifier_visuel(slug, corps):
             and isinstance(q.get("bonne"), int) and 0 <= q["bonne"] < len(q["choix"]) for q in v["donnees"])
         if not ok:
             return [f"{slug}: quiz invalide (3 questions, 2 à 4 choix, index de bonne réponse)"]
+    if v["type"] in {"comparateur", "chart", "chiffres-cles"}:
+        # A value that is prose ("moins de 3") cannot be drawn: put it in the text, not the chart.
+        prose = [d.get("valeur") for d in v["donnees"] if isinstance(d, dict) and "valeur" in d
+                 and (isinstance(d["valeur"], bool) or not isinstance(d["valeur"], (int, float)))]
+        if prose:
+            return [f"{slug}: {v['type']} avec valeur non numérique {prose[0]!r}"]
     return []
 
 

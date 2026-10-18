@@ -64,6 +64,15 @@ test("v2 validator: short visual card passes as draft, publication needs a Jev d
   for (const e of ["quiz invalide", "7 puces", "mots hors visuel", "Pour aller plus loin > 120 mots"]) assert.ok(out.includes(e), e);
 });
 
+test("a comparison visual needs numbers, not prose values", () => {
+  // Found live on 2026-09-29: a comparateur with "moins de 3" as a value could not be drawn, and Jev scored the card below 0.7.
+  const d = mkdtempSync(path.join(tmpdir(), "anak-"));
+  const lot = path.join(d, "lot.md");
+  writeFileSync(lot, card("x", { visuel: '{"type":"comparateur","titre":"t","donnees":[{"etiquette":"avant","valeur":18.3},{"etiquette":"après","valeur":"moins de 3"}]}' }));
+  const out = spawnSync("python3", [VALIDATOR, lot, "--brouillon"], { encoding: "utf8" }).stdout;
+  assert.match(out, /valeur non numérique/);
+});
+
 test("publication gate requires confirmed claims and writes Jev decisions only when every call succeeds", async t => {
   const d = scratch(t), lot = path.join(d, "lot-1.md");
   writeFileSync(lot, card("pile-volta"));
