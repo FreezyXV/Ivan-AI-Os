@@ -41,3 +41,9 @@ test('scientific and decimal prices agree, but changing dollars into euros is un
  assert.equal(report.facts.length,1);
  assert.throws(()=>validateResearchReport(bundle,{...draft,facts:[{summary:'Le cours observé est de 0,0000001 euro.',source_id:'price',evidence_index:0}]}),{code:'RESEARCH_FACT_UNSUPPORTED'});
 });
+test('a sourced product name is not a numeric claim; invented model identifiers still fail',()=>{
+ const {draft}=fixture(),bundle=sealBundle({...raw,sources:[{...raw.sources[0],text:raw.sources[0].text+'\nn8n and GPT-6 are mentioned in another passage.'},raw.sources[1]]});
+ assert.equal(validateResearchReport(bundle,{...draft,title:'Vérifier les sauvegardes n8n et GPT-6'}).title,'Vérifier les sauvegardes n8n et GPT-6');
+ assert.throws(()=>validateResearchReport(bundle,{...draft,title:'Vérifier les sauvegardes GPT-9'}),{code:'RESEARCH_NUMBER_UNSUPPORTED'});
+ assert.throws(()=>validateResearchReport(bundle,{...draft,facts:[{summary:'Le commerce utilise n8n.',source_id:'pain',evidence_index:0}]}),{code:'RESEARCH_FACT_UNSUPPORTED'});
+});

@@ -5,7 +5,8 @@ export const researchHash=v=>createHash('sha256').update(typeof v==='string'?v:J
 export const researchFail=code=>{throw Object.assign(Error(code),{code});};
 const text=(v,max)=>typeof v==='string'&&v.trim().length>0&&v.length<=max&&!/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(v);
 const date=v=>typeof v==='string'&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString()===(v.includes('.')?v:v.replace(/Z$/,'.000Z'));
-const numeric=s=>(s.match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)(?:e[+\-]?\d+)?/gi)??[]).map(n=>{
+const identifiers=s=>s.match(/\b[A-Za-z][A-Za-z0-9]*[-_.]?\d+(?:[.-]\d+)*(?:[A-Za-z0-9]*)\b/g)??[];
+const numeric=s=>(s.replace(/\b[A-Za-z][A-Za-z0-9]*[-_.]?\d+(?:[.-]\d+)*(?:[A-Za-z0-9]*)\b/g,' ').match(/[+\-−]?\d+(?:(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|(?:[.,]\d+)*)(?:e[+\-]?\d+)?/gi)??[]).map(n=>{
  const v=n.replace(/[ \u00a0\u202f]/g,'').replace('−','-'),normalized=/^[+\-]?[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?$/.test(v)?v.replaceAll(',',''):v.replaceAll(',','.');
  return /^[-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?$/i.test(normalized)?String(Number(normalized)):normalized;
 });
@@ -59,12 +60,12 @@ export function validateResearchReport(rawBundle,raw){
    if(!Number.isInteger(f.evidence_index)||f.evidence_index<0||f.evidence_index>=spans.length)researchFail('RESEARCH_FACT_INVALID');
    quote=spans[f.evidence_index];source_id=s.id;
   }
-  if(numeric(f.summary).some(n=>!numeric(quote).includes(n))||moneyUnits(f.summary).some(u=>!moneyUnits(quote).includes(u)))researchFail('RESEARCH_FACT_UNSUPPORTED');
+  if(identifiers(f.summary).some(id=>!identifiers(quote).includes(id))||numeric(f.summary).some(n=>!numeric(quote).includes(n))||moneyUnits(f.summary).some(u=>!moneyUnits(quote).includes(u)))researchFail('RESEARCH_FACT_UNSUPPORTED');
   return {summary:f.summary,source_id,...(f.calculation_id?{calculation_id:f.calculation_id}:{evidence_index:f.evidence_index}),quote};
  });
- const supported=facts.flatMap(f=>numeric(f.quote));
+ const supported=facts.flatMap(f=>numeric(f.quote)),knownIdentifiers=bundle.sources.flatMap(s=>identifiers(s.text));
  for(const value of [raw.title,raw.thesis,raw.whyNow,raw.counterargument,raw.nextStep,raw.invalidation,...raw.unknowns])
-  if(numeric(value).some(n=>!supported.includes(n)))researchFail('RESEARCH_NUMBER_UNSUPPORTED');
+  if(identifiers(value).some(id=>!knownIdentifiers.includes(id))||numeric(value).some(n=>!supported.includes(n)))researchFail('RESEARCH_NUMBER_UNSUPPORTED');
  return {...raw,facts};
 }
 export const reportBinding=(bundle,report)=>researchHash([sealBundle(bundle).id,validateResearchReport(bundle,report)]);
