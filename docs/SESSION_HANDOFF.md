@@ -1,6 +1,6 @@
 ## 2026-10-30 — Codex — reprise, recherche et rattrapage Telegram
 
-Branche agent/codex/research-engine, basée sur advisory-value ; pas de fusion.
+Branche agent/codex/research-engine ; PR#71 brouillon vers advisory-value, pas fusionnée.
 Mac Darwin confirmé ; fetch sans écrasement. Worker/plugins d47c69b actifs.
 Au retour : planning déchargé après activation interrompue le16, pas seulement veille.
 Ancien worker rechargé immédiatement, puis bascule coordonnée ; planning300s sain.

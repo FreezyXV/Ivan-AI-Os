@@ -29,3 +29,8 @@ qualifier ces abstentions de messages livrés. L'abstention initiale de l'analys
 ne conserve pas encore de questions structurées : Codex doit corriger ce manque.
 Relecture utile : ce qui manque vraiment aux deux dossiers et quelles sources
 ciblées l'établissent, sans nouvelle passe de modèles ni changement de seuil.
+
+PR du lot : https://github.com/FreezyXV/Ivan-AI-Os/pull/71 (base advisory-value).
+Avant de déclarer le moteur qualifié : vérifier l'admission/rétention des travaux
+non traités et le rafraîchissement d'une cotation quand un dossier attend longtemps.
+Ces contrôles ne sont pas une invitation à relancer les envois incertains.
