@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {activatePrepared} from './activate-opportunity-release.mjs';
+import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import path from 'node:path';
 const p={candidate:'/private/tmp/candidate',settingsPath:'/private/tmp/new',previousSettings:'/private/tmp/old',backupDir:'/private/tmp/backup',expectedCurrentSha256:'a'.repeat(64)};
 test('activation does not unload the old worker while it waits, then verifies the replacement schedule',async()=>{
  const calls=[];let checks=0;const r=await activatePrepared(p,{wait:async()=>{},runImpl:async(bin,args)=>{calls.push(args);
@@ -12,4 +13,21 @@ test('failed switch with an absent schedule restores the previous worker before 
   if(args[0].endsWith('switch-openclaw-config.mjs'))throw Error('failure');
   assert.equal(args[1],p.previousSettings);recovered=true;return {stdout:'{}'};
  }}),/SCHEDULE_PRESERVED/);assert.equal(checks,2);assert.equal(recovered,true);
+});
+test('a failed schedule replacement rolls config and schedule back together',async t=>{
+ const dir=mkdtempSync(path.join(tmpdir(),'ivan-activation-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));const candidate=path.join(dir,'candidate');writeFileSync(candidate,'new');
+ let switches=0,oldRestored=false,waits=0,checks=0;
+ await assert.rejects(activatePrepared({...p,candidate},{wait:async()=>{waits++;},runImpl:async(bin,args)=>{
+  if(bin==='/bin/launchctl')return {stdout:++checks===2?'state = running':'state = waiting'};
+  if(args[0].endsWith('switch-openclaw-config.mjs')){switches++;return {stdout:JSON.stringify({status:'ACTIVE',backup:'/private/tmp/old-config'})};}
+  if(args[1]===p.settingsPath)throw Error('ALERT_UPDATE_ROLLED_BACK');
+  assert.equal(args[1],p.previousSettings);oldRestored=true;return {stdout:'{}'};
+ }}),/FAILED_SCHEDULE_PRESERVED/);assert.equal(switches,2);assert.equal(oldRestored,true);assert.equal(waits,1);
+});
+test('a rollback that cannot restore config is reported as partial, never as coherent success',async()=>{
+ await assert.rejects(activatePrepared(p,{runImpl:async(bin,args)=>{
+  if(bin==='/bin/launchctl')return {stdout:'state = waiting'};
+  if(args[0].endsWith('switch-openclaw-config.mjs'))return {stdout:'{"status":"ACTIVE"}'};
+  if(args[1]===p.settingsPath)throw Error('install failed');return {stdout:'{}'};
+ }}),/PARTIAL_SCHEDULE_PRESERVED/);
 });

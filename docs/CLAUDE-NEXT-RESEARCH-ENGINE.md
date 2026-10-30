@@ -21,3 +21,11 @@ question Jev sans question précise et résultat mesurable attendu.
 Lot Claude : note de revue et corpus indépendant, skills/contrat éditorial si écart
 prouvé. Codex garde services/, shared/, scripts/, hooks/openclaw/. Préparation
 Knowledge différée ; Career et VPS restent en pause. PR brouillon, pas de fusion.
+
+Preuves au 30 octobre : reçu71 = correctifs OpenClaw ; aucune proposition Finance
+livrée. Bitcoin a répondu research sur six sources, WooCommerce a produit un
+rapport puis un contradicteur research et un approfondissement en file. Ne pas
+qualifier ces abstentions de messages livrés. L'abstention initiale de l'analyste
+ne conserve pas encore de questions structurées : Codex doit corriger ce manque.
+Relecture utile : ce qui manque vraiment aux deux dossiers et quelles sources
+ciblées l'établissent, sans nouvelle passe de modèles ni changement de seuil.

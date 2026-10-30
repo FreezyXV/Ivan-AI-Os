@@ -32,14 +32,15 @@ export async function applySchedule({plist,body,previousBody,backupDir,domain,ru
     !['com.ivan-ai-os.alerts','com.ivan-ai-os.jev'].includes(serviceLabel)||typeof verify!=='function')throw Error('ALERT_INSTALL_INVALID');
  const current=readFileSync(plist,'utf8');
  if(current!==body&&current!==previousBody)throw Error('ALERT_EXISTING_SCHEDULE_DIFFERS');
- let loaded=true;
- try{await run('/bin/launchctl',['print',domain+'/'+serviceLabel]);}
+ let loaded=true,serviceState;
+ try{serviceState=await run('/bin/launchctl',['print',domain+'/'+serviceLabel]);}
  catch(error){if(error.code!==113)throw error;loaded=false;}
  if(current===body){
   if(!loaded)await bootstrapWithRetry({run,domain,plist});
   await verify();
   return {alreadyActive:loaded};
  }
+ if(loaded&&/^\s*state = running$/m.test(serviceState?.stdout??''))throw Error('ALERT_EXISTING_SCHEDULE_BUSY');
  // Each attempt has a distinct, immutable backup. Old temporary files are
  // evidence of a previous interruption, never an excuse to overwrite them.
  const backup=path.join(backupDir,serviceLabel.split('.').at(-1)+'.rollback-'+randomUUID()+'.plist');

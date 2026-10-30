@@ -1,3 +1,20 @@
+## État courant — 30 octobre 2026, rattrapage demandé
+
+Ivan demande la reprise après une période Mac fermé. Au contrôle, le planning
+était également déchargé après la bascule interrompue du 16 octobre. Rechargé,
+puis worker et plugins d47c69b activés ; aucune réinstallation des autres services.
+Collecte : 43 publications et sept indicateurs Finance actualisés. Premier
+message de rattrapage confirmé : reçu 71, correctifs OpenClaw, pas une opportunité
+financière. Les envois incertains antérieurs restent exclus de toute relance.
+Recherche multi-source désormais active : voir RESEARCH-ENGINE-MAC.md ; une
+abstention Bitcoin réelle ne constitue ni une recommandation ni un benchmark.
+Les flux ne permettent pas de promettre une reconstitution exhaustive de la
+quinzaine ; priorité aux informations encore pertinentes et aux preuves fraîches.
+Aucun nouveau service payant, transaction ou contact autorisé. Le Mac doit être
+éveillé pour les collectes ; verrouiller l'écran et fermer le capot sont distincts.
+
+## Historique — retour d'utilité du 16 octobre
+
 ## État courant — 16 octobre 2026, après retour d'utilité
 
 Ivan juge les messages peu utiles. Décision : rechercher des pistes Finance,

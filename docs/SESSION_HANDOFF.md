@@ -1,3 +1,34 @@
+## 2026-10-30 — Codex — reprise, recherche et rattrapage Telegram
+
+Branche agent/codex/research-engine, basée sur advisory-value ; pas de fusion.
+Mac Darwin confirmé ; fetch sans écrasement. Worker/plugins d47c69b actifs.
+Au retour : planning déchargé après activation interrompue le16, pas seulement veille.
+Ancien worker rechargé immédiatement, puis bascule coordonnée ; planning300s sain.
+Rattrapage demandé explicitement :43 publications,7 indicateurs Finance actualisés.
+Message71 confirmé après seconde lecture : correctifs OpenClaw, pas opportunité Finance.
+File :delivered13, unknown6, expired161, review43, skipped69 ; zéro pending/ready.
+Ne pas rejouer les six sources incertaines, ni restaurer un vieux snapshot.
+Recherche multi-source active :11 candidats nouveaux,104 actifs admissibles,
+rotation BTC/LTC/Canton du jour ; sources publiques gratuites, aucune recommandation.
+Répartition : documentaliste/calculateur/code, analyste puis contradicteur isolés,
+contrôle de preuves, Obsidian et reçu ;12 appels recherche/jour UTC,3 envois/jour Paris.
+Ces plafonds ne couvrent pas tous les appels/digests ; coût natif non exposé.
+Réel :Bitcoin6 sources → research ; WooCommerce6 sources → contradicteur research,
+un approfondissement en file. Neuf travaux pending ; aucun dossier Finance livré.
+Aujourd'hui16 appels natifs process +4 recherche enregistrés ; Jev inchangé761.
+Noms n8n/GPT-6 corrigés ;258/258 tests passent. Sources/ordre refus/non-renvoi testés.
+Wrapper activation renforcé : réattente après gateway, refuse worker running,
+retour config+planning ensemble ; deux sondes indépendantes passent. Ce dernier
+correctif est source opérateur, pas une nouvelle version du worker revendiquée.
+Journal Obsidian30/10 ajouté ; backup state-after-catchup VERIFIED, reçus préservés.
+Lire RESEARCH-ENGINE-MAC.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md seulement.
+Ouvert : abstention analyste sans questions structurées ; qualification Finance,
+juste valeur non estimable, commandes Telegram entrantes non testées, utilité Ivan.
+Priorité : poursuivre preuves/objections sans forcer des notifications ; Career/VPS
+restent différés, profils privés exclus, Knowledge final commun. Aucun achat/contact.
+
+## Historique — état avant rattrapage du 30 octobre
+
 ## 2026-10-16 — Codex — utilité et horizons d’investissement
 
 État : branche agent/codex/advisory-value poussée ; code de104ba actif sur Mac Darwin.

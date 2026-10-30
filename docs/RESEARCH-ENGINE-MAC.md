@@ -49,7 +49,8 @@ Dans le DM privé de la Secrétaire :
 - `/recherche business problème de sauvegarde des workflows` ;
 - `/recherche technique reprise après veille OpenClaw`.
 
-La commande native met en file ; son texte n'est jamais une source. L'acquittement
+La commande native met en file ; son texte n'est jamais une source. Une même
+demande est dédupliquée le même jour UTC et peut être réétudiée un autre jour. L'acquittement
 ne signifie pas que les preuves existent. Un dossier insuffisant reste à approfondir.
 La réception réelle de cette nouvelle commande doit être distinguée des tests du
 handler et de l'envoi sortant. `/opportunite <id>` et `/decision <id> tester <raison>`
@@ -96,3 +97,25 @@ et clôture des envois même lorsque le budget modèle est épuisé.
 
 L'utilité réelle exige ensuite des dossiers notés par Ivan. Le nombre d'agents,
 les tests verts et un envoi réussi ne suffisent pas à la prouver.
+
+## Activation et rattrapage du 30 octobre
+
+L'activation du 16 avait été interrompue après déchargement du planning, pendant
+la qualification. Au 30 octobre, celui-ci était toujours absent. L'ancien worker
+a d'abord été rechargé, puis le lot d47c69b activé avec planning chargé. Ne jamais
+laisser le service déchargé en attendant un prochain échange ou une mesure modèle.
+
+`activate-opportunity-release.mjs` regroupe maintenant les étapes, réattend que
+le worker soit inactif après le changement de gateway et restaure configuration
+et planning ensemble si l'installation échoue. L'installateur refuse un cycle
+actif. Les deux chemins d'échec ont été reproduits et contre-vérifiés hors ligne ;
+un verrou de maintenance atomique partagé avec le worker reste une amélioration
+possible, aucune protection parfaite contre toute course système revendiquée.
+
+Le premier rattrapage a livré le message 71 après seconde lecture. La collecte
+s'est enrichie de demandes WooCommerce, incidents n8n, BTC/LTC/Canton et une piste
+macro. Ce sont des candidats, pas des opportunités qualifiées. Bitcoin : six
+sources, un appel d'analyse, décision à approfondir sans envoi. Une abstention de
+l'analyste ne contient pas encore les questions structurées nécessaires pour
+l'approfondir automatiquement ; ce point reste à corriger, pas à masquer par un
+nouveau seuil ou une prolifération d'agents.
