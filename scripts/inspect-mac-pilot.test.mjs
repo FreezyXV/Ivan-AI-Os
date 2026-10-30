@@ -8,6 +8,8 @@ test('sources and Telegram messages have different counts; an uncertain send is 
  records.push({state:'delivery_unknown',updated:at,receipt:null});
  const one=summarizeDeliveryReceipts(records,{now:new Date(at)});assert.equal(one.sourceRecordsDelivered,43);assert.equal(one.confirmedMessagesToday,1);
  records.push({state:'delivered',updated:at+1,receipt:{delivered:true,messageId:'72'}});assert.equal(summarizeDeliveryReceipts(records,{now:new Date(at)}).confirmedMessagesToday,2);
+ records.push({kind:'radar',state:'delivered',updated:at+2,receipt:{delivered:true,messageId:'73'}});
+ const radar=summarizeDeliveryReceipts(records,{now:new Date(at)});assert.equal(radar.sourceRecordsDelivered,44);assert.equal(radar.confirmedMessagesToday,3);
 });
 
 test('persisted reader failures remain visible after a successful cycle without hiding ready syntheses',()=>{

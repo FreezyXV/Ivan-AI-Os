@@ -17,3 +17,9 @@ test('requested macro topic and current month drive search, while the request is
  const r=await buildResearchBundle(seed,{now:new Date('2026-12-02T10:00:00Z'),searchImpl:async q=>{queries.push(q);return {results:[]};},fetchImpl:async()=>assert.fail()});
  assert.equal(r.bundle,null);assert.equal(r.coverage.sources,0);assert.ok(queries.every(q=>q.includes('inflation Japan')));assert.match(queries[0],/December 2026/);
 });
+test('a radar title selected by Ivan triggers the original page reader, not synthetic evidence',async()=>{
+ const fetched=[],seed={topic:'business',category:'business',sourceType:'request',anchorUrl:'https://example.org/original',title:'A customer problem',text:'UNREAD TITLE IS NOT PROOF',readAt:now.toISOString(),publishedAt:null};
+ const r=await buildResearchBundle(seed,{now,searchImpl:async()=>({results:[]}),fetchImpl:async url=>{fetched.push(url);return {url,readAt:now.toISOString(),contentType:'text/html',text:'<title>Actual page</title><article>'+('Customers describe an invoice reconciliation problem and the workaround they use. ').repeat(4)+'</article>'};}});
+ assert.deepEqual(fetched,[seed.anchorUrl]);assert.equal(r.coverage.sources,1);assert.equal(r.bundle,null); // still insufficient for a full research report
+ assert.ok(!JSON.stringify(r).includes('UNREAD TITLE IS NOT PROOF'));
+});

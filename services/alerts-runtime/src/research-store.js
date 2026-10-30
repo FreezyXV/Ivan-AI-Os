@@ -1,6 +1,7 @@
 import {DatabaseSync} from 'node:sqlite';import {mkdirSync,lstatSync,openSync,closeSync} from 'node:fs';import path from 'node:path';import {randomUUID} from 'node:crypto';
 import {researchHash,researchFail,sealBundle,validateResearchAnalysis,validateResearchReport,validateResearchReview,renderResearchMessage} from './research-contract.js';
 import {parisDay} from './schedule.js';
+import {createRadarStore} from './radar-store.js';
 export function openResearchStore(directory,{now=()=>Date.now()}={}){
  if(!path.isAbsolute(directory)||path.normalize(directory)!==directory)researchFail('RESEARCH_STORE_INVALID');
  let parent=path.parse(directory).root;for(const part of directory.slice(parent.length).split('/').filter(Boolean)){
@@ -24,6 +25,7 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
   return {interrupted:work,unknown:sends};
  };
  return {
+  radar:createRadarStore(db,{now,tx}),
   reconcile(){return tx(reconcile);},
   enqueue(seed){
    if(!seed||!['business','finance','engineering','system'].includes(seed.topic)||typeof seed.anchorUrl!=='string'||typeof seed.title!=='string'||seed.title.length>200||typeof seed.text!=='string'||seed.text.length>16000||JSON.stringify(seed).length>40000)researchFail('RESEARCH_SEED_INVALID');

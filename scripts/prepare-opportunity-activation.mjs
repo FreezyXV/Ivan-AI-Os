@@ -39,7 +39,8 @@ try{
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
   const research={enabled:true,directory:path.join(old.stateDir,'research'),dailyModelLimit:12,dailyDeliveryLimit:3};
-  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research},null,2),{flag:'wx',mode:0o600});
+  const radar={enabled:true,dailyTopics:20};
+  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research,radar},null,2),{flag:'wx',mode:0o600});
   const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,
     expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};
   writeFileSync(path.join(out,'prepared.json'),JSON.stringify(proof,null,2),{flag:'wx',mode:0o600});

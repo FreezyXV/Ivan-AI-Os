@@ -18,7 +18,7 @@ export function summarizeDeliveryReceipts(records,{now=new Date()}={}){
   if(row.state!=='delivered')continue;let receipt;
   try{receipt=typeof row.receipt==='string'?JSON.parse(row.receipt):row.receipt;}catch{continue;}
   if(receipt?.delivered!==true||! /^[1-9]\d{0,19}$/.test(receipt.messageId??'')||!Number.isFinite(row.updated))continue;
-  sourceRecordsDelivered++;confirmed.set(receipt.messageId,Math.max(confirmed.get(receipt.messageId)??0,row.updated));
+  if(row.kind!=='radar')sourceRecordsDelivered++;confirmed.set(receipt.messageId,Math.max(confirmed.get(receipt.messageId)??0,row.updated));
  }
  return {sourceRecordsDelivered,confirmedMessages:confirmed.size,confirmedMessagesToday:[...confirmed.values()].filter(at=>parisDay(at)===parisDay(now)).length,
   timezone:'Europe/Paris',meaning:'Telegram acknowledged delivery; reading on the device is not measured'};
@@ -27,7 +27,7 @@ export function readAlertCycleRows(db){
  // Five-minute processing must not bury the last daily delivery/collection.
  return db.prepare(`SELECT name,status,attempts,metrics FROM (
    SELECT *,row_number() OVER(PARTITION BY name ORDER BY updated DESC) AS rank
-   FROM cycles WHERE name IN ('feeds','finance','business','process','digest','research')
+   FROM cycles WHERE name IN ('feeds','finance','business','process','digest','research','radar')
  ) WHERE rank<=3 ORDER BY updated DESC`).all();
 }
 
@@ -36,7 +36,7 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  const reasons=Object.fromEntries(reviewReasons.filter(r=>/^[A-Z_]{1,64}$/.test(r.reason??'')&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.reason,r.n]));
  const readerCodes=Object.fromEntries(sourceReadFailures.filter(r=>/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(r.code??'')&&Number.isSafeInteger(r.n)&&r.n>0).map(r=>[r.code,r.n]));
  const persistentReads={total:Object.values(readerCodes).reduce((sum,n)=>sum+n,0),codes:readerCodes};
- const latest=cycles.filter(r=>['feeds','finance','business','process','digest','research'].includes(r.name)).map(r=>{
+ const latest=cycles.filter(r=>['feeds','finance','business','process','digest','research','radar'].includes(r.name)).map(r=>{
   let m;try{m=JSON.parse(r.metrics??'{}');}catch{m={};}
   const result=m.result??{};const sourceErrors=result.sourceErrors?.length??0;
   const readerErrors=Number.isSafeInteger(result.readerErrors)&&result.readerErrors>=0?result.readerErrors:0;
@@ -112,8 +112,17 @@ async function inspectAlertCycles(){
     latestDiscoveries:research.prepare('SELECT key,updated,metrics FROM discoveries ORDER BY updated DESC LIMIT 3').all().map(r=>({key:r.key,at:new Date(r.updated).toISOString(),metrics:JSON.parse(r.metrics)})),
     failures:research.prepare('SELECT error,count(*) n FROM jobs WHERE error IS NOT NULL GROUP BY error').all()};
    deliveryRecords.push(...research.prepare("SELECT state,updated,receipt FROM jobs WHERE state='delivered'").all());
+   if(research.prepare("SELECT 1 FROM sqlite_master WHERE name='radar_pages'").get()){
+    summary.radar={enabled:settings.radar?.enabled===true,dailyTopics:settings.radar?.dailyTopics??20,
+     pages:research.prepare('SELECT state,count(*) n FROM radar_pages GROUP BY state').all(),
+     topicsReserved:research.prepare('SELECT count(*) n FROM radar_sent').get().n,
+     topicsConfirmed:research.prepare("SELECT count(*) n FROM radar_sent JOIN radar_pages p ON p.id=page WHERE p.state='delivered'").get().n,
+     feedback:research.prepare('SELECT count(*) n FROM radar_feedback').get().n,nativeCalls:0};
+    deliveryRecords.push(...research.prepare("SELECT 'radar' kind,state,created updated,receipt FROM radar_pages WHERE state='delivered'").all());
+   }
   }catch{summary.research={enabled:true,error_code:'RESEARCH_INVENTORY_UNAVAILABLE'};}finally{research?.close();}}
   if(summary.research?.states?.delivery_unknown>0)summary.diagnoses.push({code:'CHECK_RESEARCH_RECEIPT',message:'Un dossier de recherche a un envoi incertain ; il ne sera pas renvoyé automatiquement.'});
+  if(summary.radar?.pages?.some(p=>p.state==='unknown'&&p.n>0))summary.diagnoses.push({code:'CHECK_RADAR_RECEIPT',message:'Une page du radar a un envoi incertain ; aucun renvoi automatique.'});
   summary.deliveries=summarizeDeliveryReceipts(deliveryRecords);
   try{const {stdout:service}=await run('/bin/launchctl',['print',`gui/${process.getuid()}/com.ivan-ai-os.alerts`],{timeout:5000});
    summary.schedule={loaded:true,lastExitCode:Number(service.match(/last exit code = (\d+)/)?.[1]??0),

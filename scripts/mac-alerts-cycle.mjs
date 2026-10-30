@@ -19,6 +19,7 @@ import {prefilter} from '../services/alerts-runtime/src/context.js';
 import {collectOfficialRelease} from '../services/alerts-runtime/src/official-releases.js';
 import {collectPublicDemand} from '../services/alerts-runtime/src/public-demand.js';
 import {researchTick} from '../services/alerts-runtime/src/research-runtime.js';
+import {radarTick} from '../services/alerts-runtime/src/radar.js';
 import {ingestCandidates} from './ingest-alert-candidates.mjs';
 const run=promisify(execFile),root=fileURLToPath(new URL('../',import.meta.url));
 const providerFailures=new Set(['SELECTION_UNAVAILABLE','SELECTION_TIMEOUT','SYNTHESIS_UNAVAILABLE','SYNTHESIS_TIMEOUT',
@@ -41,7 +42,7 @@ export async function collectFeeds({directory,ledger,runImpl=run,ingestImpl=inge
 }
 export async function runCycle({ledger,settings,now=new Date(),digestNow=false,processNow=false,
  feeds=()=>collectFeeds({directory:settings.stateDir,ledger}),finance=()=>financeCycle({ledger,useJev:(settings.selectionMode??'jev')==='jev'}),business=()=>businessCycle({ledger,useJev:(settings.selectionMode??'jev')==='jev'}),
- hasBusinessEvidence=()=>businessHasPendingEvidence(ledger),research=researchTick,
+ hasBusinessEvidence=()=>businessHasPendingEvidence(ledger),research=researchTick,radar=radarTick,
  select,assess,verify,synthesize=createNativeSynthesis({binary:settings.openclawBinary}),
  deliver=createTelegramDelivery({binary:settings.openclawBinary,target:settings.target})}={}){
  const selectionPolicy=settings.selectionPolicy??DEFAULT_SELECTION_POLICY;
@@ -123,6 +124,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   }
   if(cycleKey)await perform('digest',cycleKey,()=>sendDigest({ledger,...window,deliver,now:now.getTime(),prepareRow:createOpportunityProjection(settings.opportunities)}));
  }
+ if(settings.radar?.enabled)await perform('radar',`radar:${Math.floor(now.getTime()/300000)}`,()=>radar({settings,ledger,now,deliver}));
  return {at:now.toISOString(),durationMs:Date.now()-started,results,queue:ledger.counts(),business:ledger.businessSummary(),retention,policyRevisions,editorialRevisions};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){

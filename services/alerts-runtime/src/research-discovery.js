@@ -75,6 +75,9 @@ export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl
  }
  const words=seed.title.replace(/Ask HN:|[^\p{L}\p{N} .-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,140);
  const targets=[];
+ // A human selecting an unread radar title requests a real page read, not a
+ // conversion of that title into evidence. Search is supplementary.
+ if(seed.sourceType==='request'&&new URL(seed.anchorUrl).hostname!=='duckduckgo.com')targets.push({url:seed.anchorUrl,title:seed.title});
  if(seed.asset?.officialWebsite)targets.push({url:seed.asset.officialWebsite,title:seed.asset.name+' official project'});
  if(/github\.com\/n8n-io\/n8n\/issues/.test(seed.anchorUrl))targets.push({url:'https://raw.githubusercontent.com/n8n-io/n8n-docs/main/docs/hosting/cli-commands.md',title:'n8n export and import workflows CLI'});
  if(/wordpress\.org\/support\//.test(seed.anchorUrl))targets.push({url:'https://developer.woocommerce.com/docs/best-practices/performance/configuring-caching-plugins/',title:'WooCommerce existing cache procedures'});
