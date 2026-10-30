@@ -62,13 +62,16 @@ function focus(text,query,max=5000){
  const chosen=new Set([0,1,...rank.sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,6).map(p=>p.index)]);
  return spans.filter((_,i)=>chosen.has(i)).join('\n').slice(0,max);
 }
-export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl=searchPublic,financeImpl=collectFinanceResearch,now=new Date()}={}){
- const sources=(seed.sources??[]).map(s=>({...s,text:s.text.slice(0,6000)})),errors=[],queries=[];
+const publisher=url=>new URL(url).hostname.toLowerCase().replace(/^(?:www\.|docs\.|developer\.)/,'');
+export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl=searchPublic,financeImpl=collectFinanceResearch,now=new Date(),priorSources,priorCalculations}={}){
+ if(priorCalculations)seed={...seed,calculations:priorCalculations};
+ let sources=(priorSources?.slice(0,3)??seed.sources??[]).map(s=>({...s,text:s.text.slice(0,6000)}));const errors=[],queries=[];
+ const oldUrls=new Set((priorSources??[]).map(s=>s.url));
  if(!sources.length&&seed.sourceType!=='request')sources.push({id:researchHash(seed.anchorUrl),url:seed.anchorUrl,title:seed.title,kind:'seed',text:seed.text,readAt:seed.readAt,publishedAt:seed.publishedAt??null});
- if(seed.category==='asset'&&!sources.length&&seed.asset?.id){
+ if(seed.category==='asset'&&seed.asset?.id&&(!sources.length||sources.some(s=>s.kind==='market-data'&&now.getTime()-Date.parse(s.publishedAt)>3600000))){
   const data=await financeImpl({assetIds:[seed.asset.id],maxAssets:1,now}),a=data.assets[0];
   if(!a)return {bundle:null,coverage:{sources:0,errors:data.errors,queries:[],reads:0}};
-  sources.push(...a.sources);seed={...seed,asset:{...seed.asset,name:a.name,officialWebsite:a.officialWebsite},calculations:Object.entries(a.calculations).map(([id,c])=>({id,...c}))};
+  sources=[...a.sources,...sources.filter(s=>!['market-data','project'].includes(s.kind)).slice(0,1)];seed={...seed,asset:{...seed.asset,name:a.name,officialWebsite:a.officialWebsite},calculations:Object.entries(a.calculations).map(([id,c])=>({id,...c}))};
  }
  const words=seed.title.replace(/Ask HN:|[^\p{L}\p{N} .-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,140);
  const targets=[];
@@ -79,9 +82,8 @@ export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl
  const entity=seed.asset?.name??(/n8n/.test(seed.anchorUrl)?'n8n':/wordpress\.org/.test(seed.anchorUrl)?'WooCommerce':'');
  const searches=Array.isArray(seed.researchQuestions)&&seed.researchQuestions.length?
   seed.researchQuestions.slice(0,2).map(q=>`${entity} ${String(q).replace(/https?:\/\/\S+|[\r\n]/g,' ').slice(0,200)}`):
-  seed.category==='asset'?[`${seed.asset?.name??words} token economics risks dilution value accrual`,`${seed.asset?.name??words} independent analysis fundamentals ${year}`]:
-  seed.category==='macro'?(seed.sourceType==='request'?[`${words} ${month} ${year} economic analysis`,`${words} official statistics central bank ${year}`]:
-   [`France euro area inflation interest rates ${month} ${year} analysis`,`site:ecb.europa.eu monetary policy inflation ${year}`]):
+  seed.category==='asset'?[`${seed.asset?.name??words} token economics official documentation supply risks`,`${seed.asset?.name??words} adoption liquidity independent analysis ${month} ${year}`]:
+  seed.category==='macro'?[`${words} ${month} ${year} economic analysis`,`${words} official statistics central bank ${year}`]:
   [`${entity} ${words} problem workaround documentation`,`${entity} ${words} complaints alternative`];
  const expected=new Set((entity||words).toLowerCase().match(/[a-zà-ÿ0-9]{3,}/g)??[]);
  for(const query of searches){
@@ -89,12 +91,12 @@ export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl
   if(r.error_code)errors.push({code:r.error_code});
   for(const hit of r.results){
    if(seed.category!=='macro'&&expected.size&&!Array.from(expected).some(w=>(hit.title+' '+hit.url).toLowerCase().includes(w)))continue;
-   if(!targets.some(t=>t.url===hit.url)&&!sources.some(s=>s.url===hit.url))targets.push(hit);
+   if(!oldUrls.has(hit.url)&&!targets.some(t=>t.url===hit.url)&&!sources.some(s=>s.url===hit.url))targets.push(hit);
   }
  }
  let reads=0;
  for(const target of targets){
-  if(sources.length>=6||reads>=6)break;if(sources.some(s=>s.url===target.url))continue;reads++;
+  if(sources.length>=6||reads>=6)break;if(oldUrls.has(target.url)||sources.some(s=>s.url===target.url)||sources.filter(s=>publisher(s.url)===publisher(target.url)).length>=2)continue;reads++;
   try{
    const page=extractPublicPage(await fetchImpl(target.url,{maxRedirects:2})),content=focus(page.text,words);
    if(sources.some(s=>s.url===page.url||s.text===content))continue;

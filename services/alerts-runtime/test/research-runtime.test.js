@@ -49,3 +49,9 @@ test('a specific evidence gap delegates one additional research task, without an
  const first=await researchTick(args);assert.equal(first.deepeningQueued,true);assert.equal(f.store.list('pending').length,1);
  const second=await researchTick(args);assert.equal(second.deepeningQueued,undefined);assert.equal(f.store.list('pending').length,0);assert.equal(second.modelCalls,4);
 });
+test('flushing approved research does not spend another analysis call or reopen another job',async t=>{
+ const f=setup(t),{complete}=native();f.store.enqueue({...f.seed,anchorUrl:'https://another.org/pain'});
+ await researchTick({...f,jobId:f.id,now:new Date('2026-10-16T08:00:00Z'),discover:async()=>({}),build:async()=>({bundle,coverage:{}}),complete,deliver:async()=>assert.fail()});
+ const r=await researchTick({...f,now,deliveryOnly:true,forceDelivery:true,discover:async()=>assert.fail(),complete:async()=>assert.fail(),deliver:async()=>({delivered:true,messageId:'124'})});
+ assert.equal(r.nativeCalls,0);assert.equal(r.delivered,1);assert.equal(f.store.list('pending').length,1);assert.equal(r.modelCalls,2);
+});

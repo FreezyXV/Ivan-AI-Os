@@ -1,10 +1,10 @@
 import {openResearchStore} from './research-store.js';import {discoverResearch,buildResearchBundle} from './research-discovery.js';
-import {createNativeResearch} from './research-native.js';import {renderResearchMessage,researchFail} from './research-contract.js';
+import {createNativeResearch} from './research-native.js';import {renderResearchMessage,researchFail,validateResearchAnalysis} from './research-contract.js';
 import {openDossiers} from '../../../shared/opportunity-dossier.mjs';import {createTelegramDelivery} from './telegram-delivery.js';
 import {parisDay,scheduleSlots} from './schedule.js';
 export async function researchTick({settings,ledger,now=new Date(),store,
  discover=discoverResearch,build=buildResearchBundle,complete=createNativeResearch({binary:settings?.openclawBinary}),
- deliver=createTelegramDelivery({binary:settings?.openclawBinary,target:settings?.target}),forceDelivery=false}={}){
+ deliver=createTelegramDelivery({binary:settings?.openclawBinary,target:settings?.target}),forceDelivery=false,deliveryOnly=false,jobId}={}){
  if(!settings?.research?.enabled)return {state:'disabled'};
  if(!settings.opportunities||typeof settings.research.directory!=='string')researchFail('RESEARCH_RUNTIME_CONFIG_INVALID');
  const owns=!store;store??=openResearchStore(settings.research.directory);
@@ -13,29 +13,34 @@ export async function researchTick({settings,ledger,now=new Date(),store,
   result.reconciled=store.reconcile();
   const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',hour:'2-digit',hourCycle:'h23'}).format(now);
   const key=`discovery:${parisDay(now)}:${Math.floor(Number(p)/3)}`;
-  if(!store.discovery(key)){
+  if(!deliveryOnly&&!store.discovery(key)){
    result.discovery=await discover({store,ledger,now});store.recordDiscovery(key,result.discovery);
   }
   const dailyLimit=settings.research.dailyModelLimit??12;
   if(!Number.isInteger(dailyLimit)||dailyLimit<2||dailyLimit>60)researchFail('RESEARCH_RUNTIME_CONFIG_INVALID');
-  const job=store.summary().modelCallsToday+2<=dailyLimit?store.claim():null;
+  const job=!deliveryOnly&&store.summary().modelCallsToday+2<=dailyLimit?store.claim({id:jobId}):null;
   if(job){
    try{
-    const {bundle,coverage}=await build(job.seed,{now});result.coverage=coverage;
+    const prior=job.seed.parentJob?store.get(job.seed.parentJob)?.bundle:undefined;
+    const {bundle,coverage}=await build(job.seed,{now,priorSources:prior?.sources,priorCalculations:prior?.calculations});result.coverage=coverage;
     if(!bundle){store.finish(job.id,job.owner,{state:'research',error:'RESEARCH_EVIDENCE_INSUFFICIENT'});result.outcome='evidence-insufficient';}
     else{
      store.saveBundle(job.id,job.owner,bundle);store.reserveCall(job.id,job.owner,'analysis',{dailyLimit});result.nativeCalls++;
-     const analysis=await complete({bundle,stage:'analysis'});result.analysisDurationMs=analysis.execution?.durationMs;
+     const {execution,...raw}=await complete({bundle,stage:'analysis'}),analysis=validateResearchAnalysis(bundle,raw);result.analysisDurationMs=execution?.durationMs;
+     store.saveAnalysis(job.id,job.owner,analysis);
      if(analysis.decision!=='report'){
       store.finish(job.id,job.owner,{state:analysis.decision==='skip'?'rejected':'research',error:'RESEARCH_ANALYSIS_'+analysis.decision.toUpperCase()});result.outcome=analysis.decision;
+      if(analysis.decision==='research'&&(job.seed.depth??0)<1){
+       store.enqueue({...job.seed,depth:1,parentJob:job.id,revision:(job.seed.revision??'v1')+'-deepening',researchQuestions:analysis.questions});result.deepeningQueued=true;
+      }
      }else{
       store.saveDraft(job.id,job.owner,analysis.report);store.reserveCall(job.id,job.owner,'contradiction',{dailyLimit});result.nativeCalls++;
       const {execution,...review}=await complete({bundle,report:analysis.report,stage:'contradiction'});result.reviewDurationMs=execution?.durationMs;
       const state=review.decision==='approve'?'ready':review.decision==='reject'?'rejected':'research';
       store.finish(job.id,job.owner,{state,review});result.outcome=state;
       if(state==='research'&&(job.seed.depth??0)<1){
-       store.enqueue({...job.seed,depth:1,revision:(job.seed.revision??'v1')+'-deepening',
-        researchQuestions:analysis.report.unknowns.slice(0,2)});result.deepeningQueued=true;
+       store.enqueue({...job.seed,depth:1,parentJob:job.id,revision:(job.seed.revision??'v1')+'-deepening',
+        researchQuestions:review.questions??[review.strongestCounterargument.slice(0,220)]});result.deepeningQueued=true;
       }
      }
     }

@@ -1,5 +1,5 @@
 import {DatabaseSync} from 'node:sqlite';import {mkdirSync,lstatSync,openSync,closeSync} from 'node:fs';import path from 'node:path';import {randomUUID} from 'node:crypto';
-import {researchHash,researchFail,sealBundle,validateResearchReport,validateResearchReview,renderResearchMessage} from './research-contract.js';
+import {researchHash,researchFail,sealBundle,validateResearchAnalysis,validateResearchReport,validateResearchReview,renderResearchMessage} from './research-contract.js';
 import {parisDay} from './schedule.js';
 export function openResearchStore(directory,{now=()=>Date.now()}={}){
  if(!path.isAbsolute(directory)||path.normalize(directory)!==directory)researchFail('RESEARCH_STORE_INVALID');
@@ -14,8 +14,9 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
  CREATE TABLE IF NOT EXISTS model_calls(job TEXT NOT NULL,stage TEXT NOT NULL,day TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(job,stage));
  CREATE TABLE IF NOT EXISTS discoveries(key TEXT PRIMARY KEY,updated INTEGER NOT NULL,metrics TEXT NOT NULL);`);
  db.exec('CREATE TABLE IF NOT EXISTS deliveries(job TEXT PRIMARY KEY,day TEXT NOT NULL,created INTEGER NOT NULL)');
+ if(!db.prepare('PRAGMA table_info(jobs)').all().some(c=>c.name==='analysis'))db.exec('ALTER TABLE jobs ADD COLUMN analysis TEXT');
  const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const v=fn();db.exec('COMMIT');return v;}catch(e){db.exec('ROLLBACK');throw e;}};
- const get=id=>{const r=db.prepare('SELECT * FROM jobs WHERE id=?').get(id);return r?{...r,seed:JSON.parse(r.seed),bundle:r.bundle?JSON.parse(r.bundle):null,draft:r.draft?JSON.parse(r.draft):null,review:r.review?JSON.parse(r.review):null,receipt:r.receipt?JSON.parse(r.receipt):null}:null;};
+ const get=id=>{const r=db.prepare('SELECT * FROM jobs WHERE id=?').get(id);return r?{...r,seed:JSON.parse(r.seed),bundle:r.bundle?JSON.parse(r.bundle):null,analysis:r.analysis?JSON.parse(r.analysis):null,draft:r.draft?JSON.parse(r.draft):null,review:r.review?JSON.parse(r.review):null,receipt:r.receipt?JSON.parse(r.receipt):null}:null;};
  const owned=(id,owner)=>{const r=get(id);if(!r||r.owner!==owner||r.expires<=now())researchFail('RESEARCH_LEASE_LOST');return r;};
  const reconcile=()=>{
   const work=db.prepare("UPDATE jobs SET state='research',error='RESEARCH_INTERRUPTED',owner=NULL,expires=NULL,updated=? WHERE state='working' AND expires<=?").run(now(),now()).changes;
@@ -29,10 +30,11 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
    const id=researchHash([seed.topic,seed.anchorUrl,seed.revision??'v1']);
    const r=db.prepare("INSERT OR IGNORE INTO jobs(id,seed,state,created,updated) VALUES(?,?,'pending',?,?)").run(id,JSON.stringify(seed),now(),now());return {id,added:r.changes===1};
   },
-  claim(){return tx(()=>{
+  claim({id}={}){return tx(()=>{
+   if(id!==undefined&&!/^[a-f\d]{64}$/.test(id))researchFail('RESEARCH_SEED_INVALID');
    // An interrupted paid stage is visible, never silently replayed.
    reconcile();
-   const r=db.prepare("SELECT j.id FROM jobs j WHERE j.state='pending' ORDER BY (SELECT count(*) FROM jobs x WHERE x.state!='pending' AND json_extract(x.seed,'$.topic')=json_extract(j.seed,'$.topic')),j.created,j.id LIMIT 1").get();if(!r)return null;
+   const r=db.prepare("SELECT j.id FROM jobs j WHERE j.state='pending' AND (? IS NULL OR j.id=?) ORDER BY CASE WHEN json_extract(j.seed,'$.origin')='telegram-native' THEN 0 WHEN json_extract(j.seed,'$.depth')=1 THEN 1 ELSE 2 END,(SELECT count(*) FROM jobs x WHERE x.state!='pending' AND json_extract(x.seed,'$.topic')=json_extract(j.seed,'$.topic')),j.created,j.id LIMIT 1").get(id??null,id??null);if(!r)return null;
    const owner=randomUUID();db.prepare("UPDATE jobs SET state='working',owner=?,expires=?,updated=? WHERE id=?").run(owner,now()+300000,now(),r.id);return get(r.id);
   });},
   reserveCall(id,owner,stage,{dailyLimit=12}={}){return tx(()=>{
@@ -43,6 +45,7 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
    db.prepare('INSERT INTO model_calls VALUES(?,?,?,?)').run(id,stage,day,now());return n+1;
   });},
   saveBundle(id,owner,bundle){owned(id,owner);bundle=sealBundle(bundle);db.prepare('UPDATE jobs SET bundle=?,updated=? WHERE id=?').run(JSON.stringify(bundle),now(),id);},
+  saveAnalysis(id,owner,analysis){const r=owned(id,owner);analysis=validateResearchAnalysis(r.bundle,analysis);db.prepare('UPDATE jobs SET analysis=?,updated=? WHERE id=?').run(JSON.stringify(analysis),now(),id);},
   saveDraft(id,owner,draft){const r=owned(id,owner);const report=validateResearchReport(r.bundle,draft);db.prepare('UPDATE jobs SET draft=?,updated=? WHERE id=?').run(JSON.stringify(report),now(),id);},
   holdReady(id,error){if(!/^RESEARCH_[A-Z_]+$/.test(error))researchFail('RESEARCH_STATE_INVALID');
    return db.prepare("UPDATE jobs SET state='research',error=?,updated=? WHERE id=? AND state='ready'").run(error,now(),id).changes;},
