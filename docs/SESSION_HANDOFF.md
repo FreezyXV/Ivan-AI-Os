@@ -1,4 +1,35 @@
-## 2026-10-30 — Codex — sources distinctes des messages, recherche ciblée
+## 2026-10-30 — Codex — radar large et avis d’Ivan
+
+Décision plus récente : beaucoup de sujets, Ivan juge utile/inutile/creuser.
+Cela remplace la proposition précédente d’attendre deux niveaux approuvés.
+Branche agent/codex/research-engine, PR#71 brouillon ; aucune fusion.
+Mac Darwin confirmé, checkout initial propre, fetch sans écrasement.
+Worker/plugins f2268d3 actifs, planning300s chargé, gateway sain, dernier exit0.
+Radar :20 sujets/jour Paris, moitié après9h/reste après18h,5 par page max.
+Références publiques actives, trente jours max ; aucun seuil Jev/LLM d’utilité.
+Titres attribués et date/extrait lu ou titre seul non vérifié, jamais faux fait.
+Vingt sujets confirmés, quatre messages73–76 :6Business,6Finance,6Engineering,
+2System ; dix issus du planning, dix du rattrapage explicite. Zéro appel modèle
+pour le catalogue. Jev inchangé761 ; prix des recherches natives reste inconnu.
+Avis natifs : /avis ID utile|inutile|creuser [raison], /radar [page récente].
+Propriétaire DM uniquement ; historique durable, classement par domaines/mots
+des titres, diversité et25%exploration. Raisons conservées, pas exécutées.
+Creuser enfile une recherche prioritaire dédupliquée ; titre seul=request,
+page originale lue avant preuves. Budget recherche inchangé, aucun achat/contact.
+Quatre notes catalogue ajoutées dans Ivan AI OS/radar/ ; avis également projetés
+sans écrasement. Zéro avis réel à ce stade, pas d’apprentissage démontré en usage.
+Tests handlers/retours/ranking/reprise :272/272 ; entrée réelle /avis à vérifier.
+Contre-revue : envoi radar incertain désormais cycle failed/degraded, test rouge
+puis vert et sonde indépendante. Inconnus du tick distincts du cumul historique.
+Réservations avant CLI, aucun renvoi incertain ;6anciens unknown inchangés.
+Choix tester6ab5272ce301 préservé ; sauvegardes alertes VERIFIED et research/
+dossiers intègres dans mac-opportunity-f2268d3. Coût/satisfaction non inventés.
+Lire RADAR-USER-FEEDBACK.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md seulement.
+Prochain : vrais avis, vérifier commande entrante, puis approfondir les choix ;
+ne pas rétablir un filtre d’utilité bloquant avant ce retour. Couverture sources
+encore partielle ; Career/VPS différés, Knowledge final commun, profils privés exclus.
+
+## Historique — sources distinctes des messages, recherche ciblée
 
 PR#71 brouillon, agent/codex/research-engine ; aucune fusion.
 Ivan clarifie :43 publications collectées ne signifiaient pas43 posts reçus.

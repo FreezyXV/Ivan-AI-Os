@@ -1,4 +1,18 @@
-## État courant — 30 octobre 2026, rattrapage demandé
+## Décision courante — 30 octobre 2026, radar et apprentissage explicite
+
+Ivan préfère beaucoup de sujets et juger lui-même avec ses retours. Le radar
+déterministe remplace la proposition de n’envoyer que deux niveaux de dossiers
+approuvés. Références larges, titre attribué, date et lecture signalée ; aucun
+filtre Jev/LLM d’utilité pour l’admission. Vingt sujets/jour Paris au départ,
+Business/Finance/Engineering et moins de maintenance System, avec exploration.
+Code f2268d3 activé, planning chargé. Tests concernés :272/272.
+`/avis ID utile|inutile|creuser [raison]` conserve les avis/révisions et adapte
+le classement ; « creuser » demande une recherche, jamais un achat/contact.
+Notes nouvelles seulement dans `Ivan AI OS/radar/`. Pas de réentraînement du modèle,
+pas d’utilité mesurée avant les vrais avis. Les dossiers approfondis conservent
+les vérifications de faits et la contrelecture. Voir RADAR-USER-FEEDBACK.md.
+
+## Historique — 30 octobre 2026, rattrapage demandé
 
 Ivan demande la reprise après une période Mac fermé. Au contrôle, le planning
 était également déchargé après la bascule interrompue du 16 octobre. Rechargé,

@@ -59,3 +59,12 @@ nombre de sujets, pages Telegram confirmées et avis ; ils ne mesurent pas la le
 À mesurer ensuite : fraction utile selon Ivan, sujets à creuser, qualité des dossiers
 issus de ces choix, erreurs/doublons, charge de lecture. Ne pas réduire arbitrairement
 le radar avant d’avoir ces retours ; ne pas remplir un quota avec de fausses occasions.
+
+## Activation et preuve du premier catalogue
+
+Le 30 octobre, f2268d3 est actif avec planning chargé et gateway sain. Vingt sujets
+confirmés par Telegram : messages73–76, cinq sujets chacun ; six Business, six
+Finance, six Engineering et deux System. Dix sujets issus du planning et dix du
+rattrapage opérateur demandé. Aucun appel modèle pour le catalogue, aucun avis
+d’Ivan inventé. Quatre notes nouvelles dans le coffre. Les tests concernés sont
+272/272 ; la commande entrante réelle reste à distinguer des tests du handler.

@@ -1,5 +1,10 @@
 # Recherche publique multi-source sur Mac
 
+**Décision plus récente :** Ivan juge maintenant l’intérêt des sujets lui-même.
+Le catalogue large `RADAR-USER-FEEDBACK.md` est indépendant du jugement modèle
+ci-dessous : ce dernier reste le contrôle des dossiers approfondis, pas la porte
+d’entrée de tous les signaux. Les titres non lus sont étiquetés, jamais des preuves.
+
 Ce lot ajoute la recherche qui manquait au tri de liens. Il réutilise le planning
 Mac, le moteur de complétion existant, les dossiers Obsidian et Secrétaire Ivan.
 Aucun VPS ni abonnement ajouté. Une source préparée, un test et un dossier livré
@@ -115,7 +120,7 @@ possible, aucune protection parfaite contre toute course système revendiquée.
 Le premier rattrapage a livré le message 71 après seconde lecture. La collecte
 s'est enrichie de demandes WooCommerce, incidents n8n, BTC/LTC/Canton et une piste
 macro. Ce sont des candidats, pas des opportunités qualifiées. Bitcoin : six
-sources, un appel d'analyse, décision à approfondir sans envoi. Une abstention de
-l'analyste ne contient pas encore les questions structurées nécessaires pour
-l'approfondir automatiquement ; ce point reste à corriger, pas à masquer par un
-nouveau seuil ou une prolifération d'agents.
+sources, un appel d'analyse, décision à approfondir sans envoi. L'abstention initiale
+ne conservait pas encore les questions : défaut corrigé par research-analysis-v2
+dans db08a22 (raison, questions, approfondissement lié au parent). Ces corrections
+ne transforment pas les essais historiques en dossiers qualifiés ou livrés.

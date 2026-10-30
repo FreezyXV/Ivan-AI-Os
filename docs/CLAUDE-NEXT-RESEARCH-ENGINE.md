@@ -1,5 +1,27 @@
 # Claude — revue du moteur de recherche, sans double construction
 
+## Priorité actualisée — radar large et feedback
+
+Ivan veut désormais beaucoup de sujets et donner lui-même l’avis utile/inutile/
+creuser. Ne pas reconstruire un filtre LLM d’admission à sa place. Code f2268d3
+actif :20 sujets réellement livrés dans quatre catalogues73–76, six Business,
+six Finance, six Engineering, deux System. Ce ne sont pas vingt dossiers validés.
+Lire RADAR-USER-FEEDBACK.md puis relire le catalogue et le mécanisme d’avis :
+clarté des titres attribués/non lus, diversité, charge de notation, conservation
+et usage réel des retours. Aucun avis utilisateur n’existe encore ; ne pas l’inventer.
+Les tests natifs /avis passent ; son entrée Telegram réelle reste à observer.
+
+Codex a séparé préférence utilisateur et fidélité documentaire. Creuser déclenche
+la recherche avec budget actuel, pas achat/contact. Ne pas confondre choix de sujet
+et preuve. La source originale d’un titre seul doit être lue avant toute analyse.
+Les raisons servent de mémoire ; le classement actuel apprend domaines et mots
+des titres, pas une sémantique complète ni un modèle réentraîné. Proposer ensuite
+des ajustements fondés sur les vrais avis, sans nouvelle passe payante par défaut.
+La contre-revue radar a fait corriger un cycle incertain marqué sain ; sonde
+rejouée en échec visible, aucun renvoi. Les notes ajoutées ne sont jamais écrasées.
+
+## Mission précédente — toujours utile pour les approfondissements
+
 Codex livre `agent/codex/research-engine`, basé sur `agent/codex/advisory-value`.
 Lire RESEARCH-ENGINE-MAC.md et le début du relais ; vérifier le commit actif avant
 relecture. Worktree Claude séparé, aucune modification de la configuration live.
