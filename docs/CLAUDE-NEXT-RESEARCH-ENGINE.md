@@ -34,3 +34,11 @@ PR du lot : https://github.com/FreezyXV/Ivan-AI-Os/pull/71 (base advisory-value)
 Avant de déclarer le moteur qualifié : vérifier l'admission/rétention des travaux
 non traités et le rafraîchissement d'une cotation quand un dossier attend longtemps.
 Ces contrôles ne sont pas une invitation à relancer les envois incertains.
+
+Mise à jour30/10 soir : worker db08a22, research-analysis-v2, raisons/questions
+et un approfondissement liés au parent. Revoir les nouvelles sources et calculs,
+pas relancer les mêmes appels : Finance dirigée refusée en VALIDATE ; Dolibarr
+rejeté pour une condition ajoutée à la citation. Dumps privés sous
+~/.ivan-ai-os/mac-opportunity-db08a22, pas de données personnelles à copier.
+Clarification Ivan :43 était la collecte, pas le nombre de messages. Deux envois
+confirmés aujourd'hui (71/72), aucun dossier dirigé livré. Ne pas demander43 posts.

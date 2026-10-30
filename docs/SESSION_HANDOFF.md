@@ -1,3 +1,35 @@
+## 2026-10-30 — Codex — sources distinctes des messages, recherche ciblée
+
+PR#71 brouillon, agent/codex/research-engine ; aucune fusion.
+Ivan clarifie :43 publications collectées ne signifiaient pas43 posts reçus.
+Ne pas promettre une lecture intégrale de chaque référence récupérée.
+Deux messages confirmés aujourd'hui :71 OpenClaw, puis72 communication BCE.
+Nouveau compteur distingue sources livrées, messages uniques et messages/jour Paris.
+Au contrôle :14 sources livrées depuis l'origine,12 messages uniques,2 aujourd'hui.
+Worker/plugins db08a22 actifs, planning300s chargé, gateway sain, dernier exit0.
+Réponses analyste research-analysis-v2 : raison/questions conservées ; un seul
+approfondissement parent lié, prioritaire ; requêtes sur le vrai sujet macro,
+preuves nouvelles et diversité d'éditeurs ; prix >1h actualisé avant analyse.
+Le contradicteur cible sa propre objection, pas les seules inconnues du rédacteur.
+Correctif contre-revu : calculs du parent actualisé suivent ses sources.
+Migration ancienne DB testée : anciens reçus et réservations préservés.
+266/266 tests concernés passent, dont cinq repros vus rouges puis verts.
+Qualification dirigée Codex+workers, pas découverte automatique revendiquée :
+Finance5 sources : RESEARCH_FACT_UNSUPPORTED avant revue ; aucun envoi.
+Business Dolibarr5 sources : rapport puis rejet du contradicteur pour paraphrase
+qui ajoute une cause absente de SA citation. Aucun envoi, pas marché validé.
+Fiche émetteur Finance transcrite depuis page officielle web, pas connecteur ETF.
+Recherche :pending9, research8, rejected1 ;10 appels cumulés dont9 aujourd'hui,
+coût natif inconnu. Jev inchangé761, hors tri des alertes. Unknown6 préservés.
+Sources/qualifications privées dans mac-opportunity-db08a22 et /private/tmp.
+Lire RESEARCH-DEPTH-2026-10-30.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md.
+Prochain : localiser le champ du refus Finance avant nouvel appel ; qualifier une
+suite réellement exécutée et l'utilité ; admission/rétention restent à examiner.
+Ne pas rejouer les anciens envois, ni inventer un choix Ivan. Career/VPS différés,
+Knowledge final commun ; aucun achat/contact ni profil privé ajouté.
+
+## Historique — reprise du 30 octobre avant recherche ciblée
+
 ## 2026-10-30 — Codex — reprise, recherche et rattrapage Telegram
 
 Branche agent/codex/research-engine ; PR#71 brouillon vers advisory-value, pas fusionnée.

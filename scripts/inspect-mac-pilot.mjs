@@ -7,10 +7,22 @@ import {DatabaseSync} from 'node:sqlite';
 import {homedir} from 'node:os';
 import path from 'node:path';
 import {probeAlertTool} from './probe-alert-tool.mjs';
+import {parisDay} from '../services/alerts-runtime/src/schedule.js';
 
 const run = promisify(execFile);
 const knownAgents = new Set(['main','ivan-business','ivan-finance','ivan-engineering','ivan-system','ivan-knowledge','ivan-career']);
 const knownStatuses = new Set(['ok','error','skipped']);
+export function summarizeDeliveryReceipts(records,{now=new Date()}={}){
+ const confirmed=new Map();let sourceRecordsDelivered=0;
+ for(const row of records){
+  if(row.state!=='delivered')continue;let receipt;
+  try{receipt=typeof row.receipt==='string'?JSON.parse(row.receipt):row.receipt;}catch{continue;}
+  if(receipt?.delivered!==true||! /^[1-9]\d{0,19}$/.test(receipt.messageId??'')||!Number.isFinite(row.updated))continue;
+  sourceRecordsDelivered++;confirmed.set(receipt.messageId,Math.max(confirmed.get(receipt.messageId)??0,row.updated));
+ }
+ return {sourceRecordsDelivered,confirmedMessages:confirmed.size,confirmedMessagesToday:[...confirmed.values()].filter(at=>parisDay(at)===parisDay(now)).length,
+  timezone:'Europe/Paris',meaning:'Telegram acknowledged delivery; reading on the device is not measured'};
+}
 export function readAlertCycleRows(db){
  // Five-minute processing must not bury the last daily delivery/collection.
  return db.prepare(`SELECT name,status,attempts,metrics FROM (
@@ -86,6 +98,7 @@ async function inspectAlertCycles(){
     (a.state='pending' OR (a.state='review' AND a.reason='SOURCE_NOT_READ'))
     AND json_extract(a.item,'$.sourceStatus')='title-only' GROUP BY f.code`).all():[];
   const summary=summarizeAlertCycles({counts,cycles,reviewReasons,rejectionChecks,sourceReadFailures,delivery,sourceCommit:settings.sourceCommit,selectionMode:settings.selectionMode??'jev'});
+  const deliveryRecords=db.prepare("SELECT state,updated,receipt FROM alerts WHERE state='delivered'").all();
   const hasBusiness=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='business_fiches'").get();
   if(hasBusiness){const b=db.prepare('SELECT count(*) AS fiches,sum(score IS NOT NULL) AS scored FROM business_fiches').get();
    summary.business={available:true,validatedFiches:b.fiches,scoredFiches:b.scored??0};
@@ -98,8 +111,10 @@ async function inspectAlertCycles(){
     modelCalls:research.prepare('SELECT count(*) n FROM model_calls').get().n,nativeCostEur:null,
     latestDiscoveries:research.prepare('SELECT key,updated,metrics FROM discoveries ORDER BY updated DESC LIMIT 3').all().map(r=>({key:r.key,at:new Date(r.updated).toISOString(),metrics:JSON.parse(r.metrics)})),
     failures:research.prepare('SELECT error,count(*) n FROM jobs WHERE error IS NOT NULL GROUP BY error').all()};
+   deliveryRecords.push(...research.prepare("SELECT state,updated,receipt FROM jobs WHERE state='delivered'").all());
   }catch{summary.research={enabled:true,error_code:'RESEARCH_INVENTORY_UNAVAILABLE'};}finally{research?.close();}}
   if(summary.research?.states?.delivery_unknown>0)summary.diagnoses.push({code:'CHECK_RESEARCH_RECEIPT',message:'Un dossier de recherche a un envoi incertain ; il ne sera pas renvoyé automatiquement.'});
+  summary.deliveries=summarizeDeliveryReceipts(deliveryRecords);
   try{const {stdout:service}=await run('/bin/launchctl',['print',`gui/${process.getuid()}/com.ivan-ai-os.alerts`],{timeout:5000});
    summary.schedule={loaded:true,lastExitCode:Number(service.match(/last exit code = (\d+)/)?.[1]??0),
     running:/^\s*state = running$/m.test(service)};

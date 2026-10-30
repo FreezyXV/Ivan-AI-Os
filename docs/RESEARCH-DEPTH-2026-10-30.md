@@ -42,3 +42,18 @@ ETF automatique revendiqué. Aucun rendement simulé ni prix cible ajouté.
 
 Les résultats réels et éventuels reçus sont consignés dans le relais après essai.
 Une piste rejetée ne sera pas transformée en opportunité pour provoquer un envoi.
+
+## Résultats observés
+
+Worker/plugins db08a22 réellement activés, gateway et planning vérifiés sains.
+Les266 tests concernés passent. Nouvelle qualification dirigée, distincte des
+collecteurs automatiques : Finance5 sources, refus à la validation d'un fait ;
+Business5 sources, rapport produit puis refus du contradicteur car un fait ajoute
+une condition non contenue dans son propre passage. Aucun de ces dossiers envoyé.
+Le prochain travail est d'identifier le champ du refus Finance avant tout nouvel
+appel, et de mesurer un approfondissement réel. Ne pas qualifier la recherche
+financière de fiable sur la seule base des tests ou du nombre de sources.
+
+Le bilan de livraison expose maintenant confirmedMessagesToday, distinct du nombre
+de références collectées et du nombre de sources incluses. Le contrôle courant
+confirme2 messages le30 octobre (71 et72), sans mesurer leur lecture par Ivan.
