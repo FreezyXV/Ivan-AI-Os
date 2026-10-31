@@ -117,7 +117,12 @@ async function inspectAlertCycles(){
      pages:research.prepare('SELECT state,count(*) n FROM radar_pages GROUP BY state').all(),
      topicsReserved:research.prepare('SELECT count(*) n FROM radar_sent').get().n,
      topicsConfirmed:research.prepare("SELECT count(*) n FROM radar_sent JOIN radar_pages p ON p.id=page WHERE p.state='delivered'").get().n,
-     feedback:research.prepare('SELECT count(*) n FROM radar_feedback').get().n,nativeCalls:0};
+     feedback:research.prepare('SELECT count(*) n FROM radar_feedback').get().n,nativeCalls:research.prepare("SELECT count(*) n FROM model_calls WHERE job LIKE 'radar:%'").get().n,nativeCostEur:null};
+    if(research.prepare("SELECT 1 FROM sqlite_master WHERE name='radar_preparations'").get()){
+     summary.radar.preparations=research.prepare('SELECT state,count(*) n FROM radar_preparations GROUP BY state').all();
+     summary.radar.preparationErrors=research.prepare('SELECT error,count(*) n FROM radar_preparations WHERE error IS NOT NULL GROUP BY error').all();
+     summary.radar.reviewIssues=research.prepare("SELECT j.value code,count(*) n FROM radar_preparations p,json_each(p.review,'$.items') i,json_each(i.value,'$.issues') j GROUP BY j.value").all();
+    }
     deliveryRecords.push(...research.prepare("SELECT 'radar' kind,state,created updated,receipt FROM radar_pages WHERE state='delivered'").all());
    }
   }catch{summary.research={enabled:true,error_code:'RESEARCH_INVENTORY_UNAVAILABLE'};}finally{research?.close();}}

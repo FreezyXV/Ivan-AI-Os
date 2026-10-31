@@ -12,6 +12,7 @@ const numeric=s=>(s.replace(/\b[A-Za-z][A-Za-z0-9]*[-_.]?\d+(?:[.-]\d+)*(?:[A-Za
  return /^[-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?$/i.test(normalized)?String(Number(normalized)):normalized;
 });
 const moneyUnits=s=>[...(/\b(?:EUR|euros?)\b|€/i.test(s)?['EUR']:[]),...(/\b(?:USD|dollars?|priceUsd|marketCapUsd|fdvUsd)\b|\$/i.test(s)?['USD']:[]),...(/\b(?:GBP|pounds?)\b|£/i.test(s)?['GBP']:[])];
+export {numeric as evidenceNumbers,identifiers as evidenceIdentifiers,moneyUnits as evidenceCurrencies};
 export function researchSpans(value){
  const spans=[];for(const part of value.split(/\n+|(?<=[.!?])\s+/)){let rest=part.trim();while(rest.length>650){let cut=rest.lastIndexOf(' ',650);if(cut<1)cut=650;spans.push(rest.slice(0,cut));rest=rest.slice(cut).trim();}if(rest)spans.push(rest);}
  return spans;

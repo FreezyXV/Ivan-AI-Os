@@ -55,3 +55,11 @@ test('flushing approved research does not spend another analysis call or reopen 
  const r=await researchTick({...f,now,deliveryOnly:true,forceDelivery:true,discover:async()=>assert.fail(),complete:async()=>assert.fail(),deliver:async()=>({delivered:true,messageId:'124'})});
  assert.equal(r.nativeCalls,0);assert.equal(r.delivered,1);assert.equal(f.store.list('pending').length,1);assert.equal(r.modelCalls,2);
 });
+test('background research leaves room for radar while an explicit user request retains priority',async t=>{
+ const f=setup(t),{complete}=native();f.settings.radar={enabled:true};
+ for(let i=0;i<6;i++)f.store.enqueue({...f.seed,anchorUrl:`https://another.org/${i}`});
+ const args={...f,now:new Date('2026-10-16T08:00:00Z'),discover:async()=>({}),build:async()=>({bundle,coverage:{}}),complete,deliver:async()=>assert.fail()};
+ assert.equal((await researchTick(args)).nativeCalls,2);assert.equal((await researchTick(args)).nativeCalls,0);assert.equal(f.store.summary().modelCallsToday,2);
+ f.store.enqueue({...f.seed,anchorUrl:'https://another.org/owner',origin:'telegram-native'});
+ assert.equal((await researchTick(args)).nativeCalls,2);assert.equal(f.store.summary().modelCallsToday,4);
+});

@@ -35,11 +35,11 @@ try{
   const system=config.agents?.entries?.['ivan-system']??config.agents?.list?.find(a=>a.id==='ivan-system');
   const allowed=Array.isArray(system?.tools?.allow)?'allow':Array.isArray(system?.tools?.alsoAllow)?'alsoAllow':null;
   if(!allowed)throw Error('OPPORTUNITY_RESEARCH_TOOL_POLICY_REQUIRED');
-  system.tools[allowed]=[...new Set([...system.tools[allowed],'ivan_research_complete'])];
+  system.tools[allowed]=[...new Set([...system.tools[allowed],'ivan_research_complete','ivan_radar_complete'])];
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
   const research={enabled:true,directory:path.join(old.stateDir,'research'),dailyModelLimit:12,dailyDeliveryLimit:3};
-  const radar={enabled:true,dailyTopics:20};
+  const radar={enabled:old.radar?.enabled===true,dailyTopics:old.radar?.dailyTopics??20,format:'radar-explained-v1'};
   writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research,radar},null,2),{flag:'wx',mode:0o600});
   const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,
     expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};

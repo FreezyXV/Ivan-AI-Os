@@ -146,7 +146,8 @@ function published(html){
  }
  return null;
 }
-export function extractPublicPage(response){
+export function extractPublicPage(response,{maxTextChars=24000}={}){
+ if(!Number.isSafeInteger(maxTextChars)||maxTextChars<150||maxTextChars>200000)fail('PUBLIC_RESEARCH_INPUT_INVALID');
  if(!response||typeof response.text!=='string'||response.text.length>2000000)fail('PUBLIC_RESEARCH_CONTENT_INVALID');
  const url=publicUrl(response.url).href,html=response.text;
  if(challenge(html))fail('PUBLIC_RESEARCH_CHALLENGE');
@@ -159,7 +160,7 @@ export function extractPublicPage(response){
   article=article.match(/<article\b[^>]*>([\s\S]*?)<\/article\s*>/i)?.[1]??article.match(/<main\b[^>]*>([\s\S]*?)<\/main\s*>/i)?.[1]??article.match(/<body\b[^>]*>([\s\S]*?)<\/body\s*>/i)?.[1]??article;
   article=article.replace(/<(nav|header|footer|aside|form|button)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ').replace(/<head\b[^>]*>[\s\S]*?<\/head\s*>/gi,' ');
  }
- const text=(isHtml?plain(article):article.replace(/\s+/g,' ').trim()).slice(0,24000).trim();
+ const text=(isHtml?plain(article):article.replace(/\s+/g,' ').trim()).slice(0,maxTextChars).trim();
  if(text.length<150||text===title)fail('PUBLIC_RESEARCH_CONTENT_INSUFFICIENT');
  if(!title)title=new URL(url).hostname;
  return {url,title,text,publishedAt:isHtml?published(html):null,readAt:response.readAt??new Date().toISOString(),sha256:response.sha256??sha(html),kind:'page'};

@@ -68,6 +68,7 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
   list(state,limit=30){return db.prepare('SELECT id FROM jobs WHERE state=? ORDER BY created,id LIMIT ?').all(state,limit).map(r=>get(r.id));},
   summary(){return {states:Object.fromEntries(db.prepare('SELECT state,count(*) n FROM jobs GROUP BY state').all().map(r=>[r.state,r.n])),modelCalls:db.prepare('SELECT count(*) n FROM model_calls').get().n,
    modelCallsToday:db.prepare('SELECT count(*) n FROM model_calls WHERE day=?').get(new Date(now()).toISOString().slice(0,10)).n,
+   researchCallsToday:db.prepare("SELECT count(*) n FROM model_calls WHERE day=? AND job NOT LIKE 'radar:%'").get(new Date(now()).toISOString().slice(0,10)).n,
    discoveries:db.prepare('SELECT key,updated,metrics FROM discoveries ORDER BY updated DESC LIMIT 6').all().map(r=>({...r,metrics:JSON.parse(r.metrics)})),nativeCostEur:null};},
   get,close(){db.close();}
  };

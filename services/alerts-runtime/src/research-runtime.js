@@ -18,7 +18,11 @@ export async function researchTick({settings,ledger,now=new Date(),store,
   }
   const dailyLimit=settings.research.dailyModelLimit??12;
   if(!Number.isInteger(dailyLimit)||dailyLimit<2||dailyLimit>60)researchFail('RESEARCH_RUNTIME_CONFIG_INVALID');
-  const job=!deliveryOnly&&store.summary().modelCallsToday+2<=dailyLimit?store.claim({id:jobId}):null;
+  // Leave room for explained radar cards. Explicit user research remains first;
+  // background discovery cannot spend the shared daily allowance before 9 a.m.
+  const userPending=settings.radar?.enabled?store.list('pending',100).find(r=>r.seed.origin==='telegram-native'):null;
+  const backgroundAllowed=!settings.radar?.enabled||store.summary().researchCallsToday<2;
+  const job=!deliveryOnly&&(jobId||userPending||backgroundAllowed)&&store.summary().modelCallsToday+2<=dailyLimit?store.claim({id:jobId??userPending?.id}):null;
   if(job){
    try{
     const prior=job.seed.parentJob?store.get(job.seed.parentJob)?.bundle:undefined;
