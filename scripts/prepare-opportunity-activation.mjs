@@ -4,6 +4,7 @@ import {readFileSync,writeFileSync,mkdirSync,existsSync,lstatSync} from 'node:fs
 import {createHash} from 'node:crypto';
 import {homedir} from 'node:os';
 import path from 'node:path';
+import {RADAR_BRIEF_VERSION} from '../services/alerts-runtime/src/radar-brief.js';
 const [repository,commit,previousSettings]=process.argv.slice(2),home=homedir();
 try{
   if(!path.isAbsolute(repository??'')||!path.isAbsolute(previousSettings??'')||!/^[a-f\d]{40}$/.test(commit??''))throw Error('OPPORTUNITY_PREPARE_ARGUMENTS');
@@ -20,7 +21,7 @@ try{
   execFileSync('git',['archive','--format=tar','-o',archive,commit,'services','hooks','skills','shared','scripts','policies'],{cwd:repository,timeout:60000});
   execFileSync('tar',['-xf',archive,'-C',release],{timeout:60000});
   writeFileSync(path.join(release,'ivan-release.json'),JSON.stringify({sourceCommit:commit,activated:false}),{flag:'wx',mode:0o600});
-  const opportunities={directory:path.join(root,'opportunities'),vaultPath,ownerId,accountId:'default'};
+  const opportunities={directory:path.join(root,'opportunities'),vaultPath,ownerId,accountId:'default',researchDirectory:path.join(old.stateDir,'research')};
   const id='ivan-ai-os-opportunities';config.plugins??={};config.plugins.load??={};
   config.plugins.load.paths=[...(config.plugins.load.paths??[]).filter(v=>!v.endsWith('/hooks/openclaw/ivan-opportunities')),path.join(release,'hooks/openclaw/ivan-opportunities')];
   if(config.plugins.allow)config.plugins.allow=[...new Set([...config.plugins.allow,id])];
@@ -32,10 +33,16 @@ try{
    config.plugins.load.paths=config.plugins.load.paths.filter(v=>!v.endsWith('/hooks/openclaw/ivan-alerts'));
    config.plugins.load.paths.push(path.join(release,'hooks/openclaw/ivan-alerts'));
   }
+  const system=config.agents?.entries?.['ivan-system']??config.agents?.list?.find(a=>a.id==='ivan-system');
+  const allowed=Array.isArray(system?.tools?.allow)?'allow':Array.isArray(system?.tools?.alsoAllow)?'alsoAllow':null;
+  if(!allowed)throw Error('OPPORTUNITY_RESEARCH_TOOL_POLICY_REQUIRED');
+  system.tools[allowed]=[...new Set([...system.tools[allowed],'ivan_research_complete','ivan_radar_complete'])];
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
-  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true},null,2),{flag:'wx',mode:0o600});
-  const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,
+  const research={enabled:true,directory:path.join(old.stateDir,'research'),dailyModelLimit:12,dailyDeliveryLimit:3};
+  const radar={enabled:old.radar?.enabled===true,dailyTopics:old.radar?.dailyTopics??20,format:RADAR_BRIEF_VERSION};
+  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research,radar},null,2),{flag:'wx',mode:0o600});
+  const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,probeRadar:true,
     expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};
   writeFileSync(path.join(out,'prepared.json'),JSON.stringify(proof,null,2),{flag:'wx',mode:0o600});
   console.log(JSON.stringify(proof));

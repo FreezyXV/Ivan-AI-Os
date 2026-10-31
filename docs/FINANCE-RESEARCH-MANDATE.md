@@ -1,9 +1,11 @@
 # Finance — mandat de recherche et de contradiction
 
 Décision explicite d'Ivan, 16 octobre 2026. Complète ADVISORY-VALUE-2026-10-16.md.
-Statut : besoin et contrat de sortie documentés ; parcours de recherche multi-source
-non encore construit ni qualifié. Le runtime actif reste de104ba, contexte v8.
-Ce document ne prétend pas qu'un screener tokens ou une valorisation tourne déjà.
+Statut au 30 octobre : recherche multi-source activée en d47c69b, avec collecte
+publique, calculs vérifiés et deux rôles isolés analyse/contradiction. Voir
+RESEARCH-ENGINE-MAC.md. Aucun modèle de juste valeur ni classement d'investissement
+n'est qualifié. Premier essai réel Bitcoin : six sources, décision à approfondir,
+aucune recommandation ni livraison Finance issue de cet essai.
 
 ## Deux livrables, une même aide à la décision
 
@@ -73,12 +75,17 @@ Ce mandat n'autorise aucune transaction, connexion de compte ou ingestion de ce 
 
 ## Intégration restante et critères de réception
 
-Le pipeline actuel n'a qu'un extrait de source par candidat ; ses contrôles de
+Historique de la limite avant ce lot : le pipeline d'alertes n'a qu'un extrait par
+candidat. Il reste en place ; le module de recherche distinct ajoute plusieurs
+sources et des reçus de calcul, ainsi que des fiches Finance et techniques. Ses
+contrôles de
 citations refusent les nombres dérivés non présents dans les preuves. Il faut un
 dossier de plusieurs sources et un reçu de calcul distinct avant de pouvoir
 présenter honnêtement une valorisation. Ne pas assouplir le contrôle de citation
 pour faire passer un prix inventé. Les dossiers durables activés sont aujourd'hui
-Business seulement : le parcours Finance équivalent reste à ajouter.
+Business seulement dans l'ancien pipeline. Le module de recherche peut désormais
+projeter les autres catégories ; un dossier Finance réellement approuvé puis livré
+reste à observer.
 
 À vérifier avant activation : token solide mais sans capture de valeur ; forte
 dilution ; prix périmé ; confusion de ticker/réseau ; comparables inadéquats ;

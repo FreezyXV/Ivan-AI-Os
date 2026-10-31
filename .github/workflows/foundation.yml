@@ -113,6 +113,7 @@ jobs:
         with:
           node-version: 22
       - run: node --test scripts/switch-openclaw-config.test.mjs
+      - run: node --test scripts/activate-opportunity-release.test.mjs
 
   skills-and-managers:
     runs-on: ubuntu-latest

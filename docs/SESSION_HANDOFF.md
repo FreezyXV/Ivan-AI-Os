@@ -1,3 +1,129 @@
+## 2026-10-31 — Codex — fiches expliquées, correction réellement livrée
+
+Ivan juge le radar brut confus ; exige sujet/intérêt/utilité/usage/sourcefiable.
+Il demande travail réfléchi, pas d’être le contrôleur qualité des agents.
+Code d9e2b62 actif, radar-explained-v3, planning300s chargé, gateway sain, exit0.
+Branche agent/codex/research-engine, PR#71 brouillon ; aucune fusion.
+Fiches françaises : source réellement lue, fait attribué, interprétation/piste,
+usage concret centré destinataire, limite ;2 sujets max par message.
+Rédaction/revue isolées, vérification chiffres/identifiants/devises partout,
+provenance institution/éditeur/témoignage distinguée ; pas de veto NOT_USEFUL.
+Titres non lus et pages indisponibles ne deviennent plus des fiches plausibles.
+Retour low-usefulness réel conservé (Codex), aucun avis individuel inventé.
+Message79 confirmé :2 fiches Business/Finance, note radar748ed08ff27fbe41 ajoutée.
+Correction dirigée par Codex + critique native + revue de clarté indépendante ;
+ne pas la présenter comme découverte ou rédaction entièrement automatique.
+Harvest : vrais passages lus via Web Codex, HTTPS refusait ; Insee/SQLite HTTPS.
+Tech FTS5 restée rejetée, pas livrée ; FTS5 testé localement en mémoire seulement.
+Les premières sorties v2 étaient encore génériques : contrat v3 décrit résultats
+pour Ivan, pas tâches SQL/indexation à lui faire exécuter. Ne pas reproduire v1.
+Raccordement corrigé : outil manquait au manifeste ; sonde réelle sans modèle
+obligatoire avant remplacement planning, avec restauration coordonnée si échec.
+282 tests passent ; devises/GitHub contributions/quota de fond contre-vérifiés.
+Préparation radar max4sujets/2appels ; quota quotidien partagé12 en production,
+fond borné2appels avant radar, demande utilisateur prioritaire ; coût natif inconnu.
+Qualification :4réservationsradar dont1outilabsent,3complétionsréussies ; total15
+ce jour avecrecherches antérieures (dérogation bornée), pasnouveaufournisseur.
+Jev761inchangé,horsrédaction ;6anciensunknownpréservés, choix tester6ab5272ce301 intact.
+Lire RADAR-USER-FEEDBACK.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md.
+Prochain : vérifier premières fiches vraiment automatiquesv3 et avis /avis réels,
+améliorer sources/provenance, préciser les refus par champ avant nouveaux appels.
+Ne pas restaurer cataloguebrut ; Career/VPSdifférés, Knowledgefinalcommun.
+
+## Historique — 30 octobre, radar large et avis d’Ivan
+
+Décision plus récente : beaucoup de sujets, Ivan juge utile/inutile/creuser.
+Cela remplace la proposition précédente d’attendre deux niveaux approuvés.
+Branche agent/codex/research-engine, PR#71 brouillon ; aucune fusion.
+Mac Darwin confirmé, checkout initial propre, fetch sans écrasement.
+Worker/plugins f2268d3 actifs, planning300s chargé, gateway sain, dernier exit0.
+Radar :20 sujets/jour Paris, moitié après9h/reste après18h,5 par page max.
+Références publiques actives, trente jours max ; aucun seuil Jev/LLM d’utilité.
+Titres attribués et date/extrait lu ou titre seul non vérifié, jamais faux fait.
+Vingt sujets confirmés, quatre messages73–76 :6Business,6Finance,6Engineering,
+2System ; dix issus du planning, dix du rattrapage explicite. Zéro appel modèle
+pour le catalogue. Jev inchangé761 ; prix des recherches natives reste inconnu.
+Avis natifs : /avis ID utile|inutile|creuser [raison], /radar [page récente].
+Propriétaire DM uniquement ; historique durable, classement par domaines/mots
+des titres, diversité et25%exploration. Raisons conservées, pas exécutées.
+Creuser enfile une recherche prioritaire dédupliquée ; titre seul=request,
+page originale lue avant preuves. Budget recherche inchangé, aucun achat/contact.
+Quatre notes catalogue ajoutées dans Ivan AI OS/radar/ ; avis également projetés
+sans écrasement. Zéro avis réel à ce stade, pas d’apprentissage démontré en usage.
+Tests handlers/retours/ranking/reprise :272/272 ; entrée réelle /avis à vérifier.
+Contre-revue : envoi radar incertain désormais cycle failed/degraded, test rouge
+puis vert et sonde indépendante. Inconnus du tick distincts du cumul historique.
+Réservations avant CLI, aucun renvoi incertain ;6anciens unknown inchangés.
+Choix tester6ab5272ce301 préservé ; sauvegardes alertes VERIFIED et research/
+dossiers intègres dans mac-opportunity-f2268d3. Coût/satisfaction non inventés.
+Lire RADAR-USER-FEEDBACK.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md seulement.
+Prochain : vrais avis, vérifier commande entrante, puis approfondir les choix ;
+ne pas rétablir un filtre d’utilité bloquant avant ce retour. Couverture sources
+encore partielle ; Career/VPS différés, Knowledge final commun, profils privés exclus.
+
+## Historique — sources distinctes des messages, recherche ciblée
+
+PR#71 brouillon, agent/codex/research-engine ; aucune fusion.
+Ivan clarifie :43 publications collectées ne signifiaient pas43 posts reçus.
+Ne pas promettre une lecture intégrale de chaque référence récupérée.
+Deux messages confirmés aujourd'hui :71 OpenClaw, puis72 communication BCE.
+Nouveau compteur distingue sources livrées, messages uniques et messages/jour Paris.
+Au contrôle :14 sources livrées depuis l'origine,12 messages uniques,2 aujourd'hui.
+Worker/plugins db08a22 actifs, planning300s chargé, gateway sain, dernier exit0.
+Réponses analyste research-analysis-v2 : raison/questions conservées ; un seul
+approfondissement parent lié, prioritaire ; requêtes sur le vrai sujet macro,
+preuves nouvelles et diversité d'éditeurs ; prix >1h actualisé avant analyse.
+Le contradicteur cible sa propre objection, pas les seules inconnues du rédacteur.
+Correctif contre-revu : calculs du parent actualisé suivent ses sources.
+Migration ancienne DB testée : anciens reçus et réservations préservés.
+266/266 tests concernés passent, dont cinq repros vus rouges puis verts.
+Qualification dirigée Codex+workers, pas découverte automatique revendiquée :
+Finance5 sources : RESEARCH_FACT_UNSUPPORTED avant revue ; aucun envoi.
+Business Dolibarr5 sources : rapport puis rejet du contradicteur pour paraphrase
+qui ajoute une cause absente de SA citation. Aucun envoi, pas marché validé.
+Fiche émetteur Finance transcrite depuis page officielle web, pas connecteur ETF.
+Recherche :pending9, research8, rejected1 ;10 appels cumulés dont9 aujourd'hui,
+coût natif inconnu. Jev inchangé761, hors tri des alertes. Unknown6 préservés.
+Sources/qualifications privées dans mac-opportunity-db08a22 et /private/tmp.
+Lire RESEARCH-DEPTH-2026-10-30.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md.
+Prochain : localiser le champ du refus Finance avant nouvel appel ; qualifier une
+suite réellement exécutée et l'utilité ; admission/rétention restent à examiner.
+Ne pas rejouer les anciens envois, ni inventer un choix Ivan. Career/VPS différés,
+Knowledge final commun ; aucun achat/contact ni profil privé ajouté.
+
+## Historique — reprise du 30 octobre avant recherche ciblée
+
+## 2026-10-30 — Codex — reprise, recherche et rattrapage Telegram
+
+Branche agent/codex/research-engine ; PR#71 brouillon vers advisory-value, pas fusionnée.
+Mac Darwin confirmé ; fetch sans écrasement. Worker/plugins d47c69b actifs.
+Au retour : planning déchargé après activation interrompue le16, pas seulement veille.
+Ancien worker rechargé immédiatement, puis bascule coordonnée ; planning300s sain.
+Rattrapage demandé explicitement :43 publications,7 indicateurs Finance actualisés.
+Message71 confirmé après seconde lecture : correctifs OpenClaw, pas opportunité Finance.
+File :delivered13, unknown6, expired161, review43, skipped69 ; zéro pending/ready.
+Ne pas rejouer les six sources incertaines, ni restaurer un vieux snapshot.
+Recherche multi-source active :11 candidats nouveaux,104 actifs admissibles,
+rotation BTC/LTC/Canton du jour ; sources publiques gratuites, aucune recommandation.
+Répartition : documentaliste/calculateur/code, analyste puis contradicteur isolés,
+contrôle de preuves, Obsidian et reçu ;12 appels recherche/jour UTC,3 envois/jour Paris.
+Ces plafonds ne couvrent pas tous les appels/digests ; coût natif non exposé.
+Réel :Bitcoin6 sources → research ; WooCommerce6 sources → contradicteur research,
+un approfondissement en file. Neuf travaux pending ; aucun dossier Finance livré.
+Aujourd'hui16 appels natifs process +4 recherche enregistrés ; Jev inchangé761.
+Noms n8n/GPT-6 corrigés ;258/258 tests passent. Sources/ordre refus/non-renvoi testés.
+Wrapper activation renforcé : réattente après gateway, refuse worker running,
+retour config+planning ensemble ; deux sondes indépendantes passent. Ce dernier
+correctif est source opérateur, pas une nouvelle version du worker revendiquée.
+Journal Obsidian30/10 ajouté ; backup state-after-catchup VERIFIED, reçus préservés.
+Lire RESEARCH-ENGINE-MAC.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md seulement.
+Ouvert : abstention analyste sans questions structurées ; qualification Finance,
+juste valeur non estimable, commandes Telegram entrantes non testées, utilité Ivan.
+Priorité : poursuivre preuves/objections sans forcer des notifications ; Career/VPS
+restent différés, profils privés exclus, Knowledge final commun. Aucun achat/contact.
+
+## Historique — état avant rattrapage du 30 octobre
+
 ## 2026-10-16 — Codex — utilité et horizons d’investissement
 
 État : branche agent/codex/advisory-value poussée ; code de104ba actif sur Mac Darwin.

@@ -8,6 +8,11 @@ function fixture(t){const dir=mkdtempSync(path.join(tmpdir(),'ivan-schedule-upda
  const plist=path.join(dir,'schedule.plist');writeFileSync(plist,'previous',{mode:0o600});
  return {dir,plist,backupDir:dir,previousBody:'previous',body:'candidate',domain:'gui/501'};
 }
+test('an in-flight cycle is never unloaded by a schedule update',async t=>{
+ const f=fixture(t),actions=[];
+ await assert.rejects(applySchedule({...f,run:async(_bin,args)=>{actions.push(args[0]);return {stdout:'state = running'};}}),/ALERT_EXISTING_SCHEDULE_BUSY/);
+ assert.deepEqual(actions,['print']);assert.equal(readFileSync(f.plist,'utf8'),'previous');
+});
 test('repeating an update is harmless; old backup names and orphaned temp files do not block it',async t=>{
  const f=fixture(t);writeFileSync(path.join(f.dir,'alerts.rollback.plist'),'first backup');writeFileSync(f.plist+'.update','orphan');
  let loaded=true;const actions=[];

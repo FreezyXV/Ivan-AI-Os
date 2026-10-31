@@ -71,6 +71,8 @@ export function openLedger(filename, { now = () => Date.now(), leaseMs = 120000,
   for(const row of db.prepare('SELECT id,item FROM alerts WHERE archive IS NULL').all())remember(evidenceKeys(JSON.parse(row.item)),row.id);
   const owned=(id,owner,state)=>{const r=get(id);if(!r||r.state!==state||r.owner!==owner)fail('ALERT_LEASE_LOST');return r;};
   return {
+    // Radar reads recent references without rehydrating terminal archives.
+    radarSources(){return db.prepare("SELECT state,item FROM alerts WHERE archive IS NULL AND state NOT IN ('delivered','delivery_unknown','sending') ORDER BY json_extract(item,'$.observedAt') DESC,id LIMIT 500").all().map(r=>({...r,item:JSON.parse(r.item)}));},
     peekSource(id){const r=db.prepare('SELECT state,item FROM alerts WHERE id=?').get(id);
       return r?{state:r.state,sourceStatus:JSON.parse(r.item).sourceStatus}:null;},
     resolveUnreadAliases(){return tx(()=>{

@@ -1,3 +1,49 @@
+## Décision courante — 31 octobre 2026, des pistes compréhensibles et vérifiées
+
+Ivan juge le catalogue brut confus et demande du travail sérieux : sujet clair,
+pourquoi intéressant, utilité personnelle, usage concret et sources fiables.
+La sélection reste large et son avis utile/inutile/creuser reste décisif ; cela
+n’autorise pas les titres non lus, les bénéfices supposés ou les faits inventés.
+Les agents doivent préparer les recherches et les prototypes ; les fiches ne
+doivent pas reporter sur Ivan des tâches d’indexation ou de manipulation technique.
+Format corrigé d9e2b62 actif, deux sujets au maximum par message, sources lues
+et attribuées, rédaction/relecture séparées et contrôles sur toute la fiche.
+Deux fiches Business/Finance corrigées et relues sont livrées ; ce sont des pistes
+à juger, pas un marché prouvé ni un signal d’achat. Voir RADAR-USER-FEEDBACK.md.
+Le retour qualitatif réel a été conservé comme low-usefulness, origine Codex,
+sans inventer de note par sujet ou modifier ses choix antérieurs.
+
+## Historique — 30 octobre 2026, radar et apprentissage explicite
+
+Ivan préfère beaucoup de sujets et juger lui-même avec ses retours. Le radar
+déterministe remplace la proposition de n’envoyer que deux niveaux de dossiers
+approuvés. Références larges, titre attribué, date et lecture signalée ; aucun
+filtre Jev/LLM d’utilité pour l’admission. Vingt sujets/jour Paris au départ,
+Business/Finance/Engineering et moins de maintenance System, avec exploration.
+Code f2268d3 activé, planning chargé. Tests concernés :272/272.
+`/avis ID utile|inutile|creuser [raison]` conserve les avis/révisions et adapte
+le classement ; « creuser » demande une recherche, jamais un achat/contact.
+Notes nouvelles seulement dans `Ivan AI OS/radar/`. Pas de réentraînement du modèle,
+pas d’utilité mesurée avant les vrais avis. Les dossiers approfondis conservent
+les vérifications de faits et la contrelecture. Voir RADAR-USER-FEEDBACK.md.
+
+## Historique — 30 octobre 2026, rattrapage demandé
+
+Ivan demande la reprise après une période Mac fermé. Au contrôle, le planning
+était également déchargé après la bascule interrompue du 16 octobre. Rechargé,
+puis worker et plugins d47c69b activés ; aucune réinstallation des autres services.
+Collecte : 43 publications et sept indicateurs Finance actualisés. Premier
+message de rattrapage confirmé : reçu 71, correctifs OpenClaw, pas une opportunité
+financière. Les envois incertains antérieurs restent exclus de toute relance.
+Recherche multi-source désormais active : voir RESEARCH-ENGINE-MAC.md ; une
+abstention Bitcoin réelle ne constitue ni une recommandation ni un benchmark.
+Les flux ne permettent pas de promettre une reconstitution exhaustive de la
+quinzaine ; priorité aux informations encore pertinentes et aux preuves fraîches.
+Aucun nouveau service payant, transaction ou contact autorisé. Le Mac doit être
+éveillé pour les collectes ; verrouiller l'écran et fermer le capot sont distincts.
+
+## Historique — retour d'utilité du 16 octobre
+
 ## État courant — 16 octobre 2026, après retour d'utilité
 
 Ivan juge les messages peu utiles. Décision : rechercher des pistes Finance,
