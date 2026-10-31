@@ -23,6 +23,7 @@ export async function activatePrepared(prepared,{runImpl=run,wait=ms=>new Promis
   await waitForIdle();
   const changed=await invoke('switch-openclaw-config.mjs',['--candidate',candidate,'--backup-dir',backupDir,'--expected-current-sha256',expectedCurrentSha256]);
   changedConfig=JSON.parse(changed.stdout.trim());if(!['ACTIVE','UNCHANGED'].includes(changedConfig.status))throw Error('OPPORTUNITY_CONFIG_NOT_ACTIVE');
+  if(prepared.probeRadar===true){const binary=JSON.parse(readFileSync(settingsPath)).openclawBinary??'openclaw';const result=await invoke('probe-radar-tool.mjs',[binary]);if(JSON.parse(result.stdout.trim()).available!==true)throw Error('OPPORTUNITY_RADAR_TOOL_NOT_AVAILABLE');}
   // A cycle can start while the gateway is restarting. Recheck after that gap;
   // the installer also rejects an in-flight worker immediately before mutation.
   await waitForIdle();

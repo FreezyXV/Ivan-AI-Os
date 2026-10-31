@@ -31,3 +31,12 @@ test('a rollback that cannot restore config is reported as partial, never as coh
   if(args[1]===p.settingsPath)throw Error('install failed');return {stdout:'{}'};
  }}),/PARTIAL_SCHEDULE_PRESERVED/);
 });
+test('missing new tool fails activation before replacing the schedule and rolls the config back',async t=>{
+ const dir=mkdtempSync(path.join(tmpdir(),'ivan-capability-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));const candidate=path.join(dir,'candidate'),settingsPath=path.join(dir,'settings');writeFileSync(candidate,'new');writeFileSync(settingsPath,'{"openclawBinary":"/test/openclaw"}');let switched=0,installed=false,restored=false;
+ await assert.rejects(activatePrepared({...p,candidate,settingsPath,probeRadar:true},{runImpl:async(bin,args)=>{
+  if(bin==='/bin/launchctl')return {stdout:'state = waiting'};
+  if(args[0].endsWith('switch-openclaw-config.mjs')){switched++;return {stdout:JSON.stringify({status:'ACTIVE',backup:'/private/tmp/old-config'})};}
+  if(args[0].endsWith('probe-radar-tool.mjs')){assert.equal(args[1],'/test/openclaw');return {stdout:'{"available":false}'};}
+  if(args[1]===settingsPath)installed=true;if(args[1]===p.previousSettings)restored=true;return {stdout:'{}'};
+ }}),/SCHEDULE_PRESERVED/);assert.equal(switched,2);assert.equal(installed,false);assert.equal(restored,true);
+});

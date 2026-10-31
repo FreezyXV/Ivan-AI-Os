@@ -1,6 +1,6 @@
 import {researchHash,researchFail,researchSpans,evidenceNumbers,evidenceIdentifiers,evidenceCurrencies} from './research-contract.js';
 import {canonicalUrl,suspiciousSource,PILOT_CONTEXT} from './context.js';
-export const RADAR_BRIEF_VERSION='radar-explained-v1';
+export const RADAR_BRIEF_VERSION='radar-explained-v2';
 const fail=()=>researchFail('RESEARCH_RADAR_BRIEF_INVALID');
 const line=(s,max=300)=>typeof s==='string'&&s.trim().length>=15&&s.length<=max&&!/[\x00-\x1f\x7f]/.test(s)&&!suspiciousSource(s);
 export function radarSourceProfile(url,topic){
