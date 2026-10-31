@@ -1,4 +1,74 @@
-# Radar large piloté par les avis d’Ivan
+# Pistes expliquées et avis d’Ivan
+
+## Correction du 31 octobre — contrat courant
+
+Ivan juge le catalogue brut confus et demande un vrai travail de préparation.
+Chaque piste comporte, en français : sujet clair, fait attribué, intérêt expliqué,
+utilité possible pour son contexte, usage concret, limite et source datée.
+L’avis final reste utile/inutile/creuser. Un grand nombre de titres n’est pas une
+preuve de qualité ; aucun titre seul ou page inaccessible ne devient une fiche.
+
+Le lecteur récupère la page originale. Pour les longues documentations, des
+passages pertinents sont extraits après lecture, pas seulement l’introduction.
+Le code conserve URL, date de lecture, date de publication vérifiable ou inconnue,
+empreinte et citation propre au fait. Les institutions, éditeurs et témoignages
+sont qualifiés différemment : une promesse fournisseur n’est pas un gain prouvé,
+une plainte n’est pas un marché, une contribution GitHub n’est pas une validation
+du mainteneur. Les sources non qualifiées restent à examiner, pas recyclées comme
+preuves. La liste initiale des éditeurs reconnus est explicite dans le code et
+devra s’enrichir sur preuves ; elle ne couvre pas encore tous les sites fiables.
+
+Rédaction puis relecture isolées, par lots de quatre sujets au plus ; la revue
+vérifie fidélité, attribution, français et usage concret, jamais NOT_USEFUL.
+Les cinq parties d’une fiche doivent apporter des éléments distincts. Pas de
+compatibilité, gain de coût, usage existant ou chiffre inventé dans l’explication.
+Les devises sont contrôlées dans tous les champs, pas uniquement le fait.
+Une fiche refusée ou trop vague reste visible dans les diagnostics de préparation.
+Deux sujets au plus par message, sans mélange de listes de titres et paragraphes
+techniques. Les sources et les commandes d’avis restent à la fin de chaque sujet.
+
+La cible de vingt sujets/jour demeure un plafond, pas une obligation de remplir
+avec du contenu non lu. Le coût de rédaction n’est plus nul : deux tentatives
+natives par lot, enregistrées avant appel, partagent les douze appels quotidiens
+avec la recherche. La recherche de fond utilise au plus un lot avant de laisser
+de la place au radar ; une demande explicite garde la priorité. Les coûts natifs
+ne sont pas exposés par le fournisseur. Jev reste hors rédaction/tri de ce radar.
+
+Le 31 octobre, les envois bruts ont été suspendus avec sauvegarde ; les autres
+services continuent. Le correctif est chargé avec radar encore désactivé jusqu’à
+lecture des vraies fiches de qualification. Cette étape n’est pas un envoi réussi.
+Consulter le relais pour le résultat final, la version active et les reçus.
+
+### Résultat vérifié de la correction
+
+Version d9e2b62, contrat radar-explained-v3, radar repris après lecture. Deux fiches
+Business/Finance sont livrées dans un message distinct des anciens catalogues.
+Codex les a réécrites, une contrelecture native a approuvé le texte exact, puis
+une revue séparée a vérifié la clarté et l’absence de nouvelle affirmation.
+Ce sont des corrections dirigées, pas deux découvertes automatiques revendiquées.
+La piste technique FTS5 n’a pas passé la contrelecture de sa formulation et reste
+non livrée. La disponibilité de FTS5 sur le Node local a été vérifiée en mémoire
+avec des données fictives ; cela n’est pas une intégration mémoire active.
+
+Sources : Insee/SQLite via HTTPS ; Harvest via une lecture Web Codex de la page
+officielle, dont seuls de vrais passages ont été repris. Les notes paraphrasées
+du worker ne sont jamais devenues des citations sources. L’accès HTTPS Harvest
+avait échoué : la qualification est donc assistée, pas entièrement automatique.
+
+Défaut de raccordement détecté : l’outil était enregistré dans le code sans sa
+déclaration de contrat dans le manifeste. Corrigé ; l’activation teste maintenant
+une invocation réelle invalide, sans modèle, avant de remplacer le planning.
+Si l’outil reste indisponible, configuration/planning sont restaurés ensemble.
+Contre-revue : devises des champs d’usage et contributions GitHub mal qualifiées
+corrigées ; quota de fond borné pour éviter de vider le budget avant le radar.
+
+282 tests passent. Qualification : une invocation sans outil disponible, puis
+trois complétions natives réussies (rédaction/revue et revue de la correction).
+Quinze réservations au total ce jour, avec les recherches précédentes ; dérogation
+de qualification bornée, plafond de production toujours douze, coûts non exposés.
+Les prochaines sorties automatiques v3 et leur utilité restent à observer.
+
+## Historique — catalogue brut du 30 octobre, remplacé
 
 Décision du 30 octobre : Ivan préfère recevoir beaucoup de sujets et juger lui-même
 leur intérêt. Cela remplace la proposition précédente d’attendre deux niveaux de

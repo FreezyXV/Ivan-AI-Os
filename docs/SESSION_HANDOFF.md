@@ -1,4 +1,36 @@
-## 2026-10-30 — Codex — radar large et avis d’Ivan
+## 2026-10-31 — Codex — fiches expliquées, correction réellement livrée
+
+Ivan juge le radar brut confus ; exige sujet/intérêt/utilité/usage/sourcefiable.
+Il demande travail réfléchi, pas d’être le contrôleur qualité des agents.
+Code d9e2b62 actif, radar-explained-v3, planning300s chargé, gateway sain, exit0.
+Branche agent/codex/research-engine, PR#71 brouillon ; aucune fusion.
+Fiches françaises : source réellement lue, fait attribué, interprétation/piste,
+usage concret centré destinataire, limite ;2 sujets max par message.
+Rédaction/revue isolées, vérification chiffres/identifiants/devises partout,
+provenance institution/éditeur/témoignage distinguée ; pas de veto NOT_USEFUL.
+Titres non lus et pages indisponibles ne deviennent plus des fiches plausibles.
+Retour low-usefulness réel conservé (Codex), aucun avis individuel inventé.
+Message79 confirmé :2 fiches Business/Finance, note radar748ed08ff27fbe41 ajoutée.
+Correction dirigée par Codex + critique native + revue de clarté indépendante ;
+ne pas la présenter comme découverte ou rédaction entièrement automatique.
+Harvest : vrais passages lus via Web Codex, HTTPS refusait ; Insee/SQLite HTTPS.
+Tech FTS5 restée rejetée, pas livrée ; FTS5 testé localement en mémoire seulement.
+Les premières sorties v2 étaient encore génériques : contrat v3 décrit résultats
+pour Ivan, pas tâches SQL/indexation à lui faire exécuter. Ne pas reproduire v1.
+Raccordement corrigé : outil manquait au manifeste ; sonde réelle sans modèle
+obligatoire avant remplacement planning, avec restauration coordonnée si échec.
+282 tests passent ; devises/GitHub contributions/quota de fond contre-vérifiés.
+Préparation radar max4sujets/2appels ; quota quotidien partagé12 en production,
+fond borné2appels avant radar, demande utilisateur prioritaire ; coût natif inconnu.
+Qualification :4réservationsradar dont1outilabsent,3complétionsréussies ; total15
+ce jour avecrecherches antérieures (dérogation bornée), pasnouveaufournisseur.
+Jev761inchangé,horsrédaction ;6anciensunknownpréservés, choix tester6ab5272ce301 intact.
+Lire RADAR-USER-FEEDBACK.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md.
+Prochain : vérifier premières fiches vraiment automatiquesv3 et avis /avis réels,
+améliorer sources/provenance, préciser les refus par champ avant nouveaux appels.
+Ne pas restaurer cataloguebrut ; Career/VPSdifférés, Knowledgefinalcommun.
+
+## Historique — 30 octobre, radar large et avis d’Ivan
 
 Décision plus récente : beaucoup de sujets, Ivan juge utile/inutile/creuser.
 Cela remplace la proposition précédente d’attendre deux niveaux approuvés.

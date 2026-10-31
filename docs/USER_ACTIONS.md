@@ -1,4 +1,19 @@
-## Décision courante — 30 octobre 2026, radar et apprentissage explicite
+## Décision courante — 31 octobre 2026, des pistes compréhensibles et vérifiées
+
+Ivan juge le catalogue brut confus et demande du travail sérieux : sujet clair,
+pourquoi intéressant, utilité personnelle, usage concret et sources fiables.
+La sélection reste large et son avis utile/inutile/creuser reste décisif ; cela
+n’autorise pas les titres non lus, les bénéfices supposés ou les faits inventés.
+Les agents doivent préparer les recherches et les prototypes ; les fiches ne
+doivent pas reporter sur Ivan des tâches d’indexation ou de manipulation technique.
+Format corrigé d9e2b62 actif, deux sujets au maximum par message, sources lues
+et attribuées, rédaction/relecture séparées et contrôles sur toute la fiche.
+Deux fiches Business/Finance corrigées et relues sont livrées ; ce sont des pistes
+à juger, pas un marché prouvé ni un signal d’achat. Voir RADAR-USER-FEEDBACK.md.
+Le retour qualitatif réel a été conservé comme low-usefulness, origine Codex,
+sans inventer de note par sujet ou modifier ses choix antérieurs.
+
+## Historique — 30 octobre 2026, radar et apprentissage explicite
 
 Ivan préfère beaucoup de sujets et juger lui-même avec ses retours. Le radar
 déterministe remplace la proposition de n’envoyer que deux niveaux de dossiers

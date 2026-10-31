@@ -1,5 +1,31 @@
 # Claude — revue du moteur de recherche, sans double construction
 
+## Priorité du 31 octobre — explication avant jugement utilisateur
+
+Ivan trouve le catalogue brut confus. Les fiches doivent présenter en français le
+sujet, son intérêt, l’utilité personnelle, un usage concret et la source fiable.
+L’avis utile/inutile/creuser reste son jugement, pas celui du modèle. V3 ne doit
+pas devenir une sélection restrictive de marchés déjà validés ; elle vérifie
+les faits, l’attribution et la clarté. Une fiche technique ne doit pas demander
+à Ivan de faire les tâches ordinaires des agents ni promettre un outil non intégré.
+
+Code d9e2b62 actif, 282 tests concernés. Une vraie qualification a montré que des
+fiches factuellement correctes restaient trop génériques : Codex les a réécrites,
+fait relire puis a livré deux fiches Business/Finance. La piste FTS5 est restée
+rejetée, sans contournement. L’approbation native n’est pas un substitut à la lecture
+du destinataire ; ne pas noter des exemples comme découvertes automatiques.
+Preuves privées mac-opportunity-d9e2b62/editorial-review.json et corrected-delivery.json.
+Harvest : passages exacts lus via l’outil Web Codex, pas lecture HTTPS automatique.
+SQLite/Insee : pages lues par le lecteur HTTPS ; aucune note de lecture paraphrasée
+prise comme citation primaire. Aucun appel payant de benchmark demandé à Claude.
+
+Revue utile : suivre les premières sorties vraiment automatiques v3 et leur clarté,
+diversifier les sources fiables, relever les généralités et affirmations cachées
+dans l’utilité. Codex garde services/shared/scripts/hooks OpenClaw. Ne pas rétablir
+le catalogue brut ni toucher au live. Aucun avis individuel d’Ivan inventé.
+
+## Historique — radar large et feedback du 30 octobre
+
 ## Priorité actualisée — radar large et feedback
 
 Ivan veut désormais beaucoup de sujets et donner lui-même l’avis utile/inutile/
