@@ -29,3 +29,12 @@ test('a late owner request crosses a long backlog and can use capacity reserved 
  store.reserveCall(id,next.owner,'contradiction',{dailyLimit:4,reservedForRequests:2});
  assert.equal(store.summary().modelCallsToday,4);
 });
+test('an operator qualification failure cannot send a personal request notice',t=>{
+ const {store}=setup(t);
+ for(const origin of ['codex-qualification','telegram-native']){
+  const {id}=store.enqueue({...seed,origin,revision:origin});
+  const job=store.claim({id});
+  store.finish(id,job.owner,{state:'research',error:'RESEARCH_EVIDENCE_INSUFFICIENT'});
+  assert.equal(store.nextNotice()?.id,origin==='telegram-native'?id:undefined);
+ }
+});

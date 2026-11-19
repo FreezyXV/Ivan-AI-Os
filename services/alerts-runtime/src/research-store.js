@@ -138,7 +138,7 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
     calls,feedback:db.prepare('SELECT count(*) n FROM radar_feedback WHERE created>=?').get(since).n,timeSavedMinutes:grades.minutes??null,ratings:grades.n};
   },
   nextNotice({after=0}={}){
-   const terminal=db.prepare(`SELECT j.id FROM jobs j WHERE j.state IN ('research','rejected') AND ${requested}
+   const terminal=db.prepare(`SELECT j.id FROM jobs j WHERE j.state IN ('research','rejected') AND json_extract(j.seed,'$.origin')='telegram-native'
     AND j.updated>=? AND coalesce(j.error,'')!='RESEARCH_CHOICE_SUPERSEDED'
     AND NOT EXISTS (SELECT 1 FROM jobs n WHERE json_extract(n.seed,'$.parentJob')=j.id)
     AND NOT EXISTS (SELECT 1 FROM mission_notices m WHERE m.job=j.id)

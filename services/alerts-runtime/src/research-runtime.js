@@ -43,7 +43,7 @@ export async function researchTick({settings,ledger,now=new Date(),store,
   const missions=settings.research.missions===true;
   if(!requestedOnly&&!deliveryOnly&&missions)result.retired=store.retireBackground({pendingPerTopic:settings.research.pendingPerTopic??6});
   const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',hour:'2-digit',hourCycle:'h23'}).format(now);
-  const key=`discovery:${parisDay(now)}:${Math.floor(Number(p)/3)}`;
+  const key=`discovery:${missions?'missions:':''}${parisDay(now)}:${Math.floor(Number(p)/3)}`;
   if(!requestedOnly&&!deliveryOnly&&!store.discovery(key)){
    result.discovery=await discover({store,ledger,now,...(missions?{pendingPerTopic:settings.research.pendingPerTopic??6}:{})});store.recordDiscovery(key,result.discovery);
    if(missions&&settings.research.watches&&!store.nextRequest())result.watch=await checkOneResearchWatch({store,settings,now});
