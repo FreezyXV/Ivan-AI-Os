@@ -27,7 +27,7 @@ Une mission demandée est vérifiée à chaque passage de cinq minutes lorsque l
 
 Career reste en pause. Sa comparaison est préparée dans le rôle existant. Knowledge/Anakalypto est exclu de la collecte et du routage. Le pilote tourne sur Mac. Jev reste disponible pour les usages vérifiés du gateway. Le routage et la sélection des cartes utilisent le code, les preuves lues et la relecture éditoriale.
 
-Le plafond local est de 12 tentatives natives par jour UTC pour le radar et les dossiers, dont quatre réservées aux demandes. Une réservation est comptée avant l’appel. Le prix réellement facturé par le fournisseur natif reste indisponible dans le reçu. L’utilité et le temps gagné se mesurent depuis les avis et déclarations d’Ivan.
+Le plafond local est de 12 tentatives natives par jour UTC pour le radar et les dossiers, dont quatre réservées aux demandes. Une demande peut utiliser une nouvelle rédaction si le premier brouillon attribue un chiffre, une devise ou un identifiant au mauvais passage et si le budget permet aussi la relecture. Le prix réellement facturé par le fournisseur natif reste indisponible dans le reçu. L’utilité et le temps gagné se mesurent depuis les avis et déclarations d’Ivan.
 
 L’exécution d’un paiement, d’une transaction, d’un contact ou d’une publication exige le GO prévu par le noyau. Chaque livraison est vérifiée par son reçu. Un envoi incertain reste en base pour vérification.
 

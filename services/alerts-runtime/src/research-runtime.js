@@ -1,5 +1,5 @@
 import {openResearchStore,requestedResearch,researchMissionId} from './research-store.js';import {discoverResearch,buildResearchBundle} from './research-discovery.js';
-import {createNativeResearch} from './research-native.js';import {renderResearchMessage,researchFail,validateResearchAnalysis} from './research-contract.js';
+import {createNativeResearch} from './research-native.js';import {renderResearchMessage,researchFail,validateResearchAnalysis,factCheckCode} from './research-contract.js';
 import {openDossiers} from '../../../shared/opportunity-dossier.mjs';import {createTelegramDelivery} from './telegram-delivery.js';
 import {parisDay,scheduleSlots} from './schedule.js';
 import {missionOutcome} from './mission-status.js';
@@ -12,6 +12,24 @@ function choiceStillApplies(seed,config){
   const current=dossiers.researchContext(seed.watchId??seed.testId);
   return current?.choice===(seed.watchId?'veille':'tester')&&current.choiceRevision===seed.choiceRevision;
  }finally{dossiers.close();}
+}
+
+async function analyze({store,job,bundle,complete,limits,result}){
+ const request=async repairCheck=>{
+  store.reserveCall(job.id,job.owner,repairCheck?'analysis_repair':'analysis',limits);
+  result.nativeCalls++;
+  const {execution,...raw}=await complete({bundle,stage:'analysis',...(repairCheck?{repairCheck}:{})});
+  result.analysisDurationMs=execution?.durationMs;
+  return validateResearchAnalysis(bundle,raw);
+ };
+ try{return await request();}
+ catch(error){
+  const check=factCheckCode(error.check);
+  if(error.code!=='RESEARCH_FACT_UNSUPPORTED'||!check||!requestedResearch(job.seed)||
+   !store.hasModelCapacity({...limits,priority:true,count:2}))throw error;
+  result.repairedCheck=check;
+  return request(check);
+ }
 }
 export async function researchTick({settings,ledger,now=new Date(),store,
  discover=discoverResearch,build=buildResearchBundle,complete=createNativeResearch({binary:settings?.openclawBinary}),
@@ -46,8 +64,8 @@ export async function researchTick({settings,ledger,now=new Date(),store,
     const {bundle,coverage}=await build(job.seed,{now,priorSources:prior?.sources,priorCalculations:prior?.calculations});result.coverage=coverage;
     if(!bundle){store.finish(job.id,job.owner,{state:'research',error:'RESEARCH_EVIDENCE_INSUFFICIENT'});result.outcome='evidence-insufficient';}
     else{
-     store.saveBundle(job.id,job.owner,bundle);store.reserveCall(job.id,job.owner,'analysis',limits);result.nativeCalls++;
-     const {execution,...raw}=await complete({bundle,stage:'analysis'}),analysis=validateResearchAnalysis(bundle,raw);result.analysisDurationMs=execution?.durationMs;
+     store.saveBundle(job.id,job.owner,bundle);
+     const analysis=await analyze({store,job,bundle,complete,limits,result});
      store.saveAnalysis(job.id,job.owner,analysis);
      if(analysis.decision!=='report'){
       store.finish(job.id,job.owner,{state:analysis.decision==='skip'?'rejected':'research',error:'RESEARCH_ANALYSIS_'+analysis.decision.toUpperCase()});result.outcome=analysis.decision;
@@ -71,6 +89,7 @@ export async function researchTick({settings,ledger,now=new Date(),store,
     try{store.finish(job.id,job.owner,{state:'research',error:code});}catch{}
     result.error_code=code;
     if(['VALIDATE','PARSE','COMPLETE'].includes(e.failureStage))result.failureStage=e.failureStage;
+    if(factCheckCode(e.check))result.failureCheck=e.check;
    }
   }
   const scheduled=!requestedOnly&&(scheduleSlots(now).digest||forceDelivery);

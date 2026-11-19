@@ -51,7 +51,7 @@ try{
     dailyModelLimit:12,reservedForRequests:4,dailyDeliveryLimit:3,pendingPerTopic:6,missionsSince:old.research?.missionsSince??new Date().toISOString()};
   const radar={enabled:old.radar?.enabled===true,dailyTopics:old.radar?.dailyTopics??20,format:RADAR_BRIEF_VERSION,buttons:true,editions:true};
   writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research,radar},null,2),{flag:'wx',mode:0o600});
-  const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,probeRadar:true,
+  const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,probeRadar:true,probePilot:true,
     expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};
   writeFileSync(path.join(out,'prepared.json'),JSON.stringify(proof,null,2),{flag:'wx',mode:0o600});
   console.log(JSON.stringify(proof));

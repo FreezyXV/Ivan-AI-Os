@@ -106,3 +106,29 @@ test('owner radar request, delivery, decision and follow-up use one dossier with
   discover:async()=>({}),build:async()=>assert.fail(),complete:async()=>assert.fail()});
  assert.equal(stopped.outcome,'choice-updated');assert.equal(sends,2);
 });
+test('a citation check can request one targeted rewrite before independent review and delivery',async t=>{
+ const f=setup(t);f.settings.research.missions=true;f.settings.research.dailyModelLimit=3;
+ const {id}=f.store.enqueue({...f.seed,origin:'telegram-native',revision:'rewrite'});
+ const prompts=[];
+ const tool=createResearchTool({agentId:'ivan-system'},{complete:async({message,extraSystemPrompt})=>{
+  prompts.push(message);
+  if(extraSystemPrompt.startsWith('Analyste')){
+   const facts=prompts.length===1?[{...report.facts[0],summary:'Le commerce perd 999 commandes.'}]:report.facts;
+   return {text:JSON.stringify({decision:'report',report:{...report,facts}})};
+  }
+  return {text:JSON.stringify({decision:'approve',strongestCounterargument:'Une procédure existante peut résoudre le problème.',issues:[]})};
+ }});
+ const complete=createNativeResearch({runImpl:async(_binary,args)=>{
+  const request=JSON.parse(args[4]);
+  return {stdout:JSON.stringify({ok:true,output:await tool.execute('test',request.args)})};
+ }});
+ const result=await researchTick({...f,now,requestedOnly:true,build:async()=>({bundle,coverage:{}}),complete,
+  deliver:async()=>({delivered:true,messageId:'987'})});
+ assert.equal(result.repairedCheck,'FACT_1_NUMBER');
+ assert.match(prompts[1],/FACT_1_NUMBER/);
+ assert.doesNotMatch(prompts[1],/999 commandes/);
+ assert.equal(prompts.length,3);
+ assert.equal(result.nativeCalls,3);
+ assert.equal(f.store.get(id).state,'delivered');
+ assert.equal(f.store.summary().modelCallsToday,3);
+});

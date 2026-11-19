@@ -1,4 +1,3 @@
-import { Type } from "typebox";
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { routePilotTask } from "./pilot-routing.js";
 import { ROUTING_TASKS, ROUTING_URGENCY } from "../../../services/jev-gateway/src/routing-metadata.js";
@@ -13,11 +12,16 @@ export default definePluginEntry({
     api.registerTool({
       name: "ivan_route",
       description: "Select a specialist using task labels ordered by priority, urgency and detail readiness. Send no free text, names, contacts, file contents or credentials. Advisory only: does not launch agents or authorize tools.",
-      parameters: Type.Object({
-        requested_tasks: Type.Array(Type.Union(ROUTING_TASKS.map(task => Type.Literal(task))), { minItems: 1, maxItems: 8, uniqueItems: true }),
-        urgency: Type.Union(ROUTING_URGENCY.map(value => Type.Literal(value))),
-        details_available: Type.Boolean()
-      }, { additionalProperties: false }),
+      parameters: {
+        type: "object",
+        properties: {
+          requested_tasks: {type:"array",items:{type:"string",enum:[...ROUTING_TASKS]},minItems:1,maxItems:8,uniqueItems:true},
+          urgency: {type:"string",enum:[...ROUTING_URGENCY]},
+          details_available: {type:"boolean"}
+        },
+        required: ["requested_tasks","urgency","details_available"],
+        additionalProperties: false
+      },
       async execute(_id, params) {
         try {
           const result = routePilotTask(params);

@@ -39,7 +39,7 @@ export function openResearchStore(directory,{now=()=>Date.now()}={}){
     (priority||spent.background+count<=dailyLimit-reservedForRequests)};
  };
  const reserve=(key,stage,options)=>{
-  if(!['analysis','contradiction'].includes(stage))researchFail('RESEARCH_CALL_CONFIG_INVALID');
+  if(!['analysis','analysis_repair','contradiction'].includes(stage))researchFail('RESEARCH_CALL_CONFIG_INVALID');
   const {day,total,available}=budget(options);
   if(!available)researchFail('RESEARCH_DAILY_MODEL_LIMIT');
   if(db.prepare('SELECT 1 FROM model_calls WHERE job=? AND stage=?').get(key,stage))researchFail('RESEARCH_CALL_ALREADY_SPENT');
