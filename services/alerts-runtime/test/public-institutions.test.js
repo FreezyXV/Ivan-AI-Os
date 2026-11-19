@@ -27,7 +27,7 @@ test('statistical pages require publication evidence and keep snippets distinct 
     const path = new URL(url).pathname;
     const text=path==='/fr/statistiques/2107840'?'<a href="/fr/statistiques/9100001">Insee</a>':
       path.endsWith('/euro-indicators')?'<a href="/eurostat/web/products-euro-indicators/w/2-18112026-ap">Publication</a><a href="/eurostat/web/products-euro-indicators/w/1-19112026-ap">Sans date</a>':
-      '<title>Résultat statistique</title>'+(path.endsWith('9100001')?'<span id="libelle-details">Paru le</span></span>19/11/2026':
+      '<title>Résultat statistique</title>'+(path.endsWith('9100001')?'<span id="libelle-details"><span data-i18n="[html]produit.bandeau-bleu.paru-le-impression">Paru le</span></span>19/11/2026':
         path.endsWith('2-18112026-ap')?'<meta property="article:published_time" content="2026-11-18T10:00:00Z">':'')+
         '<article>'+content+'</article>';
     return {url,text,contentType:'text/html',readAt:now.toISOString()};

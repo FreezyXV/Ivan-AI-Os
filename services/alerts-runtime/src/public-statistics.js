@@ -1,12 +1,12 @@
 import {extractPublicPage, fetchPublic} from './research-web.js';
 
 const indices = [
-  { url: 'https://www.insee.fr/fr/statistiques/2107840', article: /^\/fr\/statistiques\/\d{7}\/?$/ },
-  { url: 'https://ec.europa.eu/eurostat/web/euro-indicators', article: /^\/eurostat\/web\/products-euro-indicators\/w\/[a-z\d-]+\/?$/ }
+  { url: 'https://www.insee.fr/fr/statistiques/2107840', article: /^\/fr\/statistiques\/\d{7}\/?$/, readLimit: 8 },
+  { url: 'https://ec.europa.eu/eurostat/web/euro-indicators', article: /^\/eurostat\/web\/products-euro-indicators\/w\/[a-z\d-]+\/?$/, readLimit: 4 }
 ];
 
 function inseePublication(html) {
-  const date = /id=["']libelle-details["'][^>]*>\s*Paru le\s*<\/span>\s*<\/span>\s*(\d\d)\/(\d\d)\/(\d{4})\b/i.exec(html);
+  const date = /<span\b[^>]*\bdata-i18n=["']\[html\]produit\.bandeau-bleu\.paru-le-impression["'][^>]*>\s*Paru le\s*<\/span>\s*<\/span>\s*(\d\d)\/(\d\d)\/(\d{4})\b/i.exec(html);
   if (!date) return null;
   const stamp = `${date[3]}-${date[2]}-${date[1]}`;
   const parsed = new Date(stamp);
@@ -14,7 +14,7 @@ function inseePublication(html) {
 }
 
 export async function readPublicStatistics({ now = new Date(), fetchImpl = fetchPublic } = {}) {
-  const feeds = await Promise.all(indices.map(async ({url, article}) => {
+  const feeds = await Promise.all(indices.map(async ({url, article, readLimit}) => {
     const host = new URL(url).hostname;
     try {
       const index = await fetchImpl(url, {maxBytes: 1200000, timeoutMs: 8000});
@@ -25,7 +25,7 @@ export async function readPublicStatistics({ now = new Date(), fetchImpl = fetch
         if (resolved.origin !== new URL(url).origin || !article.test(resolved.pathname) ||
             resolved.pathname === new URL(url).pathname) continue;
         articles.add(resolved.origin + resolved.pathname);
-        if (articles.size === 4) break;
+        if (articles.size === readLimit) break;
       }
       if (!articles.size) return { host, items: [], errors: ['PUBLIC_RESEARCH_STATISTICS_INDEX_EMPTY'] };
       const items = [], errors = [];
