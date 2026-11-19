@@ -33,4 +33,6 @@ L’exécution d’un paiement, d’une transaction, d’un contact ou d’une p
 
 ## Qualification
 
-Utiliser le relais de session pour distinguer les essais automatisés, les sondes locales et les messages confirmés de la version active. Après changement, contrôler la reprise du prochain créneau, les parcours de demandes et le cumul des avis réels sur deux semaines.
+Sur le Mac, `/suivi bilan` a répondu dans le chat réel. Le nouveau routage Finance et la recherche plein texte ont passé les sondes. La file a accepté sept sources publiques nouvelles. Le test automatisé a vérifié l’aller-retour dossier, reçu, décision et nouvelle version sur un coffre de test.
+
+La qualification documentaire réelle est restée en recherche après la validation des citations et la revue indépendante. Le parcours automatique jusqu’à un dossier approuvé, ainsi que les clics des boutons sur une page effectivement reçue, restent à qualifier. Le [relais de session](SESSION_HANDOFF.md) conserve les mesures, les causes observées et les références de la version active.
