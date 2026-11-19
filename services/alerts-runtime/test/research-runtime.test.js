@@ -2,6 +2,9 @@ import test from 'node:test';import assert from 'node:assert/strict';import {mkd
 import {researchTick} from '../src/research-runtime.js';import {openResearchStore} from '../src/research-store.js';import {sealBundle,researchHash} from '../src/research-contract.js';
 import {createNativeResearch} from '../src/research-native.js';import {createResearchTool} from '../../../hooks/openclaw/ivan-alerts/research-tool.js';
 import {openDossiers} from '../../../shared/opportunity-dossier.mjs';
+import {handleRadarCommand} from '../../../hooks/openclaw/ivan-opportunities/radar-command.js';
+import {handleOpportunityCommand} from '../../../hooks/openclaw/ivan-opportunities/command.js';
+import {checkOneResearchWatch} from '../src/research-watch.js';
 const now=new Date('2026-10-16T20:00:00Z'),textA='Our shop loses confirmed orders when the cache serves another customer session.',textB='Exclude the cart and checkout from page caching. This procedure does not fix external proxies.';
 const bundle=sealBundle({topic:'business',title:'Commandes perdues et cache',anchorUrl:'https://example.org/pain',sources:[['pain','https://example.org/pain',textA],['docs','https://vendor.org/docs',textB]].map(([id,url,text])=>({id,url,text,title:id,readAt:now.toISOString(),publishedAt:null,kind:'page',sha256:researchHash(text)}))});
 const report={category:'business',title:'Vérifier les erreurs de cache',facts:[{summary:'Un commerce décrit des commandes perdues lors de la mise en cache.',source_id:'pain',evidence_index:0}],thesis:'Hypothèse : un diagnostic des proxys pourrait résoudre un blocage des boutiques.',whyNow:'Le problème empêche de traiter les commandes.',counterargument:'La configuration de cache existante peut suffire.',unknowns:['Demande indépendante inconnue.'],nextStep:'Comparer la documentation et des témoignages publics indépendants.',invalidation:'La configuration existante résout entièrement les cas observés.',horizon:'short',valuation:'non estimable'};
@@ -62,4 +65,44 @@ test('background research leaves room for radar while an explicit user request r
  assert.equal((await researchTick(args)).nativeCalls,2);assert.equal((await researchTick(args)).nativeCalls,0);assert.equal(f.store.summary().modelCallsToday,2);
  f.store.enqueue({...f.seed,anchorUrl:'https://another.org/owner',origin:'telegram-native'});
  assert.equal((await researchTick(args)).nativeCalls,2);assert.equal(f.store.summary().modelCallsToday,4);
+});
+test('owner radar request, delivery, decision and follow-up use one dossier without rewriting prior notes',async t=>{
+ const f=setup(t),{complete}=native();
+ f.settings.research.missions=true;
+ const config={...f.settings.opportunities,researchDirectory:f.settings.research.directory,ownerId:'123456789',accountId:'default'};
+ const command=args=>({args,channel:'telegram',isAuthorizedSender:true,senderId:config.ownerId,from:'telegram:'+config.ownerId,accountId:'default'});
+ const id=f.store.radar.register({scope:'public',producer:'test-radar',topic:'business',url:bundle.anchorUrl,title:bundle.title,
+  observedAt:now.toISOString(),publishedAt:now.toISOString(),sourceStatus:'title-only',excerpt:''});
+ const page=f.store.radar.reserve([id],'synthetic page');f.store.radar.finish(page.id,{delivered:true,messageId:'1'});
+ const answer=await handleRadarCommand(command(`${id} creuser`),config,'feedback');
+ const mission=f.store.nextRequest().id;
+ assert.match(answer.text,new RegExp(mission.slice(0,12)));
+ const morning=new Date('2026-10-16T08:00:00Z');let sends=0;
+ const args={...f,now:morning,requestedOnly:true,discover:async()=>assert.fail(),build:async()=>({bundle,coverage:{}}),
+  complete,deliver:async()=>({delivered:true,messageId:String(10+ ++sends)})};
+ assert.equal((await researchTick(args)).delivery.dossier,mission.slice(0,12));
+ assert.equal(f.store.get(f.id).state,'pending');
+ const initial=path.join(config.vaultPath,'Ivan AI OS','inbox',`opportunite-${mission.slice(0,12)}-v0.md`);
+ const initialText=readFileSync(initial,'utf8');
+ const ack=await handleOpportunityCommand(command(`${mission.slice(0,12)} tester Comparer les preuves publiques`),config,'decide');
+ assert.match(ack.text,/Test préparatoire en file/);
+ assert.equal(f.store.missions(mission.slice(0,12))[0].current.seed.missionId,mission);
+ assert.equal((await researchTick(args)).delivery.dossier,mission.slice(0,12));
+ assert.equal(sends,2);
+ const dossiers=openDossiers(config);try{
+  assert.equal(dossiers.list().length,1);
+  assert.equal(dossiers.get(mission.slice(0,12)).decisions.length,1);
+  assert.equal(dossiers.project(mission.slice(0,12)).revision,2);
+  assert.equal(dossiers.get(mission.slice(0,12)).decisions[0].choice,'tester');
+  dossiers.decide(mission.slice(0,12),'veille','Attendre une nouvelle preuve publique.');
+ }finally{dossiers.close();}
+ assert.equal(readFileSync(initial,'utf8'),initialText);
+ const detect=async()=>({signature:'a'.repeat(64),sources:[bundle.sources[0]],question:'Quel changement observable affecte le problème ?'});
+ assert.equal((await checkOneResearchWatch({...f,now,detect})).queued,1);
+ assert.equal((await checkOneResearchWatch({...f,now,detect})).checked,0);
+ const current=openDossiers(config);
+ try{current.decide(mission.slice(0,12),'ecarter','Aucune demande confirmée.');}finally{current.close();}
+ const stopped=await researchTick({...args,requestedOnly:false,jobId:f.store.list('pending').find(row=>row.seed.watchId).id,
+  discover:async()=>({}),build:async()=>assert.fail(),complete:async()=>assert.fail()});
+ assert.equal(stopped.outcome,'choice-updated');assert.equal(sends,2);
 });

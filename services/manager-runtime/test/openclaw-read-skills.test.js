@@ -44,7 +44,7 @@ test('manager plan requires tools declared for the correct role, excluding perso
  const plan=createManagerPlan({...args,availableToolsByRoute:{finance:['ivan_finance_brief'],system:['ivan_memory_search','ivan_memory_read'],knowledge:['ivan_memory_search','ivan_memory_read']}});
  const entries=plan.openclawFragment.agents.entries;
  assert.ok(entries['ivan-finance'].skills.includes('finance-engine'));assert.ok(!entries['ivan-finance'].skills.includes('veille-investissements'));
- assert.ok(entries['ivan-system'].skills.includes('memoire-obsidian'));assert.ok(entries['ivan-knowledge'].skills.includes('memoire-obsidian'));
+ assert.ok(entries['ivan-system'].skills.includes('memoire-obsidian'));assert.equal(entries['ivan-knowledge'],undefined);
  assert.deepEqual(entries['ivan-finance'].tools.alsoAllow,['ivan_finance_brief']);
  assert.equal(entries.main.tools.alsoAllow,undefined);
  assert.throws(()=>createManagerPlan({...args,availableToolsByRoute:{finance:['ivan_memory_read']}}),/INVALID_TOOL_CAPABILITIES/);

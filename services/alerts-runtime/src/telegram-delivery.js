@@ -5,6 +5,15 @@ import { fail,AlertError } from './context.js';
 const run = promisify(execFile);
 const messageId = value => typeof value === 'string' && /^[1-9]\d{0,19}$/.test(value);
 
+export function radarPresentation(ids) {
+  if (!Array.isArray(ids) || ids.length < 1 || ids.length > 2 || new Set(ids).size !== ids.length ||
+      ids.some(id => typeof id !== 'string' || !/^[a-f\d]{10}$/.test(id))) fail('ALERT_TELEGRAM_BUTTON_INVALID');
+  return {blocks: ids.map((id,index) => ({type:'buttons', buttons:[['Utile','utile'],['Inutile','inutile'],['Creuser','creuser']].map(([label,verb]) => ({
+    label: ids.length===1?label:`${index+1} · ${label}`,
+    action:{type:'command',command:`/avis ${id} ${verb}`}
+  }))}))};
+}
+
 // Contracts observed in OpenClaw 2026.9.5 register.message and Telegram send.
 // A dry-run, partial delivery or arbitrary top-level ID is never a receipt.
 export function parseTelegramReceipt(output, target) {
@@ -35,12 +44,13 @@ export function createTelegramDelivery({ target, account, binary = 'openclaw',
       typeof binary !== 'string' || !binary || typeof runImpl !== 'function' ||
       !Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 45000 ||
       typeof silent !== 'boolean') fail('ALERT_TELEGRAM_CONFIG_INVALID');
-  return async ({ text, signal }) => {
+  return async ({ text, signal, feedbackSubjects }) => {
     if (typeof text !== 'string' || !text.trim() || text.length > 2500 || /\x00/.test(text))
       fail('ALERT_TELEGRAM_MESSAGE_INVALID');
     signal?.throwIfAborted();
     const args = ['message', 'send', '--channel', 'telegram', '--target', target,
       '--message', text, '--json', ...(account ? ['--account', account] : []),
+      ...(feedbackSubjects ? ['--presentation',JSON.stringify(radarPresentation(feedbackSubjects))] : []),
       ...(silent ? ['--silent'] : [])];
     const started=Date.now();let stage='NATIVE_EXIT';
     try {

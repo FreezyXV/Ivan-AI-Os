@@ -24,7 +24,8 @@ try {
   const managers = loadManagers(), registry = buildRegistry();
   if (!registry.ok || checkManagers(managers).length) throw new Error("INVALID_MANAGER_REGISTRY");
   if (mainWorkspace && !lstatSync(mainWorkspace).isDirectory()) throw new Error("INVALID_MAIN_WORKSPACE");
-  const pausedRoutes = pausedRoutesArg === undefined ? PILOT_STATE.pausedRoutes : pausedRoutesArg ? pausedRoutesArg.split(',') : [];
+  const requestedPauses = pausedRoutesArg === undefined ? PILOT_STATE.pausedRoutes : pausedRoutesArg ? pausedRoutesArg.split(',') : [];
+  const pausedRoutes = [...new Set([...requestedPauses,...PILOT_STATE.excludedRoutes])];
   const plan = createManagerPlan({ managers, skills: registry.results.map(r => r.entry), runtimeRoot: target, mainWorkspace, pausedRoutes });
   stage = mkdtempSync(path.join(parent, ".ivan-manager-stage-"));
   for (const role of plan.roles) {
@@ -43,7 +44,7 @@ try {
   }
   writeFileSync(path.join(stage, "manager-plan.json"), JSON.stringify(plan, null, 2), { mode: 0o600 });
   renameSync(stage, target); stage = undefined;
-  console.log(JSON.stringify({ roles_prepared: plan.roles.length, openclaw_roles: plan.roles.filter(r => r.runtime === "openclaw" && r.status !== "PAUSED").length, paused_roles:plan.roles.filter(r=>r.status==="PAUSED").map(r=>r.route), private_finance_context: "claude-only", distinct_workspaces: true, secretary_workspace_preserved: Boolean(mainWorkspace), live_config_modified: false, models_started: 0 }));
+  console.log(JSON.stringify({ roles_prepared: plan.roles.length, openclaw_roles: Object.keys(plan.openclawFragment.agents.entries).length, paused_roles:plan.roles.filter(r=>r.status==="PAUSED").map(r=>r.route), excluded_roles:plan.roles.filter(r=>r.status==="EXCLUDED").map(r=>r.route), private_finance_context: "claude-only", distinct_workspaces: true, secretary_workspace_preserved: Boolean(mainWorkspace), live_config_modified: false, models_started: 0 }));
 } catch (error) {
   const code = error.code ?? error.message;
   console.error(/^[A-Z][A-Z_]{0,63}$/.test(code) ? code : "MANAGER_PREPARATION_REFUSED"); process.exitCode = 1;

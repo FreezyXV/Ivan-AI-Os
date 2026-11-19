@@ -19,7 +19,7 @@ import xml.etree.ElementTree as ET
 
 MAX_BYTES = 800_000
 TOPICS = {"ia": "engineering", "tech": "engineering", "finance": "finance", "business": "business"}
-FEED_HOSTS = {"hnrss.org", "huggingface.co", "simonwillison.net", "nextjs.org", "www.ecb.europa.eu", "www.producthunt.com"}
+FEED_HOSTS = {"hnrss.org", "huggingface.co", "simonwillison.net", "nextjs.org", "www.ecb.europa.eu", "www.producthunt.com", "www.federalreserve.gov"}
 
 
 class ExportError(Exception):

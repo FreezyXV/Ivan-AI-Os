@@ -51,20 +51,29 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
   db.exec(`PRAGMA busy_timeout=1000; PRAGMA journal_mode=WAL;
     CREATE TABLE IF NOT EXISTS dossiers(id TEXT PRIMARY KEY,source_id TEXT UNIQUE NOT NULL,payload TEXT NOT NULL,created INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS choices(id TEXT NOT NULL,revision INTEGER NOT NULL,choice TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(id,revision));
-    CREATE TABLE IF NOT EXISTS user_feedback(id TEXT PRIMARY KEY,scope TEXT NOT NULL,verdict TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,origin TEXT NOT NULL);`);
+    CREATE TABLE IF NOT EXISTS user_feedback(id TEXT PRIMARY KEY,scope TEXT NOT NULL,verdict TEXT NOT NULL,reason TEXT NOT NULL,created INTEGER NOT NULL,origin TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS dossier_research_versions(job TEXT PRIMARY KEY, id TEXT NOT NULL, payload TEXT NOT NULL, created INTEGER NOT NULL);`);
   if(!db.prepare('PRAGMA table_info(choices)').all().some(c=>c.name==='origin'))db.exec("ALTER TABLE choices ADD COLUMN origin TEXT NOT NULL DEFAULT 'telegram-native'");
   const tx=fn=>{db.exec('BEGIN IMMEDIATE');try{const value=fn();db.exec('COMMIT');return value;}catch(e){db.exec('ROLLBACK');throw e;}};
-  const row=id=>{if(!safeId(id))reject('DOSSIER_ID_INVALID');const r=db.prepare('SELECT * FROM dossiers WHERE id=?').get(id);if(!r)reject('DOSSIER_NOT_FOUND');return {...r,payload:JSON.parse(r.payload)};};
+  const versions=id=>db.prepare('SELECT job,payload,created FROM dossier_research_versions WHERE id=? ORDER BY rowid').all(id);
+  const row=id=>{
+    if(!safeId(id))reject('DOSSIER_ID_INVALID');
+    const r=db.prepare('SELECT * FROM dossiers WHERE id=?').get(id);
+    if(!r)reject('DOSSIER_NOT_FOUND');
+    const updates=versions(id),latest=updates.at(-1);
+    return {...r,payload:JSON.parse(latest?.payload??r.payload),updates:Math.max(0,updates.length-1),sourceAt:latest?.created??r.created};
+  };
   const choices=id=>db.prepare('SELECT * FROM choices WHERE id=? ORDER BY revision').all(id);
   const notePath=(id,revision)=>`Ivan AI OS/inbox/opportunite-${id}-v${revision}.md`;
   function project(id){
     const r=row(id),history=choices(id),p=r.payload,f=p.brief.business_fiche;
     if(p.kind==='research'){
-      const content=renderResearchDossier({id,...p,history,created:r.created});
+      const revision=history.length+r.updates;
+      const content=renderResearchDossier({id,...p,history,created:r.sourceAt,revision});
       if(content.length>64000||secret.test(content))reject('DOSSIER_CONTENT_REFUSED');
       directoryTree(path.join(vaultPath,'Ivan AI OS','inbox'),true);
-      newOrIdentical(path.join(vaultPath,notePath(id,history.length)),content);
-      return {id,revision:history.length,note:notePath(id,history.length),choice:history.at(-1)?.choice??null};
+      newOrIdentical(path.join(vaultPath,notePath(id,revision)),content);
+      return {id,revision,note:notePath(id,revision),choice:history.at(-1)?.choice??null};
     }
     const revision=history.length,last=history.at(-1),at=last?.created??r.created;
     const choice=last?{tester:'tester',veille:'garder en veille',ecarter:'écarter'}[last.choice]:'en attente de ta décision';
@@ -100,11 +109,26 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
       const bundle=sealBundle(job.bundle),report=validateResearchReport(bundle,job.draft),review=validateResearchReview(bundle,report,job.review);
       if(review.decision!=='approve')reject('DOSSIER_REVIEW_REQUIRED');
       const payload={kind:'research',bundle,report,review,brief:{goal:bundle.topic,message:renderResearchMessage(bundle,report,review)}};
-      const encoded=JSON.stringify(payload),id=job.id.slice(0,12),sourceId='research:'+job.id;
+      const mission=job.seed?.missionId??job.id;
+      if(!/^[a-f\d]{64}$/.test(mission))reject('DOSSIER_SOURCE_INVALID');
+      const encoded=JSON.stringify(payload),id=mission.slice(0,12),sourceId='research:'+mission;
       if(encoded.length>128000||secret.test(encoded))reject('DOSSIER_CONTENT_REFUSED');
-      tx(()=>{const prior=db.prepare('SELECT * FROM dossiers WHERE id=? OR source_id=?').get(id,sourceId);
-        if(prior&&(prior.source_id!==sourceId||prior.payload!==encoded))reject('DOSSIER_SOURCE_CONFLICT');
-        if(!prior)db.prepare('INSERT INTO dossiers VALUES(?,?,?,?)').run(id,sourceId,encoded,now());});
+      tx(()=>{
+        const prior=db.prepare('SELECT * FROM dossiers WHERE id=? OR source_id=?').get(id,sourceId);
+        if(prior&&prior.source_id!==sourceId)reject('DOSSIER_SOURCE_CONFLICT');
+        const saved=db.prepare('SELECT id,payload FROM dossier_research_versions WHERE job=?').get(job.id);
+        if(saved){if(saved.id!==id||saved.payload!==encoded)reject('DOSSIER_SOURCE_CONFLICT');return;}
+        if(!prior)db.prepare('INSERT INTO dossiers VALUES(?,?,?,?)').run(id,sourceId,encoded,now());
+        else if(!versions(id).length){
+          if(job.id===mission){
+            if(prior.payload!==encoded)reject('DOSSIER_SOURCE_CONFLICT');
+          }else{
+            if(!job.seed?.parentJob||!job.seed?.missionId)reject('DOSSIER_SOURCE_CONFLICT');
+            db.prepare('INSERT INTO dossier_research_versions VALUES(?,?,?,?)').run(mission,id,prior.payload,prior.created);
+          }
+        }else if(!job.seed?.parentJob||!job.seed?.missionId)reject('DOSSIER_SOURCE_CONFLICT');
+        db.prepare('INSERT INTO dossier_research_versions VALUES(?,?,?,?)').run(job.id,id,encoded,now());
+      });
       return project(id);
     },
     publish(source){
@@ -125,6 +149,17 @@ export function openDossiers({directory,vaultPath,now=()=>Date.now()}){
       return project(id);
     },
     get(id){const r=row(id);return {id,title:r.payload.item?.title??r.payload.report.title,brief:r.payload.brief,decisions:choices(id),content_is_untrusted_data:true};},
+    researchContext(id){
+      const r=row(id),last=choices(id).at(-1);
+      if(r.payload.kind!=='research')return null;
+      return {missionId:r.source_id.slice(9),jobId:versions(id).at(-1)?.job??r.source_id.slice(9),
+        bundle:r.payload.bundle,report:r.payload.report,choice:last?.choice,choiceRevision:last?.revision};
+    },
+    watched(limit=6){
+      return db.prepare(`SELECT d.id FROM dossiers d JOIN choices c ON c.id=d.id WHERE d.source_id LIKE 'research:%'
+        AND c.revision=(SELECT max(revision) FROM choices x WHERE x.id=c.id) AND c.choice='veille'
+        ORDER BY c.created DESC LIMIT ?`).all(limit);
+    },
     list(){return db.prepare('SELECT id FROM dossiers ORDER BY created DESC LIMIT 10').all().map(({id})=>{const r=row(id),last=choices(id).at(-1);return {id,title:r.payload.item?.title??r.payload.report.title,choice:last?.choice??null,revision:last?.revision??0};});},
     summary(){
       const total=db.prepare('SELECT count(*) AS n FROM dossiers').get().n;

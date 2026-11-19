@@ -1,14 +1,43 @@
 import {fetchPublic,extractPublicPage,searchPublic} from './research-web.js';
 import {collectFinanceResearch,discoverFinanceUniverse} from './research-finance.js';
 import {researchHash,sealBundle,researchFail,researchSpans} from './research-contract.js';
+import {discoverProcurement} from './public-procurement.js';
+import {readPublicStatistics} from './public-statistics.js';
 const decode=s=>s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,'$1').replace(/<[^>]*>/g,' ').replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Math.min(0x10ffff,Number(n)))).replace(/&(?:amp|lt|gt|quot|apos|nbsp);/g,v=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'",'&nbsp;':' '})[v]).replace(/\s+/g,' ').trim();
 const field=(xml,name)=>xml.match(new RegExp('<'+name+'(?:\\s[^>]*)?>([\\s\\S]*?)</'+name+'>','i'))?.[1]??'';
 const safeCode=e=>/^PUBLIC_RESEARCH_[A-Z_]+$/.test(e?.code??'')?e.code:'RESEARCH_SOURCE_UNAVAILABLE';
 const week=date=>{const d=new Date(date);d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10);};
-export async function discoverResearch({store,ledger,now=new Date(),fetchImpl=fetchPublic,financeImpl=collectFinanceResearch,universeImpl=discoverFinanceUniverse}={}){
- const result={queued:0,duplicates:0,errors:[],providers:[],nativeCalls:0};
- const add=seed=>{const r=store.enqueue(seed);result[r.added?'queued':'duplicates']++;};
+export async function discoverResearch({store,ledger,now=new Date(),fetchImpl=fetchPublic,financeImpl=collectFinanceResearch,universeImpl=discoverFinanceUniverse,pendingPerTopic,procurementImpl=discoverProcurement,statisticsImpl=readPublicStatistics}={}){
+ const result={queued:0,duplicates:0,deferred:0,errors:[],providers:[],nativeCalls:0};
+ const add=seed=>{const r=store.enqueue(seed,{pendingPerTopic});result[r.added?'queued':r.deferred?'deferred':'duplicates']++;};
  const readAt=now.toISOString();
+ if(pendingPerTopic!==undefined&&ledger){
+  const key='procurement:'+now.toISOString().slice(0,10);
+  if(!store.discovery(key)){
+   const collected=await procurementImpl({now,fetchImpl});let ingested=0;
+   for(const seed of collected.seeds){
+    const event=`procurement:${seed.procurement.marketKey}:${seed.procurement.evidenceType}`;
+    if(store.discovery(event))continue;
+    const row=ledger.ingest({producer:'boamp-dila',scope:'public',topic:'business',url:seed.anchorUrl,title:seed.title,
+     publishedAt:seed.publishedAt,observedAt:seed.readAt,readAt:seed.readAt,sourceStatus:'read',excerpt:seed.text.slice(0,1200)});
+    if(!row.duplicate)ingested++;
+    store.recordDiscovery(event,{notice:seed.procurement.noticeId});
+   }
+   result.providers.push({provider:'boamp-dila',ingested,requests:collected.requests});
+   result.errors.push(...collected.errors.map(error=>({...error,provider:'boamp-dila'})));
+   store.recordDiscovery(key,{ingested,errors:collected.errors});
+  }
+  const statsKey='official-statistics:'+now.toISOString().slice(0,10);
+  if(!store.discovery(statsKey)){
+   const feeds=await statisticsImpl({now,fetchImpl});
+   for(const feed of feeds){
+    const ingested=feed.items.filter(item=>!ledger.ingest(item).duplicate).length;
+    result.providers.push({provider:feed.host,ingested});
+    result.errors.push(...feed.errors.map(code=>({provider:feed.host,code})));
+   }
+   store.recordDiscovery(statsKey,{providers:feeds.map(({host,items,errors})=>({host,references:items.length,errors}))});
+  }
+ }
  // These are public customer reports, not evidence of willingness to pay.
  try{
   const r=await fetchImpl('https://wordpress.org/support/plugin/woocommerce/feed/');let n=0;
@@ -48,7 +77,7 @@ export async function discoverResearch({store,ledger,now=new Date(),fetchImpl=fe
  if(ledger){
   const candidates=['review','skipped','delivered','pending'].flatMap(state=>ledger.list(state,100)).filter(r=>r.item.sourceStatus==='read'&&now-Date.parse(r.item.observedAt)<7*86400000);
   // One current macro dossier can combine the observation with actual economic analysis.
-  const macro=candidates.filter(r=>r.item.topic==='finance').sort((a,b)=>b.updated-a.updated)[0];
+  const macro=candidates.filter(r=>r.item.topic==='finance').sort((a,b)=>Date.parse(b.item.publishedAt)-Date.parse(a.item.publishedAt))[0];
   if(macro)add({topic:'finance',category:'macro',anchorUrl:macro.item.url,title:macro.item.title,text:macro.item.excerpt,readAt:macro.item.readAt,publishedAt:macro.item.publishedAt});
   const business=candidates.filter(r=>r.item.topic==='business'&&/\b(?:cannot|can't|lost|manual|expensive|hours|frustrat|switch|customers|businesses)\b/i.test(r.item.excerpt)).slice(0,2);
   for(const {item} of business)add({topic:'business',category:'business',anchorUrl:item.url,title:item.title,text:item.excerpt,readAt:item.readAt,publishedAt:item.publishedAt});
@@ -64,8 +93,9 @@ function focus(text,query,max=5000){
 }
 const publisher=url=>new URL(url).hostname.toLowerCase().replace(/^(?:www\.|docs\.|developer\.)/,'');
 export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl=searchPublic,financeImpl=collectFinanceResearch,now=new Date(),priorSources,priorCalculations}={}){
- if(priorCalculations)seed={...seed,calculations:priorCalculations};
- let sources=(priorSources?.slice(0,3)??seed.sources??[]).map(s=>({...s,text:s.text.slice(0,6000)}));const errors=[],queries=[];
+ if(priorCalculations&&!seed.watchId)seed={...seed,calculations:priorCalculations};
+ const snapshots=seed.sources&&seed.watchId?[...seed.sources,...(priorSources??[]).filter(s=>!seed.sources.some(fresh=>fresh.url===s.url))].slice(0,4):priorSources?.slice(0,3)??seed.sources??[];
+ let sources=snapshots.map(s=>({...s,text:s.text.slice(0,6000)}));const errors=[],queries=[];
  const oldUrls=new Set((priorSources??[]).map(s=>s.url));
  if(!sources.length&&seed.sourceType!=='request')sources.push({id:researchHash(seed.anchorUrl),url:seed.anchorUrl,title:seed.title,kind:'seed',text:seed.text,readAt:seed.readAt,publishedAt:seed.publishedAt??null});
  if(seed.category==='asset'&&seed.asset?.id&&(!sources.length||sources.some(s=>s.kind==='market-data'&&now.getTime()-Date.parse(s.publishedAt)>3600000))){
@@ -85,7 +115,7 @@ export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl
  const entity=seed.asset?.name??(/n8n/.test(seed.anchorUrl)?'n8n':/wordpress\.org/.test(seed.anchorUrl)?'WooCommerce':'');
  const searches=Array.isArray(seed.researchQuestions)&&seed.researchQuestions.length?
   seed.researchQuestions.slice(0,2).map(q=>`${entity} ${String(q).replace(/https?:\/\/\S+|[\r\n]/g,' ').slice(0,200)}`):
-  seed.category==='asset'?[`${seed.asset?.name??words} token economics official documentation supply risks`,`${seed.asset?.name??words} adoption liquidity independent analysis ${month} ${year}`]:
+  seed.category==='asset'?(seed.asset?.isin?[`${seed.asset.isin} documentation officielle émetteur prospectus résultats`,`${seed.asset.isin} risques cotation devise ${month} ${year}`]:[`${seed.asset?.name??words} token economics official documentation supply risks`,`${seed.asset?.name??words} adoption liquidity independent analysis ${month} ${year}`]):
   seed.category==='macro'?[`${words} ${month} ${year} economic analysis`,`${words} official statistics central bank ${year}`]:
   [`${entity} ${words} problem workaround documentation`,`${entity} ${words} complaints alternative`];
  const expected=new Set((entity||words).toLowerCase().match(/[a-zà-ÿ0-9]{3,}/g)??[]);
@@ -106,7 +136,8 @@ export async function buildResearchBundle(seed,{fetchImpl=fetchPublic,searchImpl
    sources.push({...page,id:researchHash(page.url),title:page.title.slice(0,200),text:content});
   }catch(e){errors.push({url:target.url,code:safeCode(e)});}
  }
- let bundle;try{bundle=sealBundle({topic:seed.topic,category:seed.category,title:seed.title,anchorUrl:seed.anchorUrl,sources,calculations:seed.calculations??[]});}
+ let bundle;try{bundle=sealBundle({topic:seed.topic,category:seed.category,title:seed.title,anchorUrl:seed.anchorUrl,sources,calculations:seed.calculations??[],
+  ...(seed.sourceOfChange?{sourceOfChange:seed.sourceOfChange}:{})});}
  catch(e){return {bundle:null,coverage:{sources:sources.length,reads,queries,errors:[...errors,{code:e.code??'RESEARCH_EVIDENCE_INSUFFICIENT'}]}};}
  return {bundle,coverage:{sources:sources.length,reads,queries,errors}};
 }

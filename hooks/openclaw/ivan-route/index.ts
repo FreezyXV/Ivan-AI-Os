@@ -1,12 +1,12 @@
 import { Type } from "typebox";
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { GatewayClientError, routeWithGateway } from "./client.js";
+import { routePilotTask } from "./pilot-routing.js";
 import { ROUTING_TASKS, ROUTING_URGENCY } from "../../../services/jev-gateway/src/routing-metadata.js";
 
 export default definePluginEntry({
   id: "ivan-ai-os-route",
   name: "Ivan AI OS Route",
-  description: "Advisory specialist routing backed by Jev.",
+  description: "Advisory specialist routing for the active Mac pilot.",
   register(api) {
     const gatewayUrl = api.pluginConfig?.gatewayUrl;
     if (typeof gatewayUrl !== "string") throw new Error("gatewayUrl is required");
@@ -20,11 +20,11 @@ export default definePluginEntry({
       }, { additionalProperties: false }),
       async execute(_id, params) {
         try {
-          const result = await routeWithGateway(params, gatewayUrl);
+          const result = routePilotTask(params);
           return { content: [{ type: "text", text: JSON.stringify(result) }], details: result };
         } catch (error) {
-          const fallback = { status: "REVIEW", manager: null, provider: "gateway-unavailable",
-            error_code: error instanceof GatewayClientError ? error.code : "GATEWAY_UNAVAILABLE" };
+          const fallback = { status: "REVIEW", manager: null, provider: "deterministic-kernel",
+            error_code: "ROUTING_METADATA_REQUIRED" };
           return { content: [{ type: "text", text: JSON.stringify(fallback) }], details: fallback };
         }
       }

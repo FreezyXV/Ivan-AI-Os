@@ -3,7 +3,7 @@ import { PILOT_STATE } from '../../../shared/pilot-state.mjs';
 export const PILOT_CONTEXT = Object.freeze({
   version: 'mac-alerts-20261016-v8',
   active: Object.freeze(['business', 'finance', 'engineering', 'system']),
-  deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.deferredProjects]),
+  deferred: Object.freeze([...PILOT_STATE.pausedRoutes, ...PILOT_STATE.excludedRoutes, ...PILOT_STATE.deferredProjects]),
   priorities: Object.freeze(['system','business','finance','engineering']),
   investmentHorizons: Object.freeze(['short','medium','long']),
   stack: Object.freeze(['Mac','Node.js','TypeScript','Next.js','Git','Codex','Claude Code','OpenClaw','Jev','TypeSafe','Obsidian','Telegram']),
@@ -45,6 +45,15 @@ export function sourceMaxAgeHours(item){
 }
 export function suspiciousSource(text){
   return /ignore\s+(?:(?:all|your|previous)\s+)*instructions|system\s+note\s+to\s+ai|(?:include|send|reveal|print|exfiltrate)\b[^.!?]{0,80}\b(?:secret|token|api[ -]?key)|classify\s+(?:this\s+)?as\s+urgent/i.test(text);
+}
+export function readInstitutionalSnapshot(item) {
+  if(item.sourceStatus!=='read')return null;
+  const url=new URL(item.url);
+  const supported=item.producer==='boamp-dila'&&url.hostname==='www.boamp.fr'&&url.pathname==='/pages/avis/'||
+    item.producer==='official-statistics'&&(
+      url.hostname==='www.insee.fr'&&/^\/fr\/statistiques\/\d{7}\/?$/.test(url.pathname)||
+      url.hostname==='ec.europa.eu'&&url.pathname.startsWith('/eurostat/web/products-euro-indicators/w/'));
+  return supported?{url:item.url,title:item.title,text:item.excerpt,readAt:item.readAt,publishedAt:item.publishedAt,kind:'primary'}:null;
 }
 export function insufficientShortEvidence(item){
   const excerpt=item.excerpt.trim();

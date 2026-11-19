@@ -7,6 +7,8 @@ export default definePluginEntry({
   register(api){
     api.registerCommand({name:'radar',description:'Relire les sujets du radar large',channels:['telegram'],acceptsArgs:true,requireAuth:true,handler:ctx=>handleRadarCommand(ctx,api.pluginConfig,'read')});
     api.registerCommand({name:'avis',description:'Noter un sujet : utile, inutile ou creuser',channels:['telegram'],acceptsArgs:true,requireAuth:true,handler:ctx=>handleRadarCommand(ctx,api.pluginConfig,'feedback')});
+    api.registerCommand({name:'suivi',description:'Suivre tes demandes en cours et retrouver leur résultat',channels:['telegram'],acceptsArgs:true,requireAuth:true,handler:ctx=>handleRadarCommand(ctx,api.pluginConfig,'follow')});
+    api.registerCommand({name:'temps',description:'Noter les minutes gagnées grâce à un dossier livré',channels:['telegram'],acceptsArgs:true,requireAuth:true,handler:ctx=>handleRadarCommand(ctx,api.pluginConfig,'time')});
     api.registerCommand({name:'opportunite',description:'Consulter les dossiers de recherche préparés',channels:['telegram'],acceptsArgs:true,requireAuth:true,
       handler:ctx=>handleOpportunityCommand(ctx,api.pluginConfig,'read')});
     api.registerCommand({name:'decision',description:'Enregistrer ton choix et sa raison dans Obsidian',channels:['telegram'],acceptsArgs:true,requireAuth:true,

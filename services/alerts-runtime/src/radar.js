@@ -3,6 +3,7 @@ import {createTelegramDelivery} from './telegram-delivery.js';import {researchFa
 import {projectRadarPage} from '../../../shared/radar-memory.mjs';
 import {renderRadarCard,radarSourceProfile} from './radar-brief.js';
 import {prepareRadarCards} from './radar-prepare.js';
+import {parisDay} from './schedule.js';
 const domains=['business','finance','engineering','system'];
 const words=s=>new Set(s.toLowerCase().match(/[\p{L}][\p{L}\p{N}-]{4,}/gu)??[]);
 export function chooseRadarTopics(rows,feedback,limit){
@@ -15,7 +16,9 @@ export function chooseRadarTopics(rows,feedback,limit){
  for(const domain of domains)add(fresh.find(r=>r.item.topic===domain));
  for(const row of fresh){if(chosen.length>=Math.max(domains.length,Math.ceil(limit/4)))break;add(row);}
  while(chosen.length<Math.min(limit,rows.length)){
-  const priority=r=>score(r)-chosen.filter(x=>x.item.topic===r.item.topic).length*(r.item.topic==='system'?1.2:0.4);
+  const publisher=r=>new URL(r.item.url).hostname.replace(/^www\./,'');
+  const priority=r=>score(r)-chosen.filter(x=>x.item.topic===r.item.topic).length*(r.item.topic==='system'?1.2:0.4)
+   -chosen.filter(x=>publisher(x)===publisher(r)).length*0.5;
   add(rows.filter(r=>!chosen.some(x=>x.id===r.id)).sort((a,b)=>priority(b)-priority(a)||recent(a,b))[0]);
  }
  return chosen;
@@ -38,6 +41,8 @@ export async function radarTick({settings,ledger,store,now=new Date(),force=fals
   const eligible=new Set();
   for(const row of ledger.radarSources()){
    try{const item=validateItem(row.item);
+    const subject=`${item.title} ${item.excerpt}`;
+    if(/\b(?:anakalypto|job rejection|getting hired|résumé screening|career advice|refus d[’']embauche|who is hiring)\b/i.test(subject))continue;
     if(!PILOT_CONTEXT.active.includes(item.topic)||['delivered','delivery_unknown','sending'].includes(row.state)||item.url.length>400||now-Date.parse(item.publishedAt)>30*86400000||Date.parse(item.publishedAt)>now.getTime()+300000||Date.parse(item.observedAt)>now.getTime()+300000||
      suspiciousSource(item.title+' '+item.excerpt)||/apikey_|Bearer\s|-----BEGIN|\b(?:sk-|gh[pousr]_)[\w-]{16,}/i.test(item.title+' '+item.excerpt+' '+item.url))continue;
     radarSourceProfile(item.url,item.topic);eligible.add(store.radar.register(item));
@@ -50,6 +55,11 @@ export async function radarTick({settings,ledger,store,now=new Date(),force=fals
     if(result.preparation.error_code)result.error_code=result.preparation.error_code;}
   }
   const rows=chooseRadarTopics(store.radar.explained().filter(r=>eligible.has(r.id)),store.radar.preferences(),remaining);
+  if(settings.radar.editions&&!force&&rows.length){
+   const edition=`radar-edition:${parisDay(now)}:${hour>=18?'pm':'am'}`;
+   if(store.discovery(edition))return snapshot();
+   store.recordDiscovery(edition,{available:rows.length});
+  }
   let offset=0;
   for(let page=0;page<maxPages&&offset<rows.length;page++){
    const batch=[];let text;
@@ -60,7 +70,7 @@ export async function radarTick({settings,ledger,store,now=new Date(),force=fals
    // overwriting a note or claiming the catalogue was delivered.
    try{if(settings.opportunities)projectRadarPage(settings.opportunities,{...reserved,rows:batch,at:now.toISOString()});}
    catch{store.radar.finish(reserved.id);result.error_code='RESEARCH_RADAR_MEMORY_FAILED';break;}
-   let receipt;try{receipt=await deliver({text});}catch{}
+   let receipt;try{receipt=await deliver({text,...(settings.radar.buttons?{feedbackSubjects:batch.map(row=>row.id)}:{})});}catch{}
    const done=store.radar.finish(reserved.id,receipt);result.topics+=batch.length;
    result[done.state==='delivered'?'delivered':'unknown']++;
    if(done.state==='unknown'){result.error_code='RESEARCH_RADAR_DELIVERY_UNKNOWN';break;}

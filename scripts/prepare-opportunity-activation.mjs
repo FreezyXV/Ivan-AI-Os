@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {homedir} from 'node:os';
 import path from 'node:path';
 import {RADAR_BRIEF_VERSION} from '../services/alerts-runtime/src/radar-brief.js';
+import {applyPilotScope} from '../services/manager-runtime/src/pilot-scope.js';
 const [repository,commit,previousSettings]=process.argv.slice(2),home=homedir();
 try{
   if(!path.isAbsolute(repository??'')||!path.isAbsolute(previousSettings??'')||!/^[a-f\d]{40}$/.test(commit??''))throw Error('OPPORTUNITY_PREPARE_ARGUMENTS');
@@ -14,6 +15,7 @@ try{
   if(existsSync(release)||existsSync(out))throw Error('OPPORTUNITY_CANDIDATE_EXISTS');
   const live=path.join(home,'.openclaw/openclaw.json'),bytes=readFileSync(live),config=JSON.parse(bytes),old=JSON.parse(readFileSync(previousSettings));
   if(old.selectionMode!=='native-editorial'||old.verifyNativeBrief!==true)throw Error('OPPORTUNITY_EDITORIAL_CONFIG_REQUIRED');
+  applyPilotScope(config);
   const ownerId=old.target;
   if(!/^[1-9]\d{4,15}$/.test(ownerId??'')||!config.channels?.telegram?.allowFrom?.some(v=>String(v).replace(/^telegram:/,'')===ownerId)||config.channels.telegram.accounts)throw Error('OPPORTUNITY_OWNER_CONFIG_UNSUPPORTED');
   mkdirSync(release,{mode:0o700});mkdirSync(out,{mode:0o700});
@@ -23,24 +25,31 @@ try{
   writeFileSync(path.join(release,'ivan-release.json'),JSON.stringify({sourceCommit:commit,activated:false}),{flag:'wx',mode:0o600});
   const opportunities={directory:path.join(root,'opportunities'),vaultPath,ownerId,accountId:'default',researchDirectory:path.join(old.stateDir,'research')};
   const id='ivan-ai-os-opportunities';config.plugins??={};config.plugins.load??={};
-  config.plugins.load.paths=[...(config.plugins.load.paths??[]).filter(v=>!v.endsWith('/hooks/openclaw/ivan-opportunities')),path.join(release,'hooks/openclaw/ivan-opportunities')];
+  function pinPlugin(folder){
+    const suffix='/hooks/openclaw/'+folder;
+    config.plugins.load.paths=[...(config.plugins.load.paths??[]).filter(v=>!v.replace(/\/+$/,'').endsWith(suffix)),release+suffix];
+  }
+  pinPlugin('ivan-opportunities');
   if(config.plugins.allow)config.plugins.allow=[...new Set([...config.plugins.allow,id])];
   config.plugins.entries??={};config.plugins.entries[id]={enabled:true,config:opportunities};
   // Worker and isolated writer/verifier must share the same evidence contract.
   // Pin both together when deploying an updated public context or prompt.
-  const alerts='ivan-ai-os-alerts';
-  if(config.plugins.entries[alerts]?.enabled===true){
-   config.plugins.load.paths=config.plugins.load.paths.filter(v=>!v.endsWith('/hooks/openclaw/ivan-alerts'));
-   config.plugins.load.paths.push(path.join(release,'hooks/openclaw/ivan-alerts'));
+  for(const name of ['alerts','route','memory']){
+   if(config.plugins.entries['ivan-ai-os-'+name]?.enabled!==true)throw Error('OPPORTUNITY_REQUIRED_PLUGIN_MISSING');
+   pinPlugin('ivan-'+name);
   }
+  config.plugins.entries['ivan-ai-os-memory'].config={vaultPath,searchMode:'full-text'};
+  const telegram=config.channels.telegram;
+  telegram.capabilities={...telegram.capabilities,inlineButtons:'allowlist'};
   const system=config.agents?.entries?.['ivan-system']??config.agents?.list?.find(a=>a.id==='ivan-system');
   const allowed=Array.isArray(system?.tools?.allow)?'allow':Array.isArray(system?.tools?.alsoAllow)?'alsoAllow':null;
   if(!allowed)throw Error('OPPORTUNITY_RESEARCH_TOOL_POLICY_REQUIRED');
   system.tools[allowed]=[...new Set([...system.tools[allowed],'ivan_research_complete','ivan_radar_complete'])];
   const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
   writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
-  const research={enabled:true,directory:path.join(old.stateDir,'research'),dailyModelLimit:12,dailyDeliveryLimit:3};
-  const radar={enabled:old.radar?.enabled===true,dailyTopics:old.radar?.dailyTopics??20,format:RADAR_BRIEF_VERSION};
+  const research={enabled:true,missions:true,watches:true,directory:path.join(old.stateDir,'research'),
+    dailyModelLimit:12,reservedForRequests:4,dailyDeliveryLimit:3,pendingPerTopic:6,missionsSince:old.research?.missionsSince??new Date().toISOString()};
+  const radar={enabled:old.radar?.enabled===true,dailyTopics:old.radar?.dailyTopics??20,format:RADAR_BRIEF_VERSION,buttons:true,editions:true};
   writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research,radar},null,2),{flag:'wx',mode:0o600});
   const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,probeRadar:true,
     expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};

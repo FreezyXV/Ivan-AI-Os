@@ -16,7 +16,12 @@ Reprise uniquement sur décision explicite d'Ivan.
 
 **Mission** : Maximiser les entretiens utiles pour le positionnement d'Ivan, sans rien inventer.
 
-**Flux** : Offres → pré-tri Jev sur métadonnées → analyse `job-application-optimizer` du top 3 → brouillons (CV, lettre, message) → Ivan envoie.
+## Comparer les offres à la reprise
+
+1. Demander les critères indispensables et les préférences d'Ivan pour la mission étudiée. Vérifier le lieu, la rémunération, les conditions et les dates à partir de l'offre d'origine.
+2. Pour chaque offre, distinguer les critères vérifiés, incompatibles et inconnus. Associer à chaque constat le passage de l'offre ou la référence précise à un élément du CV autorisé par Ivan.
+3. Classer les offres d'abord par critères indispensables, puis par préférences satisfaites. Conserver les inconnues avec une question précise. Écarter une offre seulement sur un critère indispensable contredit ou une publication clôturée.
+4. Présenter les trois pistes les plus solides avec l'écart principal, la diligence suivante et la source. Préparer les brouillons CV, lettre ou message pour les pistes choisies par Ivan. Utiliser un worker isolé par comparaison exigeante.
 
 **Contrat de worker** (voir `agents/README.md`) : un objectif, un contexte borné, les skills listés
 ci-dessus seulement, les politiques noyau, une sortie définie, une condition d'arrêt.

@@ -54,3 +54,23 @@ test('catalogue and feedback project new Obsidian notes; an edited note is prese
  writeFileSync(path.join(notes,feedback),'Note personnelle');const answer=await handleRadarCommand(native(`${id} utile`),config,'feedback');assert.match(answer.text,/conservé en base/);assert.equal(readFileSync(path.join(notes,feedback),'utf8'),'Note personnelle');
  assert.equal(f.store.radar.feedbackHistory(id).length,1);
 });
+test('one bad card leaves the approved neighbour deliverable and receives one delayed retry',async t=>{
+ const f=fixture(t),items=[{state:'review',item:item(1)},{state:'review',item:item(2)}];
+ const seen=[];
+ const args={...f,ledger:ledger(items),now:date,force:true,deliver:async({feedbackSubjects})=>{
+  assert.equal(feedbackSubjects.length,1);return {delivered:true,messageId:'201'};
+ }};
+ f.settings.radar.buttons=true;
+ const first=await radarTick({...args,complete:async details=>{
+  if(details.stage==='analysis'){
+   const [good,bad]=details.evidence.items;seen.push(bad.id);
+   return [card(good.id),{...card(bad.id),fact:{summary:'Le commerce a gagné 999 millions.',evidence_index:0}}];
+  }
+  assert.equal(details.evidence.items.length,1);return complete(details);
+ }});
+ assert.equal(first.topics,1);assert.equal(first.preparation.errors[0].code,'RESEARCH_RADAR_DRAFT_INVALID');
+ assert.equal(f.store.radar.preparable().length,0);
+ f.advance(3600000);assert.deepEqual(f.store.radar.preparable().map(r=>r.id),seen);
+ const second=await radarTick(args);assert.equal(second.topics,1);
+ f.advance(3600000);assert.equal(f.store.radar.preparable().length,0);
+});

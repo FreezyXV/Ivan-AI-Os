@@ -1,8 +1,8 @@
-// Operator decisions, 2026-10-05. Deferred projects do not disable existing
-// memory tools. A paused role stays defined and keeps its files for later use.
+// Operating scope. Existing project and vault files remain separate from routing.
 export const PILOT_STATE = Object.freeze({
-  version: 'mac-pilot-20261005-v1',
+  version: 'mac-pilot-20261119-v2',
   pausedRoutes: Object.freeze(['career']),
-  deferredProjects: Object.freeze(['knowledge', 'ovh']),
+  excludedRoutes: Object.freeze(['knowledge']),
+  deferredProjects: Object.freeze(['ovh']),
   deployment: 'mac'
 });

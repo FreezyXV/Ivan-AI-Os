@@ -1,11 +1,11 @@
 import {researchHash,researchFail,researchSpans,evidenceNumbers,evidenceIdentifiers,evidenceCurrencies} from './research-contract.js';
 import {canonicalUrl,suspiciousSource,PILOT_CONTEXT} from './context.js';
-export const RADAR_BRIEF_VERSION='radar-explained-v3';
+export const RADAR_BRIEF_VERSION='radar-explained-v4';
 const fail=()=>researchFail('RESEARCH_RADAR_BRIEF_INVALID');
 const line=(s,max=300)=>typeof s==='string'&&s.trim().length>=15&&s.length<=max&&!/[\x00-\x1f\x7f]/.test(s)&&!suspiciousSource(s);
 export function radarSourceProfile(url,topic){
  const u=new URL(url),host=u.hostname.replace(/^www\./,'');
- if(['ecb.europa.eu','insee.fr','banque-france.fr','eurostat.ec.europa.eu','ec.europa.eu','federalreserve.gov','bls.gov','aft.gouv.fr'].includes(host))return {kind:'institution',label:'source institutionnelle primaire'};
+ if(['ecb.europa.eu','insee.fr','banque-france.fr','eurostat.ec.europa.eu','ec.europa.eu','federalreserve.gov','bls.gov','aft.gouv.fr','boamp.fr'].includes(host))return {kind:'institution',label:'source institutionnelle primaire'};
  if(['sqlite.org','support.getharvest.com','nodejs.org','nextjs.org','docs.openclaw.ai','openclaw.ai','docs.n8n.io','developer.woocommerce.com','woocommerce.com','typescriptlang.org'].includes(host))return {kind:'documentation',label:'documentation ou annonce de l’éditeur'};
  if(host==='github.com'&&/^\/(?:openclaw\/openclaw|nodejs\/node|n8n-io\/n8n|vercel\/next.js|Dolibarr\/dolibarr)(?:\/|$)/i.test(u.pathname)){
   if(/\/(?:issues|pull|discussions)\//.test(u.pathname)||/issuecomment|discussion_r|pullrequestreview/i.test(u.hash+u.search)){
@@ -40,6 +40,28 @@ export function validateRadarCards(rawEvidence,raw){
   if(evidenceNumbers(prose).some(n=>!evidenceNumbers(quote).includes(n))||evidenceIdentifiers(prose).some(n=>!evidenceIdentifiers(row.source.text+' '+PILOT_CONTEXT.stack.join(' ')).includes(n))||evidenceCurrencies(prose).some(unit=>!evidenceCurrencies(quote).includes(unit)))fail();
   return {...c,fact:{summary:f.summary,evidence_index:f.evidence_index,quote}};
  });
+}
+
+export function radarEvidenceForCards(evidence, cards) {
+ const ids = new Set(cards.map(card => card.id));
+ return sealRadarEvidence(evidence.items.filter(item => ids.has(item.id)));
+}
+
+// A malformed draft cannot discard the independent, valid drafts beside it.
+// Duplicate IDs are ambiguous and are dropped rather than resolved by order.
+export function validateRadarDrafts(evidence, raw) {
+ if (!Array.isArray(raw) || raw.length > 8) fail();
+ const cards = [];
+ for (const item of evidence.items) {
+  const matches = raw.filter(card => card?.id === item.id);
+  if (matches.length !== 1) continue;
+  try {
+   cards.push(...validateRadarCards(sealRadarEvidence([item]), matches));
+  } catch (error) {
+   if (error?.code !== 'RESEARCH_RADAR_BRIEF_INVALID') throw error;
+  }
+ }
+ return cards;
 }
 export const radarCardsBinding=(e,cards)=>researchHash([sealRadarEvidence(e.items).id,validateRadarCards(e,cards)]);
 const reviewIssues=['UNSUPPORTED_FACT','UNSUPPORTED_CONTEXT','UNSAFE_ACTION','MISATTRIBUTION','SOURCE_OVERCLAIM','NOT_FRENCH','VAGUE_APPLICATION'];

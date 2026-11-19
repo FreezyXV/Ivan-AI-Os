@@ -1,12 +1,10 @@
-# Priorités du pilote Mac — 2026-10-05
+# Priorités du pilote Mac — 2026-11-19
 
-Décision Ivan : Career en pause ; finalisation Knowledge/Anakalypto à la fin avec
-Codex + Claude ; OVH reporté. Les cases historiques ci-dessous décrivent les
-livraisons, pas l'ordre de travail actuel. Lire docs/MAC-PILOT-PRIORITIES.md.
-Priorité : alertes Telegram synthétiques contextualisées, filtrage et dédoublonnage,
-puis collectes locales, fiabilité, usine logicielle et System.
-Suivi opérationnel jusqu'à la livraison : docs/PROJECT-CHECKLISTS.md,
-25 tâches Codex / 10 tâches Claude avec preuves de fin et répartition des fichiers.
+Le parcours actuel couvre Business, Finance, Engineering et System. Career
+reste en pause, sa comparaison est préparée. Knowledge/Anakalypto est exclu
+du parcours et OVH reste reporté. Obsidian conserve la mémoire du pilote.
+Le contrat opératoire et les mesures figurent dans [Jarvis sur Mac](JARVIS-MISSIONS-MAC.md).
+Les phases ci-dessous conservent l’historique des livraisons.
 
 # Implementation Roadmap
 
@@ -85,7 +83,7 @@ Task decomposition → Claude/Codex builder-reviewer → tests → branch/PR.
 - [x] Claude Code hook `gate`: level-0 rules, Jev for ambiguous calls, active in this project (#28, #31)
 - [ ] Codex hook on the same rules; Jev `tache.categorie` / `constat.severite`
 
-## Phase 8 — Anakalypto
+## Phase 8 — Anakalypto (historique, exclu du pilote)
 Topic → sources → claims → fact-check → pedagogy → visuals → interactive content → QA.
 - [x] Coded evidence rules and visual router (#25); v2 short visual cards, 19 domains, reconstruction series (#26)
 - [x] Topic discovery by code: Wikimedia trends + seven science feeds, deals dropped (#33)

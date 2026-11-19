@@ -75,12 +75,16 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   const at=Date.now();
   try{const result=await fn();
    const degraded=Boolean(result?.error_code)||Boolean(result?.projection_error)||result?.state==='delivery_unknown'||result?.deliveryUnknown>0||
+    Boolean(result?.watch?.error_code)||(result?.preparation?.errors?.length??0)>0||
     (result?.discovery?.errors?.length??0)>0||(result?.coverage?.errors?.length??0)>0||
     (Array.isArray(result?.sourceErrors)&&result.sourceErrors.length>0)||result?.failedFeeds>0||result?.readerErrors>0||result?.decisionErrors>0||result?.pendingDecisions>0;
    results[name]={...result,...(degraded?{degraded:true}:{})};
    ledger.finishCycle(lease,{ok:!degraded,metrics:{durationMs:Date.now()-at,result:results[name]}});}
   catch(error){const code=typeof error.code==='string'&&/^[A-Z_]{1,60}$/.test(error.code)?error.code:'CYCLE_FAILED';results[name]={error_code:code};ledger.finishCycle(lease,{ok:false,metrics:{durationMs:Date.now()-at,error_code:code}});}
  };
+ const missions=settings.research?.missions===true;
+ if(missions)await perform('requests',`requests:${Math.floor(now.getTime()/300000)}`,
+  ()=>research({settings,ledger,now,deliver,requestedOnly:true}));
  await perform('feeds',slots.feeds,feeds);
  if(slots.finance)await perform('finance',slots.finance,finance);
  if(slots.business)await perform('business',slots.business,business);
@@ -89,7 +93,7 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
  const processKey=processNow?'process:verify:'+now.toISOString().slice(0,16).replace(/[T:]/g,'-'):
   selectionMode==='native-editorial'?'process:native:'+Math.floor(now.getTime()/300000):
   slots.feeds.replace('feeds:','process:')+':'+now.getUTCHours()+(selectionMode!=='jev'?':'+selectionMode:'');
- await perform('process',processKey,async()=>{
+ if(!missions)await perform('process',processKey,async()=>{
   if(selectionMode==='native-editorial'){
    // Older Jev reviews retain their original queue age. Only reopen enough to
    // fill spare capacity, so migration cannot displace newly collected sources.
@@ -111,9 +115,9 @@ export async function runCycle({ledger,settings,now=new Date(),digestNow=false,p
   return {selectionMode,decisions,nativeCalls,generations,businessFichesCreated,opportunityScoresCreated,states,...(providerError?{error_code:providerError}:{})};
  });
  if(settings.research?.enabled)await perform('research',`research:${Math.floor(now.getTime()/1800000)}`,
-  ()=>research({settings,ledger,now}));
+  ()=>research({settings,ledger,now,deliver}));
  const window=digestWindow(now,{digestNow});
- if(ledger.list('ready',100).some(r=>digestEligible(r,window)&&prefilter(r.item,{now:now.getTime()}).decision==='select')){
+ if(!missions&&ledger.list('ready',100).some(r=>digestEligible(r,window)&&prefilter(r.item,{now:now.getTime()}).decision==='select')){
   // A source may finish after the day's first page. Reserve the next stable page
   // without replaying a completed cycle or continuing an uncertain delivery.
   let cycleKey;

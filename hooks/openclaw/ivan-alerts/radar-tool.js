@@ -10,7 +10,7 @@ export function createRadarTool(context,subagent){
   phase='COMPLETE';const result=await subagent.complete({agentId:'ivan-system',message:stage==='analysis'?c.radarBriefPrompt(evidence):c.radarReviewPrompt(evidence,cards),extraSystemPrompt:stage==='analysis'?'Rédaction documentaire française uniquement, aucun outil ni historique privé.':'Relecture indépendante de fidélité et clarté, pas de sélection d’utilité. Aucun outil ni contexte privé.',timeoutMs:60000,signal});
   phase='PARSE';if(signal?.aborted||typeof result.text!=='string'||result.text.length>18000)throw Error();
   const raw=JSON.parse(result.text.replace(/^```(?:json)?\s*|\s*```$/g,''));phase='VALIDATE';
-  const value=stage==='analysis'?c.validateRadarCards(evidence,raw):c.validateRadarReview(evidence,cards,{...raw,binding:c.radarCardsBinding(evidence,cards)});
+  const value=stage==='analysis'?c.validateRadarDrafts(evidence,raw):c.validateRadarReview(evidence,cards,{...raw,binding:c.radarCardsBinding(evidence,cards)});
   return output({status:'COMPLETE',version:c.RADAR_BRIEF_VERSION,evidenceId:evidence.id,stage,result:value,execution:'native-isolated-completion'});
  }catch(e){return output({status:'UNAVAILABLE',phase,error_code:/^RESEARCH_[A-Z_]+$/.test(e.code??'')?e.code:'RESEARCH_RADAR_NATIVE_UNAVAILABLE'});}}
  };

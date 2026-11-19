@@ -23,7 +23,8 @@ test("candidate preserves identity, credentials, bindings and model without muta
   assert.equal(result.agents.entries.main.workspace, "/existing-secretary");
   assert.ok(result.agents.entries.main.tools.deny.includes("synthetic-denied"));
   assert.deepEqual(result.agents.entries.main.tools.allow, current.agents.entries.main.tools.allow);
-  assert.equal(Object.keys(result.agents.entries).length, 7);
+  assert.equal(Object.keys(result.agents.entries).length, 6);
+  assert.equal(result.agents.entries['ivan-knowledge'],undefined);
   assert.equal(result.plugins.entries["ivan-ai-os-route"].config.gatewayUrl, "http://127.0.0.1:4311");
 });
 test("explicit Secretary workspace and stricter existing limits are preserved", () => {
@@ -59,13 +60,13 @@ test("runtime candidate keeps an explicitly paused role out of the active roster
   const plan=createManagerPlan({ managers,skills,runtimeRoot:'/prepared/managers',mainWorkspace:'/existing-secretary',pausedRoutes:['career'] });
   const result=propose({plan});
   assert.equal(Object.hasOwn(result.agents.entries,'ivan-career'),false);
-  assert.equal(Object.keys(result.agents.entries).length,6);
+  assert.equal(Object.keys(result.agents.entries).length,5);
   assert.deepEqual(result.channels,current.channels);
 });
 test('external Engineering is retained logically; an existing native Engineering is never silently deleted',()=>{
  const definitions=managers.map(m=>({...m,runtimes:m.route==='engineering'?['codex','claude-code']:['openclaw']}));
  const plan=createManagerPlan({managers:definitions,skills,runtimeRoot:'/prepared/managers',mainWorkspace:'/existing-secretary',pausedRoutes:['career']});
- const result=propose({plan});assert.equal(Object.keys(result.agents.entries).length,5);
+ const result=propose({plan});assert.equal(Object.keys(result.agents.entries).length,4);
  const existing=structuredClone(current);existing.agents.entries['ivan-engineering']={workspace:'/existing-engineering'};
  assert.throws(()=>propose({plan,current:existing}),/EXISTING_MANAGER_PRESERVED/);
  assert.equal(existing.agents.entries['ivan-engineering'].workspace,'/existing-engineering');

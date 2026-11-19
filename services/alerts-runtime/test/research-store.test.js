@@ -13,3 +13,19 @@ test('the daily budget is reserved before calls and includes failed attempts',t=
  assert.throws(()=>store.reserveCall(next,j.owner,'analysis',{dailyLimit:2}),{code:'RESEARCH_DAILY_MODEL_LIMIT'});
  assert.equal(store.summary().modelCalls,2);
 });
+test('a late owner request crosses a long backlog and can use capacity reserved for it',t=>{
+ const {store}=setup(t);
+ for(let i=0;i<120;i++)store.enqueue({...seed,anchorUrl:`https://example.org/background/${i}`});
+ const old=store.claim();store.reserveCall(old.id,old.owner,'analysis',{dailyLimit:4,reservedForRequests:2});
+ store.reserveCall(old.id,old.owner,'contradiction',{dailyLimit:4,reservedForRequests:2});
+ const {id}=store.enqueue({...seed,anchorUrl:'https://owner.example.org/priority',origin:'telegram-native'});
+ assert.equal(store.nextRequest().id,id);
+ assert.equal(store.retireBackground({pendingPerTopic:6}),113);
+ assert.equal(store.list('expired',120).length,113);
+ assert.equal(store.hasModelCapacity({dailyLimit:4,reservedForRequests:2,count:2}),false);
+ assert.equal(store.hasModelCapacity({dailyLimit:4,reservedForRequests:2,count:2,priority:true}),true);
+ const next=store.claim();assert.equal(next.id,id);
+ store.reserveCall(id,next.owner,'analysis',{dailyLimit:4,reservedForRequests:2});
+ store.reserveCall(id,next.owner,'contradiction',{dailyLimit:4,reservedForRequests:2});
+ assert.equal(store.summary().modelCallsToday,4);
+});

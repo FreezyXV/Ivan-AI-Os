@@ -1,6 +1,7 @@
 import path from "node:path";
 import { validateRoutingMetadata } from "../../jev-gateway/src/routing-metadata.js";
 import { isOpenClawSkillAvailable } from "./openclaw-skills.js";
+import { PILOT_STATE } from "../../../shared/pilot-state.mjs";
 
 export const ROUTES = Object.freeze(["business", "career", "finance", "knowledge", "engineering", "system"]);
 export const ROLE_IDS = Object.freeze(Object.fromEntries(ROUTES.map(route => [route, `ivan-${route}`])));
@@ -48,12 +49,13 @@ export function createManagerPlan({ managers, skills, runtimeRoot, mainWorkspace
         ? mainWorkspace : path.join(runtimeRoot, manager.route === "orchestrator" ? "chief-of-staff" : manager.route),
       ...(manager.route === "orchestrator" && mainWorkspace ? { preparedWorkspace: path.join(runtimeRoot, "chief-of-staff") } : {}),
       skills: allowed, availableTools, description: publicFinance ? "Veille financière publique : macro, taux, évolutions et opportunités sourcées pour éclairer les décisions d'Ivan." : manager.description,
-      publicContextOnly: publicFinance, status: pausedRoutes.includes(manager.route) ? "PAUSED" : nativeRuntime?'PREPARED_NOT_ACTIVATED':'EXTERNAL_HANDOFF_REQUIRED'
+      publicContextOnly: publicFinance, status: PILOT_STATE.excludedRoutes.includes(manager.route) ? "EXCLUDED" :
+        pausedRoutes.includes(manager.route) ? "PAUSED" : nativeRuntime?'PREPARED_NOT_ACTIVATED':'EXTERNAL_HANDOFF_REQUIRED'
     };
   });
   if (expected.size) throw new Error("INVALID_MANAGER_REGISTRY");
   if (new Set(roles.map(role => path.resolve(role.workspace))).size !== 7) throw new Error("WORKSPACE_COLLISION");
-  const native = roles.filter(role => role.runtime === "openclaw" && role.status !== "PAUSED");
+  const native = roles.filter(role => role.runtime === "openclaw" && !["PAUSED","EXCLUDED"].includes(role.status));
   const agentEntries = Object.fromEntries(native.map(role => [role.agentId, {
     ...(role.agentId === "main" ? { default: true } : {}),
     workspace: role.workspace, skills: role.skills,
@@ -79,6 +81,8 @@ export function buildDispatchPlan({ route, metadata, plan }) {
   }
   const role = plan.roles.find(r => r.route === route.manager);
   if (!role) throw new Error("MANAGER_NOT_CONFIGURED");
+  if (role.status === "EXCLUDED" || PILOT_STATE.excludedRoutes.includes(role.route))
+    return {status:"EXCLUDED",manager:route.manager,reason:"PILOT_ROUTE_EXCLUDED",executable:false};
   if (role.status === "PAUSED") return { status:"PAUSED",manager:route.manager,reason:"MANAGER_PAUSED",executable:false };
   if (safeMetadata.requested_tasks.includes("portfolio_review")) return { status: "PRIVATE_CLAUDE_HANDOFF", manager: "finance", executable: false, private_data_forwarded: false };
   if(role.runtime!=='openclaw')return {status:'EXTERNAL_MANAGER_HANDOFF',manager:route.manager,runtimes:role.runtimes,

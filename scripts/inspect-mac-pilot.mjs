@@ -18,7 +18,8 @@ export function summarizeDeliveryReceipts(records,{now=new Date()}={}){
   if(row.state!=='delivered')continue;let receipt;
   try{receipt=typeof row.receipt==='string'?JSON.parse(row.receipt):row.receipt;}catch{continue;}
   if(receipt?.delivered!==true||! /^[1-9]\d{0,19}$/.test(receipt.messageId??'')||!Number.isFinite(row.updated))continue;
-  if(row.kind!=='radar')sourceRecordsDelivered++;confirmed.set(receipt.messageId,Math.max(confirmed.get(receipt.messageId)??0,row.updated));
+  if(row.kind!=='radar'&&row.kind!=='notice')sourceRecordsDelivered++;
+  confirmed.set(receipt.messageId,Math.max(confirmed.get(receipt.messageId)??0,row.updated));
  }
  return {sourceRecordsDelivered,confirmedMessages:confirmed.size,confirmedMessagesToday:[...confirmed.values()].filter(at=>parisDay(at)===parisDay(now)).length,
   timezone:'Europe/Paris',meaning:'Telegram acknowledged delivery; reading on the device is not measured'};
@@ -27,20 +28,20 @@ export function readAlertCycleRows(db){
  // Five-minute processing must not bury the last daily delivery/collection.
  return db.prepare(`SELECT name,status,attempts,metrics FROM (
    SELECT *,row_number() OVER(PARTITION BY name ORDER BY updated DESC) AS rank
-   FROM cycles WHERE name IN ('feeds','finance','business','process','digest','research','radar')
+   FROM cycles WHERE name IN ('feeds','finance','business','process','digest','requests','research','radar')
  ) WHERE rank<=3 ORDER BY updated DESC`).all();
 }
 
-export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejectionChecks=[],sourceReadFailures=[],delivery=null,sourceCommit,selectionMode}){
+export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejectionChecks=[],sourceReadFailures=[],delivery=null,sourceCommit,selectionMode,missions=false}){
  const queue=Object.fromEntries(counts.filter(r=>['pending','processing','review','ready','sending','delivered','skipped','delivery_unknown','expired_unsent'].includes(r.state)&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.state,r.n]));
  const reasons=Object.fromEntries(reviewReasons.filter(r=>/^[A-Z_]{1,64}$/.test(r.reason??'')&&Number.isSafeInteger(r.n)&&r.n>=0).map(r=>[r.reason,r.n]));
  const readerCodes=Object.fromEntries(sourceReadFailures.filter(r=>/^(?:PUBLIC_SOURCE_|ALERT_SOURCE_|SOURCE_READ_)[A-Z_]{1,40}$/.test(r.code??'')&&Number.isSafeInteger(r.n)&&r.n>0).map(r=>[r.code,r.n]));
  const persistentReads={total:Object.values(readerCodes).reduce((sum,n)=>sum+n,0),codes:readerCodes};
- const latest=cycles.filter(r=>['feeds','finance','business','process','digest','research','radar'].includes(r.name)).map(r=>{
+ const latest=cycles.filter(r=>['feeds','finance','business','process','digest','requests','research','radar'].includes(r.name)).map(r=>{
   let m;try{m=JSON.parse(r.metrics??'{}');}catch{m={};}
   const result=m.result??{};const sourceErrors=result.sourceErrors?.length??0;
   const readerErrors=Number.isSafeInteger(result.readerErrors)&&result.readerErrors>=0?result.readerErrors:0;
-  const errorCodes=[...new Set([m.error_code,result.error_code,result.projection_error,...(result.discovery?.errors??[]).map(e=>e?.code),...(result.coverage?.errors??[]).map(e=>e?.code),...(Array.isArray(result.sourceErrors)?result.sourceErrors.map(e=>e?.code):[]),...(Array.isArray(result.readerFailures)?result.readerFailures.map(e=>e?.code):[])]
+  const errorCodes=[...new Set([m.error_code,result.error_code,result.projection_error,result.watch?.error_code,...(result.preparation?.errors??[]).map(e=>e?.code),...(result.discovery?.errors??[]).map(e=>e?.code),...(result.coverage?.errors??[]).map(e=>e?.code),...(Array.isArray(result.sourceErrors)?result.sourceErrors.map(e=>e?.code):[]),...(Array.isArray(result.readerFailures)?result.readerFailures.map(e=>e?.code):[])]
    .filter(code=>typeof code==='string'&&/^[A-Z_]{1,64}$/.test(code)))];
   return {name:r.name,status:['running','done','failed'].includes(r.status)?r.status:'unknown',
    degraded:result.degraded===true||result.state==='delivery_unknown'||sourceErrors>0||result.failedFeeds>0||readerErrors>0,sourceErrors,readerErrors,
@@ -60,15 +61,15 @@ export function summarizeAlertCycles({counts=[],cycles=[],reviewReasons=[],rejec
  const add=(condition,code,message)=>{if(condition)diagnoses.push({code,message});};
  add(latest.find(r=>r.name==='digest')?.errorCodes.includes('DOSSIER_PROJECTION_FAILED'),'CHECK_OPPORTUNITY_MEMORY','Une fiche Business attend son écriture Obsidian ; consulter le code de projection, sans renvoyer une livraison déjà tentée.');
  add((queue.delivery_unknown??0)+(queue.sending??0)>0,'CHECK_DELIVERY_RECEIPT','Envoi incertain : vérifier son reçu avant de renvoyer cette synthèse ; les autres peuvent continuer.');
- add(latest.find(r=>r.name==='digest')?.degraded||latest.find(r=>r.name==='digest')?.status==='failed','CHECK_DIGEST_DELIVERY','Le dernier digest a échoué ou reste incertain : vérifier son reçu ; les autres synthèses peuvent continuer sans renvoyer cette tentative.');
+ add(!missions&&(latest.find(r=>r.name==='digest')?.degraded||latest.find(r=>r.name==='digest')?.status==='failed'),'CHECK_DIGEST_DELIVERY','Le dernier digest a échoué ou reste incertain : vérifier son reçu ; les autres synthèses peuvent continuer sans renvoyer cette tentative.');
  const currentCollections=['feeds','finance','business'].map(name=>latest.find(r=>r.name===name)).filter(Boolean);
  add(currentCollections.some(r=>r.status==='failed'||r.degraded),'CHECK_COLLECTION','Une collecte est dégradée : consulter ses codes de source et vérifier sa reprise au prochain créneau.');
- add(latest.find(r=>r.name==='research')?.status==='failed'||latest.find(r=>r.name==='research')?.degraded,'CHECK_RESEARCH_COVERAGE','Une recherche a rencontré une source inaccessible ou un contrôle en échec ; consulter ses codes, sans conclure à une absence d’opportunité.');
+ add(['requests','research'].some(name=>{const cycle=latest.find(row=>row.name===name);return cycle?.status==='failed'||cycle?.degraded;}),'CHECK_RESEARCH_COVERAGE','Une recherche a rencontré une source inaccessible ou un contrôle en échec ; consulter ses codes, sans conclure à une absence d’opportunité.');
  add(persistentReads.total>0,'CHECK_SOURCE_READS','Des lectures attendent un nouvel essai ou un correctif du lecteur : consulter les codes persistés ; les autres sources continuent.');
  add(latest.find(r=>r.name==='process')?.status==='failed','CHECK_PROCESS_RECOVERY','Un traitement a été interrompu ou a échoué : vérifier le prochain créneau courant et son code ; aucun rattrapage des créneaux anciens.');
  add(contentRefusals.total>0,'CHECK_EDITORIAL_REJECTIONS','Des contenus ont été refusés : vérifier leurs citations et la phase de validation avant une correction ciblée.');
- add(queue.ready>0,'WAIT_DIGEST','Synthèses prêtes pour le prochain digest.');
- add((queue.pending??0)+(queue.processing??0)>0,'PROCESS_PENDING','Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.');
+ add(!missions&&queue.ready>0,'WAIT_DIGEST','Synthèses prêtes pour le prochain digest.');
+ add(!missions&&(queue.pending??0)+(queue.processing??0)>0,'PROCESS_PENDING','Des preuves attendent le prochain passage de traitement ; vérifier le planning et ses erreurs.');
  add(['NATIVE_ASSESSMENT_UNAVAILABLE','NATIVE_ASSESSMENT_TIMEOUT','NATIVE_VERIFICATION_UNAVAILABLE','NATIVE_VERIFICATION_TIMEOUT'].some(code=>reasons[code]>0),'CHECK_NATIVE_GENERATION','Vérifier le service de complétion et son unique nouvel essai.');
  add(selectionMode!=='native-editorial'&&reasons.SELECTION_UNCERTAIN>0,'CALIBRATE_RELEVANCE','La sélection retient des cas incertains : améliorer et mesurer la pertinence avant de forcer des messages.');
  add(reasons.SOURCE_NOT_READ>0,'EXPAND_READERS','Des sources restent non lues : compléter leur lecture avant la synthèse.');
@@ -97,7 +98,7 @@ async function inspectAlertCycles(){
     JOIN alerts a ON a.id=f.id WHERE a.archive IS NULL AND
     (a.state='pending' OR (a.state='review' AND a.reason='SOURCE_NOT_READ'))
     AND json_extract(a.item,'$.sourceStatus')='title-only' GROUP BY f.code`).all():[];
-  const summary=summarizeAlertCycles({counts,cycles,reviewReasons,rejectionChecks,sourceReadFailures,delivery,sourceCommit:settings.sourceCommit,selectionMode:settings.selectionMode??'jev'});
+  const summary=summarizeAlertCycles({counts,cycles,reviewReasons,rejectionChecks,sourceReadFailures,delivery,sourceCommit:settings.sourceCommit,selectionMode:settings.selectionMode??'jev',missions:settings.research?.missions===true});
   const deliveryRecords=db.prepare("SELECT state,updated,receipt FROM alerts WHERE state='delivered'").all();
   const hasBusiness=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='business_fiches'").get();
   if(hasBusiness){const b=db.prepare('SELECT count(*) AS fiches,sum(score IS NOT NULL) AS scored FROM business_fiches').get();
@@ -105,13 +106,17 @@ async function inspectAlertCycles(){
   }else summary.business={available:false};
   if(settings.research?.enabled){let research;try{
    research=new DatabaseSync(path.join(settings.research.directory,'research.sqlite'),{readOnly:true});
-   summary.research={enabled:true,
+   summary.research={enabled:true,missions:settings.research.missions===true,
     states:Object.fromEntries(research.prepare('SELECT state,count(*) n FROM jobs GROUP BY state').all().map(r=>[r.state,r.n])),
     byTopic:research.prepare("SELECT json_extract(seed,'$.topic') topic,state,count(*) n FROM jobs GROUP BY topic,state").all(),
     modelCalls:research.prepare('SELECT count(*) n FROM model_calls').get().n,nativeCostEur:null,
     latestDiscoveries:research.prepare('SELECT key,updated,metrics FROM discoveries ORDER BY updated DESC LIMIT 3').all().map(r=>({key:r.key,at:new Date(r.updated).toISOString(),metrics:JSON.parse(r.metrics)})),
     failures:research.prepare('SELECT error,count(*) n FROM jobs WHERE error IS NOT NULL GROUP BY error').all()};
    deliveryRecords.push(...research.prepare("SELECT state,updated,receipt FROM jobs WHERE state='delivered'").all());
+   if(research.prepare("SELECT 1 FROM sqlite_master WHERE name='mission_notices'").get()){
+    summary.research.notices=research.prepare('SELECT state,count(*) n FROM mission_notices GROUP BY state').all();
+    deliveryRecords.push(...research.prepare("SELECT 'notice' kind,state,created updated,receipt FROM mission_notices WHERE state='delivered'").all());
+   }
    if(research.prepare("SELECT 1 FROM sqlite_master WHERE name='radar_pages'").get()){
     summary.radar={enabled:settings.radar?.enabled===true,dailyTopics:settings.radar?.dailyTopics??20,
      pages:research.prepare('SELECT state,count(*) n FROM radar_pages GROUP BY state').all(),

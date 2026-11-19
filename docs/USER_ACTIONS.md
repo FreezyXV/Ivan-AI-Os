@@ -1,4 +1,13 @@
-## Décision courante — 31 octobre 2026, des pistes compréhensibles et vérifiées
+## Décision courante — 19 novembre 2026, missions Jarvis
+
+Ivan demande d’appliquer les améliorations à Business, Finance, Engineering
+et System, et de retirer Knowledge/Anakalypto du processus. Career reste en pause
+et le pilote reste sur Mac. Obsidian conserve son rôle de mémoire durable.
+Secrétaire Ivan centralise les sujets expliqués, les demandes, le suivi et les
+décisions. L’avis d’Ivan guide la pertinence. Voir [Jarvis sur Mac](JARVIS-MISSIONS-MAC.md)
+pour les commandes et [le relais](SESSION_HANDOFF.md) pour les preuves d’activation.
+
+## Historique — 31 octobre 2026, des pistes compréhensibles et vérifiées
 
 Ivan juge le catalogue brut confus et demande du travail sérieux : sujet clair,
 pourquoi intéressant, utilité personnelle, usage concret et sources fiables.
