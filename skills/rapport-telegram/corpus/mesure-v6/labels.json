@@ -1,0 +1,52 @@
+{
+ "version": 1,
+ "fixturesSha256": "c60695d86950e981d5dede4b4207ba0f558cc69d38b8c23e591971b75756267a",
+ "figéLe": "2026-10-06",
+ "contexte": "mac-alerts-20261006-v6",
+ "collecteSimulee": "observedAt = publishedAt + 2 h (jugement mesuré, pas la fraîcheur)",
+ "avertissement": "Labels figés AVANT toute passe ; ne pas transmettre au modèle. Un seul keep attendu : les flux du jour contiennent peu de positifs.",
+ "labels": [
+  {
+   "id": "M01",
+   "selection": "skip",
+   "livraison": "silence",
+   "argument": "Expérience ludique d'addition en mots sur un modèle : aucun usage pour le pilote.",
+   "desaccords": "review peu probable"
+  },
+  {
+   "id": "M02",
+   "selection": "skip",
+   "livraison": "silence",
+   "argument": "Projet personnel (moteur WebAssembly) relancé avec un agent : démonstration.",
+   "desaccords": "review si l'on retient le coût d'agent"
+  },
+  {
+   "id": "M03",
+   "selection": "keep",
+   "livraison": "digest",
+   "argument": "Nouvelle commande de comptage de tokens via une API gratuite d'Anthropic : outil concret pour mesurer un coût aujourd'hui non mesuré (complétions).",
+   "desaccords": "review si le lien avec les complétions natives (OpenClaw) paraît indirect"
+  },
+  {
+   "id": "M04",
+   "selection": "review",
+   "livraison": "silence",
+   "argument": "Changement au directoire de la BCE : fait public réel mais sans effet établi sur la veille macro (ni décision ni donnée).",
+   "desaccords": "skip défendable"
+  },
+  {
+   "id": "M05",
+   "selection": "skip",
+   "livraison": "silence",
+   "argument": "Plainte d'un utilisateur Android : hors objectifs.",
+   "desaccords": ""
+  },
+  {
+   "id": "M06",
+   "selection": "skip",
+   "livraison": "silence",
+   "argument": "Opinion sur la communauté indie hackers : aucune demande ni preuve exploitable pour Business.",
+   "desaccords": "review si on y lit un signal de marché"
+  }
+ ]
+}

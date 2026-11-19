@@ -1,0 +1,58 @@
+// Prepare immutable code and private candidates; do not restart or activate.
+import {execFileSync} from 'node:child_process';
+import {readFileSync,writeFileSync,mkdirSync,existsSync,lstatSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {homedir} from 'node:os';
+import path from 'node:path';
+import {RADAR_BRIEF_VERSION} from '../services/alerts-runtime/src/radar-brief.js';
+import {applyPilotScope} from '../services/manager-runtime/src/pilot-scope.js';
+const [repository,commit,previousSettings]=process.argv.slice(2),home=homedir();
+try{
+  if(!path.isAbsolute(repository??'')||!path.isAbsolute(previousSettings??'')||!/^[a-f\d]{40}$/.test(commit??''))throw Error('OPPORTUNITY_PREPARE_ARGUMENTS');
+  const vaultPath=path.join(home,'Ivan AI OS Brain/Obsidian/Ivan AI Os Notes');
+  if(!lstatSync(vaultPath).isDirectory()||lstatSync(vaultPath).isSymbolicLink()||!existsSync(path.join(vaultPath,'.obsidian')))throw Error('OPPORTUNITY_VAULT_NOT_FOUND');
+  const short=commit.slice(0,7),root=path.join(home,'.ivan-ai-os'),release=path.join(root,'releases','orchestrator-'+short),out=path.join(root,'mac-opportunity-'+short);
+  if(existsSync(release)||existsSync(out))throw Error('OPPORTUNITY_CANDIDATE_EXISTS');
+  const live=path.join(home,'.openclaw/openclaw.json'),bytes=readFileSync(live),config=JSON.parse(bytes),old=JSON.parse(readFileSync(previousSettings));
+  if(old.selectionMode!=='native-editorial'||old.verifyNativeBrief!==true)throw Error('OPPORTUNITY_EDITORIAL_CONFIG_REQUIRED');
+  applyPilotScope(config);
+  const ownerId=old.target;
+  if(!/^[1-9]\d{4,15}$/.test(ownerId??'')||!config.channels?.telegram?.allowFrom?.some(v=>String(v).replace(/^telegram:/,'')===ownerId)||config.channels.telegram.accounts)throw Error('OPPORTUNITY_OWNER_CONFIG_UNSUPPORTED');
+  mkdirSync(release,{mode:0o700});mkdirSync(out,{mode:0o700});
+  const archive=path.join(out,'source.tar');
+  execFileSync('git',['archive','--format=tar','-o',archive,commit,'services','hooks','skills','shared','scripts','policies'],{cwd:repository,timeout:60000});
+  execFileSync('tar',['-xf',archive,'-C',release],{timeout:60000});
+  writeFileSync(path.join(release,'ivan-release.json'),JSON.stringify({sourceCommit:commit,activated:false}),{flag:'wx',mode:0o600});
+  const opportunities={directory:path.join(root,'opportunities'),vaultPath,ownerId,accountId:'default',researchDirectory:path.join(old.stateDir,'research')};
+  const id='ivan-ai-os-opportunities';config.plugins??={};config.plugins.load??={};
+  function pinPlugin(folder){
+    const suffix='/hooks/openclaw/'+folder;
+    config.plugins.load.paths=[...(config.plugins.load.paths??[]).filter(v=>!v.replace(/\/+$/,'').endsWith(suffix)),release+suffix];
+  }
+  pinPlugin('ivan-opportunities');
+  if(config.plugins.allow)config.plugins.allow=[...new Set([...config.plugins.allow,id])];
+  config.plugins.entries??={};config.plugins.entries[id]={enabled:true,config:opportunities};
+  // Worker and isolated writer/verifier must share the same evidence contract.
+  // Pin both together when deploying an updated public context or prompt.
+  for(const name of ['alerts','route','memory']){
+   if(config.plugins.entries['ivan-ai-os-'+name]?.enabled!==true)throw Error('OPPORTUNITY_REQUIRED_PLUGIN_MISSING');
+   pinPlugin('ivan-'+name);
+  }
+  config.plugins.entries['ivan-ai-os-memory'].config={vaultPath,searchMode:'full-text'};
+  const telegram=config.channels.telegram;
+  telegram.capabilities={...telegram.capabilities,inlineButtons:'allowlist'};
+  const system=config.agents?.entries?.['ivan-system']??config.agents?.list?.find(a=>a.id==='ivan-system');
+  const allowed=Array.isArray(system?.tools?.allow)?'allow':Array.isArray(system?.tools?.alsoAllow)?'alsoAllow':null;
+  if(!allowed)throw Error('OPPORTUNITY_RESEARCH_TOOL_POLICY_REQUIRED');
+  system.tools[allowed]=[...new Set([...system.tools[allowed],'ivan_research_complete','ivan_radar_complete'])];
+  const candidate=path.join(out,'openclaw-candidate.json'),settingsPath=path.join(out,'settings.json');
+  writeFileSync(candidate,JSON.stringify(config,null,2),{flag:'wx',mode:0o600});
+  const research={enabled:true,missions:true,watches:true,directory:path.join(old.stateDir,'research'),
+    dailyModelLimit:12,reservedForRequests:4,dailyDeliveryLimit:3,pendingPerTopic:6,missionsSince:old.research?.missionsSince??new Date().toISOString()};
+  const radar={enabled:old.radar?.enabled===true,dailyTopics:old.radar?.dailyTopics??20,format:RADAR_BRIEF_VERSION,buttons:true,editions:true};
+  writeFileSync(settingsPath,JSON.stringify({...old,sourceCommit:commit,releaseRoot:release,opportunities,requireAdvisory:true,research,radar},null,2),{flag:'wx',mode:0o600});
+  const proof={sourceCommit:commit,candidate,settingsPath,previousSettings,release,backupDir:out,probeRadar:true,probePilot:true,
+    expectedCurrentSha256:createHash('sha256').update(bytes).digest('hex'),activated:false};
+  writeFileSync(path.join(out,'prepared.json'),JSON.stringify(proof,null,2),{flag:'wx',mode:0o600});
+  console.log(JSON.stringify(proof));
+}catch(error){console.error(/^[A-Z_]{3,60}$/.test(error.message)?error.message:'OPPORTUNITY_PREPARE_FAILED');process.exitCode=1;}

@@ -1,6 +1,6 @@
 ---
 name: interview-prep
-description: Préparation d'Ivan aux entretiens de Business Analyst Métier (BA fonctionnel, AMOA, consultant fonctionnel) - questions probables, réponses STAR à partir de ses vraies expériences, cas pratiques, questions à poser, simulation d'entretien. Utiliser dès qu'Ivan mentionne un entretien, un call RH, un test, un cas pratique, ou veut "s'entraîner", même sans citer le skill.
+description: Career en pause depuis le 2026-10-05 - seulement sur demande explicite d'Ivan. Préparation d'Ivan aux entretiens de Business Analyst Métier (BA fonctionnel, AMOA, consultant fonctionnel) - questions probables, réponses STAR à partir de ses vraies expériences, cas pratiques, questions à poser, simulation d'entretien. Utiliser dès qu'Ivan mentionne un entretien, un call RH, un test, un cas pratique, ou veut "s'entraîner", même sans citer le skill.
 metadata:
   version: "1.1.0"
   famille: career

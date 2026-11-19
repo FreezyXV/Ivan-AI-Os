@@ -4,11 +4,12 @@
 // Usage: node sujets.mjs [--source tout|wikipedia|flux] [--langue fr] [--jours 3] [--max 150] [--jev]   (trends are people-heavy:
 // a wide pool lets Jev keep the few domain-relevant topics for well under a cent)
 // Covered topics: one title per line in ~/.ivan-ai-os/anakalypto/couverts.txt (optional).
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { classify, pool } from "../../jev-decision/scripts/classify.mjs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 export const DOMAINES = JSON.parse(readFileSync(new URL("../domaines.json", import.meta.url), "utf8"));
 // Under-covered domains first: deficit = target articles per domain - current articles.
@@ -74,7 +75,7 @@ export async function gate(candidates, { classifyImpl = classify, langue = "fr",
   return out.sort((a, b) => (b.statut === "retenu") - (a.statut === "retenu") || (b.priorite ?? 0) - (a.priorite ?? 0) || (b.score ?? 0) - (a.score ?? 0));
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const args = process.argv.slice(2);
   const opt = (flag, d) => { const i = args.indexOf(flag); return i < 0 ? d : args[i + 1]; };
   try {

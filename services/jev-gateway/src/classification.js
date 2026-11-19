@@ -57,6 +57,9 @@ export const QUESTIONS = Object.freeze({
   },
   "alerte.importante": {
     fields: ["indicateur", "ancien", "nouveau", "seuil"], required: ["indicateur", "ancien", "nouveau", "seuil"],
+    // The Finance engine sends formatted public values, e.g. "12 %" and
+    // "±10 % sur 7 jours". Keep numeric inputs compatible as well.
+    formattedFields: ["ancien", "nouveau", "seuil"],
     prompt: yesNo("Determine if this public market-indicator change merits a concise informational alert. Do not recommend a transaction.",
       "Meaningful threshold crossing with decision relevance.", "Routine fluctuation or insufficient context for an alert.")
   },
@@ -90,11 +93,17 @@ export const QUESTIONS = Object.freeze({
 });
 
 const CREDENTIALS = /\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}|\bapikey_[A-Za-z0-9_]{20,}|\bBearer\s+\S{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
-const CONTACT = /[\w.+-]+@[\w.-]+\.[a-z]{2,}|\+\d[\d .()-]{8,}\d|\b0[1-9](?:[ .-]?\d{2}){4}\b/i;
+export const CONTACT = /[\w.+-]+@[\w.-]+\.[a-z]{2,}|\+\d[\d .()-]{8,}\d|\b0[1-9](?:[ .-]?\d{2}){4}\b/i;
 const NUMERIC_FIELDS = new Set(["vues", "jours", "mots", "ancien", "nouveau", "seuil", "note"]);
 
 export class ClassificationInputError extends Error {
   constructor(code, status = 400) { super(code); this.code = code; this.status = status; }
+}
+// Server-owned text bounds. The generic catalogue retains its 500-character
+// limit; the dedicated alerts endpoint can transmit its whole read envelope.
+export function isPublicClassificationText(value,maxLength=500){
+  return Number.isInteger(maxLength)&&maxLength>0&&maxLength<=1200&&typeof value==='string'&&value.length>0&&value.length<=maxLength&&
+    !CREDENTIALS.test(value)&&!CONTACT.test(value);
 }
 
 export function validateClassification(payload) {
@@ -107,10 +116,10 @@ export function validateClassification(payload) {
       Object.keys(input).some(key => !spec.fields.includes(key)) ||
       spec.required.some(key => !Object.hasOwn(input, key))) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
   for (const [key, value] of Object.entries(input)) {
-    if (NUMERIC_FIELDS.has(key) ?
-      !(typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1_000_000) :
-      !(typeof value === "string" && value.length > 0 && value.length <= 500 &&
-        !CREDENTIALS.test(value) && !CONTACT.test(value))) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
+    const validNumber = typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1_000_000;
+    const validText = isPublicClassificationText(value);
+    const valid = spec.formattedFields?.includes(key) ? validNumber || validText : NUMERIC_FIELDS.has(key) ? validNumber : validText;
+    if (!valid) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
     if (key === "domaines" && value !== domains.join(",")) throw new ClassificationInputError("INVALID_CLASSIFICATION_INPUT");
   }
   return { question, input, spec };

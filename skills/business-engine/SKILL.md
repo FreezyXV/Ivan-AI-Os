@@ -1,8 +1,9 @@
 ---
 name: business-engine
 description: Moteur d'opportunités d'Ivan (Opportunity Manager) - collecter des signaux publics de problèmes monétisables, les dédoublonner, mesurer leur récurrence, noter les opportunités sur preuves et les classer Cash (1er euro en 30 jours) ou Venture, puis livrer un top 3 actionnable. Utiliser pour toute veille business, recherche d'opportunités, d'arbitrages, de services ou de SaaS, "trouve-moi des opportunités", "cycle business", ou quand une alerte Sentinelle business arrive.
+compatibility: "claude-code, codex, openclaw"
 metadata:
-  version: "1.1.0"
+  version: "1.3.0"
   famille: business
   manager: business
   risque: brouillon
@@ -11,6 +12,9 @@ metadata:
   provenance: "Ivan-AI-Os, roadmap v1 section 11 (Business Engine), 2026-09-29"
 ---
 # Business Engine
+
+Sans shell (OpenClaw) : ne pas lancer les scripts ; lire les résultats préparés avec
+`ivan_business_brief` (adaptateur Codex) et signaler EMPTY/UNAVAILABLE sans inventer.
 
 Mission : détecter des **preuves** de problèmes monétisables, pas produire « 10 idées de SaaS ».
 Outil : `node skills/business-engine/scripts/signals.mjs` (registre privé hors Git).
@@ -38,7 +42,25 @@ Contrat complet : `workflows/business-engine.md`. Notation d'une idée isolée :
    douleur, monétisation, plan de validation 7 jours à 0 €.
    Règles codées : aucune preuve de paiement = abandon ; ≥ 22 lancer, ≥ 16 creuser.
 6. **Livrer** : `signals.mjs rapport --top 3` → note `decision` via `memoire-obsidian`
-   (sensibilité `interne`) + résumé Telegram via `rapport-telegram`.
+   (sensibilité `interne`) + synthèse Telegram via `rapport-telegram` forme A.
+
+## Fiche d'opportunité (contrat `docs/BUSINESS-OPPORTUNITY-CONTRACT.md`)
+Problème, acheteur (hypothèse sauf paiement observé), preuves citées de l'extrait lu (douleur,
+demande, offre existante, paiement observé), objections, hypothèse, prochain test réversible
+(≤ 7 jours, 0 €, aucun contact), décision `exploratoire`/`a-noter` sans score codé. Contrôle :
+`node skills/business-engine/scripts/fiche.mjs <fiche.json> <sources.jsonl>`.
+
+## Synthèse pour Ivan : preuve, hypothèse, recommandation
+- **Preuve** (faits) : ce que des gens disent ou paient, cité depuis la page lue, avec sa date.
+  Une demande (Ask HN, forum) prouve une douleur ; seule une offre payée ou un prix prouve le
+  paiement. Compter les sources **distinctes**, pas les messages.
+- **Hypothèse** (utilité, annoncée comme telle) : le problème monétisable possible, la cible, et
+  pourquoi Ivan serait bien placé — seulement à partir du contexte public, jamais d'un objectif
+  personnel inventé.
+- **Recommandation** : uniquement la décision **codée** de `signals.mjs` (lancer ≥ 22, creuser
+  ≥ 16, abandon sans preuve de paiement) avec son score ; un cycle de veille sans notation dit
+  « exploratoire » et propose la prochaine preuve à chercher, jamais « lancer ».
+- **Limites** : source unique, pas de preuve de paiement, commentaires non lus, biais du forum.
 
 ## Règles
 - Aucun chiffre de marché sans source ; aucune promesse de revenu.

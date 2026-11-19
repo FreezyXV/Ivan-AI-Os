@@ -1,0 +1,33 @@
+{
+ "provenance": "sortie native réelle, runtime 33480ee, capture historique B03 (fiches-v1), évaluation éditoriale, reçu Telegram de test 61",
+ "fiche": {
+  "sujet": "friction-essai-saas",
+  "acheteur": {
+   "profil": "Équipes utilisant un SaaS avec essai produit et tarification par contacts.",
+   "statut": "hypothèse"
+  },
+  "preuves": [
+   {
+    "url": "https://news.ycombinator.com/item?id=49455036",
+    "date": "2026-08-26",
+    "type": "douleur",
+    "citation": "(1)the price hike based on contact count and not actual email usage (2) the stray Account Executive started reaching out to connect (3) the \"forcing\" onto an annual commitment plan (4) the disappearance of any way to just sign in and test the product (5) the annual AE call with fake promises to get the signature We're leaving."
+   }
+  ],
+  "objections": [
+   "Un seul témoignage ne suffit pas à établir un besoin partagé."
+  ],
+  "hypothese": "Hypothèse : un prototype local peut comparer un parcours d’essai autonome à un parcours imposant un engagement annuel.",
+  "prochainTest": {
+   "description": "Comparer localement deux parcours fictifs d’accès et relever les frictions visibles.",
+   "dureeJours": 3,
+   "coutEur": 0,
+   "reversible": true,
+   "contactTiers": false
+  },
+  "decision": "exploratoire",
+  "limites": "La source ne couvre pas l’ensemble de l’article et ne confirme ni acheteur réel ni demande récurrente.",
+  "probleme": "Un témoignage reproche à customer.io une hausse de prix liée au nombre de contacts, une sollicitation commerciale, un engagement annuel imposé et la disparition d’un accès de test.",
+  "sourcesDistinctes": 1
+ }
+}

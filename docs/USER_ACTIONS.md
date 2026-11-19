@@ -1,3 +1,100 @@
+## Décision courante — 19 novembre 2026, missions Jarvis
+
+Ivan demande d’appliquer les améliorations à Business, Finance, Engineering
+et System, et de retirer Knowledge/Anakalypto du processus. Career reste en pause
+et le pilote reste sur Mac. Obsidian conserve son rôle de mémoire durable.
+Secrétaire Ivan centralise les sujets expliqués, les demandes, le suivi et les
+décisions. L’avis d’Ivan guide la pertinence. Voir [Jarvis sur Mac](JARVIS-MISSIONS-MAC.md)
+pour les commandes et [le relais](SESSION_HANDOFF.md) pour les preuves d’activation.
+
+## Historique — 31 octobre 2026, des pistes compréhensibles et vérifiées
+
+Ivan juge le catalogue brut confus et demande du travail sérieux : sujet clair,
+pourquoi intéressant, utilité personnelle, usage concret et sources fiables.
+La sélection reste large et son avis utile/inutile/creuser reste décisif ; cela
+n’autorise pas les titres non lus, les bénéfices supposés ou les faits inventés.
+Les agents doivent préparer les recherches et les prototypes ; les fiches ne
+doivent pas reporter sur Ivan des tâches d’indexation ou de manipulation technique.
+Format corrigé d9e2b62 actif, deux sujets au maximum par message, sources lues
+et attribuées, rédaction/relecture séparées et contrôles sur toute la fiche.
+Deux fiches Business/Finance corrigées et relues sont livrées ; ce sont des pistes
+à juger, pas un marché prouvé ni un signal d’achat. Voir RADAR-USER-FEEDBACK.md.
+Le retour qualitatif réel a été conservé comme low-usefulness, origine Codex,
+sans inventer de note par sujet ou modifier ses choix antérieurs.
+
+## Historique — 30 octobre 2026, radar et apprentissage explicite
+
+Ivan préfère beaucoup de sujets et juger lui-même avec ses retours. Le radar
+déterministe remplace la proposition de n’envoyer que deux niveaux de dossiers
+approuvés. Références larges, titre attribué, date et lecture signalée ; aucun
+filtre Jev/LLM d’utilité pour l’admission. Vingt sujets/jour Paris au départ,
+Business/Finance/Engineering et moins de maintenance System, avec exploration.
+Code f2268d3 activé, planning chargé. Tests concernés :272/272.
+`/avis ID utile|inutile|creuser [raison]` conserve les avis/révisions et adapte
+le classement ; « creuser » demande une recherche, jamais un achat/contact.
+Notes nouvelles seulement dans `Ivan AI OS/radar/`. Pas de réentraînement du modèle,
+pas d’utilité mesurée avant les vrais avis. Les dossiers approfondis conservent
+les vérifications de faits et la contrelecture. Voir RADAR-USER-FEEDBACK.md.
+
+## Historique — 30 octobre 2026, rattrapage demandé
+
+Ivan demande la reprise après une période Mac fermé. Au contrôle, le planning
+était également déchargé après la bascule interrompue du 16 octobre. Rechargé,
+puis worker et plugins d47c69b activés ; aucune réinstallation des autres services.
+Collecte : 43 publications et sept indicateurs Finance actualisés. Premier
+message de rattrapage confirmé : reçu 71, correctifs OpenClaw, pas une opportunité
+financière. Les envois incertains antérieurs restent exclus de toute relance.
+Recherche multi-source désormais active : voir RESEARCH-ENGINE-MAC.md ; une
+abstention Bitcoin réelle ne constitue ni une recommandation ni un benchmark.
+Les flux ne permettent pas de promettre une reconstitution exhaustive de la
+quinzaine ; priorité aux informations encore pertinentes et aux preuves fraîches.
+Aucun nouveau service payant, transaction ou contact autorisé. Le Mac doit être
+éveillé pour les collectes ; verrouiller l'écran et fermer le capot sont distincts.
+
+## Historique — retour d'utilité du 16 octobre
+
+## État courant — 16 octobre 2026, après retour d'utilité
+
+Ivan juge les messages peu utiles. Décision : rechercher des pistes Finance,
+des douleurs Business à résoudre et des techniques applicables à Jarvis/code/apps/sites.
+Investissement : court, moyen et long terme ouverts ; aucun horizon à redemander.
+Périmètre précisé : tokens et autres actifs, projet/valorisation/prix, macro et
+avocat du diable ; événements France/Europe/monde utiles à une décision, même
+sans achat immédiat. Voir FINANCE-RESEARCH-MANDATE.md (mandat, pas activation).
+Contexte v8 et contrat de proposition/invalidation actifs, code de104ba ;
+voir ADVISORY-VALUE-2026-10-16.md pour les preuves et les limites.
+Retour qualitatif conservé sans note inventée ; choix tester antérieur intact.
+La prochaine étape est la recherche de preuves croisées ; aucun nouveau service
+payant, portefeuille privé ou transaction n'est autorisé par cette décision.
+
+## Historique — 16 octobre 2026, avant retour d'utilité
+
+Le bilan d'une semaine et les ajustements sont dans WEEKLY-OUTCOMES-2026-10-16.md.
+Première fiche Business générée à partir de la collecte réelle : dossier Unity
+1e662e4641f1, message 69 confirmé, sans choix enregistré à la place d'Ivan.
+Le signal reste exploratoire ; une solution de récupération officielle existe
+déjà. Le coût natif et le temps gagné ne sont pas mesurés. L'avis d'Ivan sur
+l'utilité des messages a été demandé, aucune note n'est inventée en son absence.
+Le choix tester du dossier 6ab5272ce301 reste intact. Career et VPS toujours en pause.
+
+## Historique — 9 octobre 2026
+
+Le parcours dossier Obsidian → Telegram → choix explicite Ivan → nouvelle fiche
+est observé pour 6ab5272ce301. Ivan choisit tester, avec recherche publique de
+témoignages indépendants avant toute offre ; reçu dans Codex, pas dans Telegram.
+Les commandes natives /opportunite et /decision sont activées, mais leur entrée
+Telegram réelle reste à vérifier. Voir OPPORTUNITY-DECISION-LOOP.md et le relais.
+Career demeure en pause : la mention career matching du cadrage général
+ci-dessous ne constitue pas une demande de réactivation. Aucun VPS à provisionner.
+
+## Historique — 5 octobre 2026
+
+Le pilote Mac est actif ; aucune nouvelle clé ou reprovisionnement n'est requis
+pour poursuivre les tâches présentes. Voir SESSION_HANDOFF.md pour les versions
+vérifiées et CLAUDE-NEXT-ACTIONS-2026-10-05.md pour le travail parallèle.
+Career est en pause, OVH différé, Knowledge/Anakalypto finalisé en dernier.
+Les demandes de provisionnement ci-dessous sont historiques ; ne pas les rejouer.
+
 # Human inputs and confirmed decisions
 
 ## Decision confirmed on 2026-10-08 — local-first pilot

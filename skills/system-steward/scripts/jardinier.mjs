@@ -2,10 +2,11 @@
 // in the agents' area of the vault. Read-only by default; `--proposer` writes ONE proposal note in
 // inbox/ through memoire.mjs. Never modifies, moves or deletes a note.
 // Usage: node jardinier.mjs [--proposer] [--aujourdhui AAAA-MM-JJ]
-import { readFileSync, realpathSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AGENT_ROOT, add, notesUnder, parseNote, resolveVault } from "../../memoire-obsidian/scripts/memoire.mjs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 const STOP = new Set(["de", "du", "des", "la", "le", "les", "et", "en", "un", "une", "a", "au", "aux", "sur", "pour", "par", "the", "of", "and"]);
 const words = title => new Set(title.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 1 && !STOP.has(w)));
@@ -65,7 +66,7 @@ export function report(findings, total) {
   ].join("\n");
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const args = process.argv.slice(2);
   const i = args.indexOf("--aujourdhui");
   const today = i >= 0 ? args[i + 1] : new Date().toISOString().slice(0, 10);

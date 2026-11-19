@@ -2,9 +2,10 @@
 // pass a question id and PUBLIC inputs only; the gateway owns the question text, the budget and
 // the audit. Until Codex opens a question the call fails closed: JEV_QUESTION_UNAVAILABLE.
 // Usage: echo '{"titre":"…"}' | node classify.mjs <question-id>
-import { readFileSync, realpathSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { readDecisionToken } from "../../../services/jev-gateway/src/runtime-token.js";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 export const QUESTIONS = Object.freeze({
   "sujet.captivant": { type: "noul", fields: ["titre", "langue", "vues", "jours"] },
@@ -75,7 +76,7 @@ export async function pool(items, worker, concurrency = 4) {
   return results;
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [question] = process.argv.slice(2);
   try {
     const input = JSON.parse(readFileSync(0, "utf8") || "{}");

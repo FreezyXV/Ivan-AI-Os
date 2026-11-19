@@ -1,7 +1,7 @@
 {
   "id": "ivan-ai-os-route",
   "name": "Ivan AI OS Route",
-  "description": "Advisory Jev domain routing via the local Decision Plane",
+  "description": "Advisory task routing for the active Mac pilot",
   "contracts": { "tools": ["ivan_route"] },
   "activation": { "onStartup": true },
   "configSchema": {

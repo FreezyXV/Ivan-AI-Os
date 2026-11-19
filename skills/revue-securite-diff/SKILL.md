@@ -1,6 +1,7 @@
 ---
 name: revue-securite-diff
 description: Checklist de sécurité proportionnée pour un diff ou une PR (secrets, chemins, authentification, appels payants, actions irréversibles, dépendances, données personnelles) - rapide, sans excès, chaque constat prouvé. Utiliser avant tout commit, push ou fusion qui touche du code, de la configuration, un workflow CI, un hook ou une dépendance, ou quand Ivan dit "c'est sûr ?", "vérifie la sécurité", "relis cette PR".
+compatibility: "claude-code, codex"
 metadata:
   version: "1.0.0"
   famille: engineering

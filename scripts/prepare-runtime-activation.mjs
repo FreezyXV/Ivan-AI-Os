@@ -65,7 +65,8 @@ try {
   if (result.status !== 0 || JSON.parse(result.stdout).valid !== true) throw new Error("NATIVE_CANDIDATE_VALIDATION_FAILED");
   rmSync(state, { recursive: true });
   if (digest(original) !== digest(readFileSync(liveConfigPath)) || JSON.stringify(before) !== JSON.stringify(contextInventory(mainWorkspace))) throw new Error("SOURCE_CHANGED_DURING_PREPARATION");
-  const summary = { status: "PREPARED_NOT_ACTIVATED", native_config_valid: true, roles: 7,
+  const summary = { status: "PREPARED_NOT_ACTIVATED", native_config_valid: true, roles: Object.keys(candidate.agents.entries).length,
+    paused_roles:plan.roles.filter(r=>r.status==="PAUSED").map(r=>r.route),
     secretary_workspace_preserved: true, context_files_unchanged: before.context.length,
     memory_file_count_unchanged: before.memory_file_count, memory_bodies_read: 0,
     unusable_memory_skill_excluded: plan.roles.every(r => !r.skills.includes("memoire-obsidian")),

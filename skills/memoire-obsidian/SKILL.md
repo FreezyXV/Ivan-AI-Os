@@ -1,6 +1,7 @@
 ---
 name: memoire-obsidian
 description: Mémoire durable des agents dans le coffre Obsidian d'Ivan - retrouver ce qui est déjà su avant de chercher, enregistrer un fait sourcé, une décision ou un compte rendu, sans jamais modifier les notes personnelles d'Ivan ni dupliquer. Utiliser dès qu'un résultat mérite d'être retenu, qu'Ivan dit "note ça", "retiens", "mets dans Obsidian", "qu'est-ce qu'on sait déjà sur", ou en fin de tâche de recherche, de veille ou de décision.
+compatibility: "claude-code, codex, openclaw"
 metadata:
   version: "1.2.0"
   famille: memory
@@ -11,6 +12,9 @@ metadata:
   provenance: "Ivan-AI-Os memory/README.md (couche Obsidian), coffre choisi par Ivan le 2026-09-29"
 ---
 # Mémoire Obsidian
+
+Sans shell (OpenClaw) : lecture seule via `ivan_memory_search` puis `ivan_memory_read` ;
+pour « note ça », rendre une proposition au parent, jamais annoncer une écriture.
 
 Outil : `node skills/memoire-obsidian/scripts/memoire.mjs <commande>` (dépôt Ivan-AI-Os).
 Coffre : `$IVAN_OBSIDIAN_VAULT` ou `obsidian_vault` dans `~/.ivan-ai-os/config.json`.

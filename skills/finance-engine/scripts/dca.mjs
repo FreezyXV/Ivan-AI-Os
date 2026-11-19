@@ -8,6 +8,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { realpathSync } from "node:fs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 export class DcaError extends Error {}
 const fail = code => { throw new DcaError(code); };
@@ -75,7 +76,7 @@ export function toTarget(a, valeur = a.valeur_portefeuille_eur) {
   return round2(Math.max(0, needed));
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [command, ...args] = process.argv.slice(2);
   const opt = flag => { const i = args.indexOf(flag); return i < 0 ? undefined : Number(args[i + 1]); };
   try {

@@ -11,6 +11,7 @@ import { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpat
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 export const CATEGORIES = ["frontend", "backend", "securite", "infra", "integration", "tests", "outillage", "architecture", "debug", "docs", "data"];
 export const AGENTS = ["claude", "codex"];
@@ -85,7 +86,7 @@ export function recommend(categorie, list, { proprietaire } = {}) {
   return { categorie, constructeur, relecteur: constructeur === "claude" ? "codex" : "claude", raison, ...s };
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [command, arg] = process.argv.slice(2);
   try {
     const dir = privateDir();

@@ -1,0 +1,93 @@
+{
+ "version": 1,
+ "fixturesSha256": "5368b47a25e6858333e716444928a9aa2658da636881db3fae074aa3f4afe35b",
+ "figéLe": "2026-10-06",
+ "avertissement": "Réponses attendues fixées avant toute rédaction de fiche ; ne pas transmettre au modèle.",
+ "grille": "utile = douleur précise + acheteur identifiable + signal que l'on paie déjà ; faible = vague, isolé ou sensible ; bruit = promotion/opinion sans problème client.",
+ "labels": [
+  {
+   "id": "B01",
+   "attendu": "utile",
+   "argument": "Douleur précise : la revue humaine du code produit par agents devient le goulot ; outils payants cités (CodeRabbit, Copilot) = marché qui paie déjà.",
+   "motsPreuve": [
+    "review",
+    "agent"
+   ],
+   "nuance": "Avec B02 : deux sources distinctes de la même douleur."
+  },
+  {
+   "id": "B02",
+   "attendu": "utile",
+   "argument": "Même douleur que B01, source distincte : valider le code généré par LLM, résultats de revue instables d'un modèle à l'autre.",
+   "motsPreuve": [
+    "review"
+   ],
+   "nuance": "Seule, ce serait une preuve faible ; avec B01, elle compte comme seconde source distincte."
+  },
+  {
+   "id": "B03",
+   "attendu": "utile",
+   "argument": "Clients qui paient déjà (customer.io) et décrivent des irritants précis : hausse de prix au nombre de contacts, engagement annuel, plus d'essai en libre-service.",
+   "motsPreuve": [
+    "price",
+    "annual"
+   ],
+   "nuance": "Marché très concurrentiel : objection à documenter, pas à inventer."
+  },
+  {
+   "id": "B04",
+   "attendu": "utile",
+   "argument": "Exploitant d'un site de 50 000 pages statiques : trafic de robots IA massif malgré Vercel et Cloudflare ; il paie déjà des services sans résoudre le problème.",
+   "motsPreuve": [
+    "50,000",
+    "Cloudflare"
+   ],
+   "nuance": "Fournisseurs établis : test = vérifier si la douleur est récurrente, pas construire."
+  },
+  {
+   "id": "B05",
+   "attendu": "utile",
+   "argument": "Obligation réglementaire datée (Cyber Resilience Act) pour un vendeur solo de firmware : contrainte réelle, coûts de conformité.",
+   "motsPreuve": [
+    "10 years",
+    "security update"
+   ],
+   "nuance": "Le nom « Cyber Resilience Act » n'est que dans le titre : la fiche s'appuie sur l'obligation décrite dans l'extrait (mises à jour de sécurité disponibles 10 ans). Source unique : exploratoire."
+  },
+  {
+   "id": "B06",
+   "attendu": "faible",
+   "argument": "Question générique sans contenu (« quel fournisseur changeriez-vous ») : aucune douleur décrite dans l'extrait.",
+   "motsPreuve": [],
+   "nuance": "Les réponses non lues pourraient contenir des demandes."
+  },
+  {
+   "id": "B07",
+   "attendu": "faible",
+   "argument": "Douleur personnelle de suivi médical, une seule personne ; domaine de santé sensible : pas d'opportunité sans plusieurs sources et sans précautions.",
+   "motsPreuve": [],
+   "nuance": "Domaine sensible : ne jamais collecter de données de santé."
+  },
+  {
+   "id": "B08",
+   "attendu": "faible",
+   "argument": "Difficulté générale à trouver des utilisateurs ; aucun problème payable précis.",
+   "motsPreuve": [],
+   "nuance": ""
+  },
+  {
+   "id": "B09",
+   "attendu": "bruit",
+   "argument": "Auto-promotion d'un outil : ni douleur ni preuve de demande.",
+   "motsPreuve": [],
+   "nuance": "Peut servir d'« offre » (concurrence) dans le registre, jamais de demande."
+  },
+  {
+   "id": "B10",
+   "attendu": "bruit",
+   "argument": "Essai catastrophiste sans problème client.",
+   "motsPreuve": [],
+   "nuance": ""
+  }
+ ]
+}

@@ -1,3 +1,844 @@
+## 2026-11-19 — Codex — missions Jarvis sur Mac
+
+- Version active `c585aed` sur Darwin. PR [#72](https://github.com/FreezyXV/Ivan-AI-Os/pull/72) en brouillon vers `foundation/v1`, branche `agent/codex/jarvis-missions`. Le lot intègre les trois commits de la branche de référence et les précédents travaux Mac. Lire [Jarvis sur Mac](JARVIS-MISSIONS-MAC.md).
+- Secrétaire Ivan délègue à Business, Finance, Engineering et System. Knowledge/Anakalypto sort du routage, du planning et de la liste OpenClaw. Career reste en pause, comparaison préparée. Obsidian et le choix antérieur `tester` sont préservés. OVH reste reporté.
+- Appels directs vérifiés après bascule. Routage Finance par table, refus de la route retirée, recherche de passage par System, rejet des entrées invalides avant modèle. Le premier chargement du routeur était bloqué par TypeBox absent de la copie de release. La dépendance a été retirée et la sonde du routeur est maintenant obligatoire avant la bascule du planning. Réponse réelle du bot à `/suivi bilan`.
+- 511 tests JavaScript et 24 Python réussis. La simulation couvre une demande derrière 120 jobs de fond, deux livraisons versionnées sur le même dossier, une décision conservée, l’arrêt après changement d’avis et la reprise d’un lot radar partiellement invalide. Les trois bases et les archives d’alertes ont des sauvegardes privées vérifiées. La bascule a écarté 93 travaux de fond de la file active en conservant leurs traces. Le planning est chargé et son dernier passage s’est terminé avec le code 0.
+- La collecte réelle a admis 3 avis BOAMP, 2 publications Insee et 2 Eurostat. La lecture Insee utilise le marqueur daté de la publication. Dans le coffre réel, la recherche plein texte retrouve un passage sourcé par un terme absent du titre pour lequel l’ancienne recherche renvoyait zéro.
+- Qualification `56ab16ac9f5d`. Deux tentatives automatiques ont été arrêtées sur la citation. La seconde a utilisé la reprise et isolé `FACT_1_IDENTIFIER`. Deux brouillons rédigés par Codex ont ensuite été examinés par le relecteur natif. Il demande encore une preuve d’utilité et une comparaison avec la recherche intégrée Obsidian. Aucun dossier approuvé, projeté ou livré dans cet essai. Les avis de test historiques restent en base. Les futurs échecs d’essai restent locaux. Les demandes Telegram de l’utilisateur conservent le retour sur un blocage.
+- Budget du 19 novembre. 12 réservations natives, dont 5 pour la qualification. Coût natif non exposé. Jev sain, zéro appel au mois courant lors de la vérification. L’utilité et le temps gagné attendent les avis réels.
+- OpenClaw accepte l’aperçu des trois boutons en mode sans envoi. La suite se concentre sur le premier dossier intégralement automatique et la première page du radar avec boutons effectivement reçue. Revoir les passages exacts et la manière dont le relecteur traite une piste exploratoire, puis tester sur une demande publique avec utilité démontrable. Garder les contrôles et le plafond. Pour Claude, revue ciblée du diff `489ebe1...c585aed` et de ces deux preuves réelles avant tout élargissement.
+
+## 2026-10-31 — Codex — fiches expliquées, correction réellement livrée
+
+Ivan juge le radar brut confus ; exige sujet/intérêt/utilité/usage/sourcefiable.
+Il demande travail réfléchi, pas d’être le contrôleur qualité des agents.
+Code d9e2b62 actif, radar-explained-v3, planning300s chargé, gateway sain, exit0.
+Branche agent/codex/research-engine, PR#71 brouillon ; aucune fusion.
+Fiches françaises : source réellement lue, fait attribué, interprétation/piste,
+usage concret centré destinataire, limite ;2 sujets max par message.
+Rédaction/revue isolées, vérification chiffres/identifiants/devises partout,
+provenance institution/éditeur/témoignage distinguée ; pas de veto NOT_USEFUL.
+Titres non lus et pages indisponibles ne deviennent plus des fiches plausibles.
+Retour low-usefulness réel conservé (Codex), aucun avis individuel inventé.
+Message79 confirmé :2 fiches Business/Finance, note radar748ed08ff27fbe41 ajoutée.
+Correction dirigée par Codex + critique native + revue de clarté indépendante ;
+ne pas la présenter comme découverte ou rédaction entièrement automatique.
+Harvest : vrais passages lus via Web Codex, HTTPS refusait ; Insee/SQLite HTTPS.
+Tech FTS5 restée rejetée, pas livrée ; FTS5 testé localement en mémoire seulement.
+Les premières sorties v2 étaient encore génériques : contrat v3 décrit résultats
+pour Ivan, pas tâches SQL/indexation à lui faire exécuter. Ne pas reproduire v1.
+Raccordement corrigé : outil manquait au manifeste ; sonde réelle sans modèle
+obligatoire avant remplacement planning, avec restauration coordonnée si échec.
+282 tests passent ; devises/GitHub contributions/quota de fond contre-vérifiés.
+Préparation radar max4sujets/2appels ; quota quotidien partagé12 en production,
+fond borné2appels avant radar, demande utilisateur prioritaire ; coût natif inconnu.
+Qualification :4réservationsradar dont1outilabsent,3complétionsréussies ; total15
+ce jour avecrecherches antérieures (dérogation bornée), pasnouveaufournisseur.
+Jev761inchangé,horsrédaction ;6anciensunknownpréservés, choix tester6ab5272ce301 intact.
+Lire RADAR-USER-FEEDBACK.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md.
+Prochain : vérifier premières fiches vraiment automatiquesv3 et avis /avis réels,
+améliorer sources/provenance, préciser les refus par champ avant nouveaux appels.
+Ne pas restaurer cataloguebrut ; Career/VPSdifférés, Knowledgefinalcommun.
+
+## Historique — 30 octobre, radar large et avis d’Ivan
+
+Décision plus récente : beaucoup de sujets, Ivan juge utile/inutile/creuser.
+Cela remplace la proposition précédente d’attendre deux niveaux approuvés.
+Branche agent/codex/research-engine, PR#71 brouillon ; aucune fusion.
+Mac Darwin confirmé, checkout initial propre, fetch sans écrasement.
+Worker/plugins f2268d3 actifs, planning300s chargé, gateway sain, dernier exit0.
+Radar :20 sujets/jour Paris, moitié après9h/reste après18h,5 par page max.
+Références publiques actives, trente jours max ; aucun seuil Jev/LLM d’utilité.
+Titres attribués et date/extrait lu ou titre seul non vérifié, jamais faux fait.
+Vingt sujets confirmés, quatre messages73–76 :6Business,6Finance,6Engineering,
+2System ; dix issus du planning, dix du rattrapage explicite. Zéro appel modèle
+pour le catalogue. Jev inchangé761 ; prix des recherches natives reste inconnu.
+Avis natifs : /avis ID utile|inutile|creuser [raison], /radar [page récente].
+Propriétaire DM uniquement ; historique durable, classement par domaines/mots
+des titres, diversité et25%exploration. Raisons conservées, pas exécutées.
+Creuser enfile une recherche prioritaire dédupliquée ; titre seul=request,
+page originale lue avant preuves. Budget recherche inchangé, aucun achat/contact.
+Quatre notes catalogue ajoutées dans Ivan AI OS/radar/ ; avis également projetés
+sans écrasement. Zéro avis réel à ce stade, pas d’apprentissage démontré en usage.
+Tests handlers/retours/ranking/reprise :272/272 ; entrée réelle /avis à vérifier.
+Contre-revue : envoi radar incertain désormais cycle failed/degraded, test rouge
+puis vert et sonde indépendante. Inconnus du tick distincts du cumul historique.
+Réservations avant CLI, aucun renvoi incertain ;6anciens unknown inchangés.
+Choix tester6ab5272ce301 préservé ; sauvegardes alertes VERIFIED et research/
+dossiers intègres dans mac-opportunity-f2268d3. Coût/satisfaction non inventés.
+Lire RADAR-USER-FEEDBACK.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md seulement.
+Prochain : vrais avis, vérifier commande entrante, puis approfondir les choix ;
+ne pas rétablir un filtre d’utilité bloquant avant ce retour. Couverture sources
+encore partielle ; Career/VPS différés, Knowledge final commun, profils privés exclus.
+
+## Historique — sources distinctes des messages, recherche ciblée
+
+PR#71 brouillon, agent/codex/research-engine ; aucune fusion.
+Ivan clarifie :43 publications collectées ne signifiaient pas43 posts reçus.
+Ne pas promettre une lecture intégrale de chaque référence récupérée.
+Deux messages confirmés aujourd'hui :71 OpenClaw, puis72 communication BCE.
+Nouveau compteur distingue sources livrées, messages uniques et messages/jour Paris.
+Au contrôle :14 sources livrées depuis l'origine,12 messages uniques,2 aujourd'hui.
+Worker/plugins db08a22 actifs, planning300s chargé, gateway sain, dernier exit0.
+Réponses analyste research-analysis-v2 : raison/questions conservées ; un seul
+approfondissement parent lié, prioritaire ; requêtes sur le vrai sujet macro,
+preuves nouvelles et diversité d'éditeurs ; prix >1h actualisé avant analyse.
+Le contradicteur cible sa propre objection, pas les seules inconnues du rédacteur.
+Correctif contre-revu : calculs du parent actualisé suivent ses sources.
+Migration ancienne DB testée : anciens reçus et réservations préservés.
+266/266 tests concernés passent, dont cinq repros vus rouges puis verts.
+Qualification dirigée Codex+workers, pas découverte automatique revendiquée :
+Finance5 sources : RESEARCH_FACT_UNSUPPORTED avant revue ; aucun envoi.
+Business Dolibarr5 sources : rapport puis rejet du contradicteur pour paraphrase
+qui ajoute une cause absente de SA citation. Aucun envoi, pas marché validé.
+Fiche émetteur Finance transcrite depuis page officielle web, pas connecteur ETF.
+Recherche :pending9, research8, rejected1 ;10 appels cumulés dont9 aujourd'hui,
+coût natif inconnu. Jev inchangé761, hors tri des alertes. Unknown6 préservés.
+Sources/qualifications privées dans mac-opportunity-db08a22 et /private/tmp.
+Lire RESEARCH-DEPTH-2026-10-30.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md.
+Prochain : localiser le champ du refus Finance avant nouvel appel ; qualifier une
+suite réellement exécutée et l'utilité ; admission/rétention restent à examiner.
+Ne pas rejouer les anciens envois, ni inventer un choix Ivan. Career/VPS différés,
+Knowledge final commun ; aucun achat/contact ni profil privé ajouté.
+
+## Historique — reprise du 30 octobre avant recherche ciblée
+
+## 2026-10-30 — Codex — reprise, recherche et rattrapage Telegram
+
+Branche agent/codex/research-engine ; PR#71 brouillon vers advisory-value, pas fusionnée.
+Mac Darwin confirmé ; fetch sans écrasement. Worker/plugins d47c69b actifs.
+Au retour : planning déchargé après activation interrompue le16, pas seulement veille.
+Ancien worker rechargé immédiatement, puis bascule coordonnée ; planning300s sain.
+Rattrapage demandé explicitement :43 publications,7 indicateurs Finance actualisés.
+Message71 confirmé après seconde lecture : correctifs OpenClaw, pas opportunité Finance.
+File :delivered13, unknown6, expired161, review43, skipped69 ; zéro pending/ready.
+Ne pas rejouer les six sources incertaines, ni restaurer un vieux snapshot.
+Recherche multi-source active :11 candidats nouveaux,104 actifs admissibles,
+rotation BTC/LTC/Canton du jour ; sources publiques gratuites, aucune recommandation.
+Répartition : documentaliste/calculateur/code, analyste puis contradicteur isolés,
+contrôle de preuves, Obsidian et reçu ;12 appels recherche/jour UTC,3 envois/jour Paris.
+Ces plafonds ne couvrent pas tous les appels/digests ; coût natif non exposé.
+Réel :Bitcoin6 sources → research ; WooCommerce6 sources → contradicteur research,
+un approfondissement en file. Neuf travaux pending ; aucun dossier Finance livré.
+Aujourd'hui16 appels natifs process +4 recherche enregistrés ; Jev inchangé761.
+Noms n8n/GPT-6 corrigés ;258/258 tests passent. Sources/ordre refus/non-renvoi testés.
+Wrapper activation renforcé : réattente après gateway, refuse worker running,
+retour config+planning ensemble ; deux sondes indépendantes passent. Ce dernier
+correctif est source opérateur, pas une nouvelle version du worker revendiquée.
+Journal Obsidian30/10 ajouté ; backup state-after-catchup VERIFIED, reçus préservés.
+Lire RESEARCH-ENGINE-MAC.md puis CLAUDE-NEXT-RESEARCH-ENGINE.md seulement.
+Ouvert : abstention analyste sans questions structurées ; qualification Finance,
+juste valeur non estimable, commandes Telegram entrantes non testées, utilité Ivan.
+Priorité : poursuivre preuves/objections sans forcer des notifications ; Career/VPS
+restent différés, profils privés exclus, Knowledge final commun. Aucun achat/contact.
+
+## Historique — état avant rattrapage du 30 octobre
+
+## 2026-10-16 — Codex — utilité et horizons d’investissement
+
+État : branche agent/codex/advisory-value poussée ; code de104ba actif sur Mac Darwin.
+PR #70 brouillon vers #69 : https://github.com/FreezyXV/Ivan-AI-Os/pull/70 ; aucune fusion.
+Décisions explicites Ivan : messages peu utiles ; pistes Finance, douleurs Business,
+techniques applicables à Jarvis/code/apps/sites. Court/moyen/long terme ouverts.
+Précision Finance : tokens/autres actifs, projet/prix/valorisation et contradicteur ;
+macro France/Europe/monde utile sans achat immédiat. FINANCE-RESEARCH-MANDATE.md fait foi.
+Fait : contexte v8, proposition + fait justificatif + invalidation obligatoires,
+horizon/risque pour Finance ; second jugement indépendant. 201/201 tests passent.
+Fait : simple avis SEO désormais review, relevé de taux seul skip, reprise OpenClaw
+keep puis approve ; essai isolé unique, 4 appels natifs, zéro envoi de qualification.
+Ce n’est ni un benchmark indépendant ni une mesure d’utilité quotidienne.
+Worker et plugins de104ba coordonnés, services sains, planning 300 s chargé.
+File : delivered 12, unknown 6, expired 129, review 32, skipped 63 ; dernier reçu 70.
+Les 18 sources déjà livrées/incertaines et le choix tester sont inchangés.
+Message 70 automatique v5/v7 : demande d’avis SEO, pas douleur prouvée ; trop faible.
+Retour qualitatif peu utile enregistré et auditable ; aucune note chiffrée inventée.
+Note Obsidian ajoutée : inbox/2026-10-16-horizons-investissement-et-pistes-utiles.md.
+Ouvert : recherche multi-source Business/Finance encore absente du worker ;
+à approfondir conserve la piste mais ne réalise pas encore cette recherche.
+Pas de nouvelle opportunité Finance revendiquée ; coût natif non exposé, pas nul.
+Jev inchangé 761 appels, hors tri des alertes ; pas d’upgrade OpenClaw effectué.
+Ne pas toucher : notes/choix, profils privés, reçus unknown ; Career/VPS différés,
+Knowledge final commun. Preuves privées mac-opportunity-de104ba, backups vérifiés.
+Lire ADVISORY-VALUE-2026-10-16.md et CLAUDE-NEXT-ADVISORY-VALUE.md seulement.
+Prochaine action : assembler des preuves croisées avant de proposer un dossier,
+avec revue Claude des sources Business hors HN et des pistes Finance.
+
+## Historique — avant le retour d’utilité du 16 octobre
+
+## 2026-10-16 — Codex — résultats utiles et première fiche Business automatique
+
+État : agent/codex/weekly-value-recovery poussée ; PR #69 brouillon vers #68,
+pas fusionnée ; code cb2696e activé. CI 9c5e7e1 : 11/11 jobs réussis.
+Reprise Mac Darwin, checkout propre, fetch sans écrasement ; aucun avis Claude
+nouveau sur #68. Lire WEEKLY-OUTCOMES-2026-10-16.md, pas tout l'historique.
+Fait : bilan semaine avant correction : 111 candidats, un digest confirmé sur
+trois tentatives, deux sources Engineering, zéro fiche Business automatique.
+Fait : collecteur de demandes branché au planning ; recherche par index, lecture
+API HN officielle, refus/échecs mémorisés, archive absente non bloquante.
+Qualification réelle f4346f4 déclenchée par Codex : 2 demandes lues en 2,543 s,
+4 complétions natives, une fiche approuvée et une rejetée, cycle 56,245 s.
+Messages 68 (System déjà prêt) et 69 (Unity Business) confirmés ; dossier Unity
+1e662e4641f1 v0 écrit avant envoi, aucun choix Ivan inventé. Pas un digest du soir revendiqué.
+Complément actif cb2696e : prompt v5 sur le problème actuel, brouillons refusés
+conservés pour diagnostic privé, fenêtre native 40 s/global 50 s sans nouvel essai.
+194/194 tests runtime/scripts ; le message 69 reste v4/v7, qualité v5 non mesurée.
+Avis Codex : Unity exploratoire ; récupération de compte officielle existante,
+pas de marché ni paiement prouvés. Journal Obsidian du 16, aucune note remplacée.
+File : delivered 11, unknown 6, expired 119, review 41, skipped 60. Six sources
+incertaines conservées, pas six messages : ne pas les rejouer ni restaurer une vieille file.
+Ouvert : utilité Ivan et coût natif inconnus ; commandes Telegram UI non vérifiées,
+Mac verrouillé. OpenClaw 2026.9.5 confirmé ; ne pas déployer 2026.10.4 sans compatibilité.
+Jev inchangé 761 appels / 0,029489 € estimé ; aucun Jev pour les alertes.
+Ne pas toucher : profils privés, notes personnelles, ancien choix tester 6ab5272ce301 ;
+Career en pause, aucun VPS, Knowledge final commun. Preuves : mac-opportunity-f4346f4
+et mac-opportunity-cb2696e sous ~/.ivan-ai-os, backups SQLite VERIFIED.
+Prochaine action : revue Claude selon CLAUDE-NEXT-WEEKLY-VALUE-2026-10-16.md,
+en ciblant l'utilité commerciale et deux familles de sources hors HN.
+
+## Historique — 2026-10-09 — Codex — parcours opportunité et décision
+
+État : branche agent/codex/opportunity-loop poussée ; PR #68 brouillon vers
+agent/codex/alerts-integration, pas fusionnée ; code b846907 actif sur Mac.
+CI du commit documentaire d274bcd : 11/11 jobs réussis.
+Mac Darwin confirmé, dépôt initial propre ; fetch sans écrasement, trois commits
+documentaires foundation/v1 repris avec provenance jusqu'à c44c441.
+Fait : 187/187 tests runtime/scripts, dont huit cas dossier/décision/reprise ;
+plugin natif chargé (/opportunite, /decision), worker b846907, services sains.
+Fait : digests automatiques 64 et 65 confirmés le 9 au soir ; message 66 depuis
+une qualification séparée, dossier public exploratoire préparé par Codex et
+approuvé par une relecture native (15,561 s). Pas de découverte Business automatique.
+Décision réelle Ivan : tester, chercher des témoignages indépendants avant offre ;
+origine codex-explicit-user, fiche Obsidian 6ab5272ce301 v1, v0 préservée.
+Recherche gratuite supplémentaire : trois auteurs, friction technique plausible,
+aucun achat prouvé ; journal ciblé dans Obsidian, aucun contact/installation.
+Ouvert : vraie entrée des commandes Telegram non testée (UI noWindowsAvailable),
+coût natif non exposé, temps gagné/utilité non mesurés, Business automatique zéro.
+File production : delivered 7, unknown 4, expired 37, review 40, skipped 36 ;
+ne pas rejouer les quatre envois incertains, ni restaurer un vieux snapshot.
+Ne pas toucher : notes personnelles/profils privés, autres services/plugins ;
+Career reste en pause, aucun VPS ; Knowledge/Anakalypto finalisation commune après pilote.
+Preuves : mac-opportunity-ffd71b3/research-qualification et mac-opportunity-b846907
+sous ~/.ivan-ai-os ; voir OPPORTUNITY-DECISION-LOOP.md et CLAUDE-NEXT-OPPORTUNITY-LOOP.md.
+Prochaine action : vérifier une vraie entrée /opportunite 6ab5272ce301 dans le DM
+de la Secrétaire, sans simuler une nouvelle décision d'Ivan ; revue Claude parallèle.
+
+## Historique — digest repris et Finance livrée, 8 octobre 2026
+
+Worker 6385c5b actif ; plugin alertes 8364b9f, Jev d35963e et hook Claude
+c6ead2c conservés. Mode natif avec seconde lecture ; aucun Jev pour les alertes.
+196 tests runtime/scripts concernés passent. PR Claude #67 c3b428e reprise avec
+provenance en 335088a : revue du message 62, skills/contrat/guide alignés.
+Défaut d'horloge confirmé par Claude déjà corrigé dans le lot 6385c5b.
+
+Ivan confirme aucun message depuis le reçu 62 (7 octobre 00:28 Paris).
+Digest du 7 vers 21:41 interrompu pendant Low Power Sleep, batterie 1 % ;
+aucun reçu, deux sources delivery_unknown. Défauts corrigés : cette page ne
+bloque plus les autres, rattrapage au réveil des seules synthèses prêtes la
+veille, diagnostics conservés par activité, résultat incertain dégradé.
+Tests sur lendemain, DST/année, pages limitées et absence de renvoi.
+
+Rattrapage automatique du 8 à 12:34 Paris : deux autres sources réservées,
+panne réseau native sendMessage, état incertain conservé. IPv4 public et
+sonde bot réussissent ensuite ; IPv6 direct échoue. Aucune configuration
+réseau modifiée : ne pas revendiquer une réparation permanente du transport.
+Qualification manuelle séparée, source Finance fraîche : taux US à 10 ans,
+message 63 confirmé, zéro appel modèle/Jev. Les quatre sources incertaines
+ne sont pas rejouées. Aucun nouveau digest automatique réussi encore prouvé.
+
+À 10:39 UTC : delivered 5, delivery_unknown 4, expired_unsent 16, review 41,
+skipped 25 ; zéro ready/pending/processing. Catalogue Business toujours zéro.
+Anciens reçus et anciennes tentatives intacts. Sauvegarde après reçu 63 VERIFIED.
+Preuves privées mac-alerts-6385c5b/{digest-recovery-activation,
+fresh-finance-qualification,final-digest-proof}.json ; snapshot de reprise
+state-backup-after-message-63. Garder la file actuelle pour un retour de code.
+
+Claude note message 62 à 9/10 (fidélité 2/2), pas une mesure d'utilité Ivan.
+Uceprotect ajoute une précision non portée par sa propre citation ; appartient
+aux tentatives incertaines, ne pas la renvoyer. Ancien discours BCE fidèle
+mais pauvre/expiré ; ne pas le confondre avec la nouvelle observation Finance.
+Reste : digest ordinaire automatique vérifié, qualité Business/Finance,
+transport Telegram intermittent, coût natif, Engineering/mémoire et consolidation,
+puis Knowledge/Anakalypto commun. Career en pause, OVH différé.
+
+## Historique — reprise du 7 octobre
+
+## État courant — reprise nocturne et priorité des sources, 7 octobre 2026
+
+Worker c613533 actif ; plugin alertes 8364b9f, Jev d35963e et hook Claude
+c6ead2c inchangés. Mode native-editorial avec relecture indépendante, zéro Jev
+pour les alertes. 284 tests Node concernés passent. CI c613533 : 11/11 verte.
+
+Correctifs activés : les nouvelles sources et le travail interrompu occupent
+les places avant la migration des anciennes abstentions ; les cycles expirés
+sont fermés avec CYCLE_INTERRUPTED ; une panne fournisseur arrête le passage
+après le premier échec, sans consommer la file restante. Un refus de contenu
+ne coupe pas un fournisseur sain. Lire MAC-NATIVE-RECOVERY.md.
+
+Nuit réellement observée : 49 périodes de sommeil entre 00:34 et 10:01 Paris,
+avec réveils partiels ; deux cycles restés running après expiration. Fermés
+après correctif, zéro cycle fantôme au contrôle et quatre reçus préservés.
+Six erreurs matinales viennent de model/list timed out dans la passerelle locale
+Codex (~5,3 s), avant rédaction. Les appels ont ensuite repris sans modifier le
+modèle. Le transport interne reste externe ; ne pas revendiquer sa réparation.
+
+État à 08:41 UTC : services sains, 4 livrées, 3 prêtes, 4 pending, zéro processing ;
+deux dates non vérifiées et des refus/outages restent visibles. Finance BCE a
+une synthèse approuvée en attente, pas une nouvelle livraison revendiquée ;
+catalogue Business toujours zéro. Le traitement courant continue automatiquement.
+Premier cycle c613533 terminé en 49,553 s, trois appels natifs et zéro Jev,
+sans nouvelle fiche ni livraison. CHECK_PROCESS_RECOVERY effacé par ce succès.
+Jev reste 761 appels / 0,029489 EUR estimé. Aucun nouvel envoi dans ce lot.
+
+Preuves privées : ~/.ivan-ai-os/mac-alerts-c613533/{worker-activation,
+morning-recovery-proof,final-recovery-proof}.json et state-backup-before-provider-recovery VERIFIED ;
+première qualification matinale dans mac-alerts-32dcdff/morning-recovery-proof.json.
+Snapshot final VERIFIED : mac-alerts-c613533/state-backup-after-recovery.
+Rollback de code en gardant la file actuelle et ses reçus, pas de restauration
+aveugle d'une ancienne file. Aucun changement des autres services/réglages.
+
+Lot Claude actualisé : CLAUDE-NEXT-NATIVE-EDITORIAL-2026-10-07.md ; reçu 62,
+documents/skills et avis ciblé sur les trois correctifs, pas de campagne payante.
+Reste global : qualité/utilité Business et Finance, coût natif accessible,
+prochaine nuit sous cette version, Engineering/mémoire et consolidation des PR,
+puis Knowledge/Anakalypto ensemble en dernière étape. Career en pause, OVH différé.
+
+## Historique — tri natif activé et vraie livraison, 7 octobre 2026
+
+Décision explicite d'Ivan : ne pas utiliser Jev là où il n'est pas fiable.
+Worker et plugin alertes 8364b9f actifs ; gateway Jev d35963e et hook Claude
+c6ead2c conservés. Mode native-editorial, verifyNativeBrief=true ; Jev n'est plus
+appelé pour trier les alertes. Contexte public v6 inchangé, relecture v1.
+Lire NATIVE-ALERT-TRIAGE.md pour le parcours et les limites.
+
+Source lue → filtres locaux → jugement/rédaction isolés → preuves contrôlées
+→ relecture indépendante liée au contenu exact → digest durable. Traitement
+natif par créneau de cinq minutes, quatre complétions max (les deux étapes
+comptées). Abstentions Jev réexaminées une fois, deux par passage ; décisions
+anciennes conservées dans evidence_revisions. Aucun envoi tenté n'est réouvert.
+Rumeurs courtes et annonces Next.js de correctifs à venir : review sans modèle.
+276 tests Node concernés passent, dont bascule OpenClaw et vérification.
+
+Première preuve actuelle : le worker automatique traite deux sources en 21,526 s,
+zéro Jev, trois complétions natives ; discours BCE sans intérêt macro écarté,
+Next.js 16.4 retenu puis approuvé par le relecteur (12,761 s + 4,626 s).
+Citations et conditions d'applicabilité relues manuellement. Digest déclenché
+manuellement pour qualification, message Telegram 62 réellement reçu ; ce n'est
+ni une fixture ni une livraison automatique du soir revendiquée. Trois anciens
+reçus conservés ; repassage de la même page sans renvoi.
+
+Contrôle isolé historique : deux utiles retenus, trois cas non livrés ; un bruit
+bloqué par validation, pas une réussite du seul jugement natif. Relecteur réel :
+refus du contexte installé inventé et du bricolage hors périmètre, deux appels.
+Ces cinq cas connus et deux contre-exemples ne constituent pas un benchmark neuf.
+Coût natif non exposé ; ne pas le présenter comme gratuit ni parfaitement fiable.
+Jev reste 761 appels / 0,029489 EUR estimé, aucun ajout dans cette qualification.
+
+Activation coordonnée OpenClaw/worker avec rollback et sauvegarde VERIFIED intacte.
+Mémoire, destinataire, autres plugins, réglages Claude et service Jev conservés.
+Preuves privées ~/.ivan-ai-os/mac-alerts-8364b9f/{native-triage-activation,
+first-native-production-digest,independent-verifier-counterexamples,
+native-digest-idempotency,native-final-health}.json. Sauvegarde intacte :
+state-backup-before-native ; snapshot après livraison : state-backup-after-native-delivery. Branche Codex/PR #57, aucune fusion foundation/main.
+
+Suite Claude : CLAUDE-NEXT-NATIVE-EDITORIAL-2026-10-07.md, revue du vrai reçu 62
+et alignement des documents/skills qu'il possède ; pas de nouvelle campagne payante.
+Reste global : qualification Business/Finance actuels, coûts natifs accessibles,
+reprise après nuit Mac, Engineering/mémoire et consolidation des PR ; puis
+Knowledge/Anakalypto en étape finale commune. Career en pause, OVH différé.
+
+## Historique — lecture Next.js initialement bloquée par Jev
+
+## État courant vérifié — revue #66 et lecture Next.js, 7 octobre 2026
+
+Worker 9faaadb actif ; gateway/plugin d35963e conservés. #66 640e2ec repris
+avec provenance en 5015a28. Lot CLAUDE-NEXT-SOURCE-QUALITY clos.
+Next.js : téléchargement plafonné à 600 000 octets, texte extrait à 100 000
+caractères, extrait à 1 200. Autres hôtes : téléchargement toujours 400 000.
+URL Mistral /news/<slug> normalisée à un slash final ; un ancien doublon non lu
+résolu avec duplicateOf, sans réévaluer la source canonique ni modifier ses reçus.
+264 tests Node concernés et 15 tests Python du lecteur passent.
+
+Lecture réelle Next.js 16.4 : 498 948 octets, 17 652 caractères extraits,
+publication primaire concordante au 6 octobre. Une sélection Jev : keep/confidence
+0,47 (probabilités keep 0,64/review 0,20/skip 0,16), donc SELECTION_UNCERTAIN
+avec la règle qualifiée .75/.75. Aucun natif ni envoi, aucun seuil changé.
+Nouveau passage : zéro lecture, aucun changement de ligne, zéro appel/envoi.
+Simon le-chonk reste non lu ; ne pas confondre absence de lecture et inutilité.
+
+Services, outil et planning sains, exit 0 ; 3 delivered, 34 review, 11 skipped,
+5 expired_unsent. Reviews : 18 SOURCE_NOT_READ, 14 SELECTION_UNCERTAIN, deux
+refus factuels. Un échec lecteur persiste (date Simon) ; le dernier cycle de flux
+signale aussi FEED_UNAVAILABLE, sans bloquer les autres producteurs.
+Jev 761 appels / 0,029489 EUR estimé, inconnus zéro ; cette qualification :
+un appel / 0,000067 EUR estimé. Les trois reçus de livraison restent inchangés.
+Sauvegarde avant activation ; snapshot initial utilisé pour qualification isolée,
+puis snapshot final VERIFIED distinct, laissé intact pour reprise.
+
+Preuves privées ~/.ivan-ai-os/mac-alerts-9faaadb/{worker-activation,
+next-source-qualification,next-idempotency,health-after-next-reader}.json ;
+snapshot de reprise state-backup-after-next-reader. Aucune fusion foundation/main.
+Le pilote reste à qualifier sur utilité réelle, fiche Business actuelle,
+coût natif et nuit Mac. Career/OVH différés ; Knowledge/Anakalypto étape finale.
+
+## Historique — reprise durable des lecteurs
+
+## État courant vérifié — #64/#65 et reprise durable des lecteurs, 7 octobre 2026
+
+Worker ab8d294 actif ; gateway/plugin d35963e conservés, contexte v6/mode E .75/.75
+inchangés. Branche agent/codex/alerts-integration, PR #57 ; aucune fusion foundation/main.
+#64 repris avec provenance : 2ab7694/e369e16/4b1e2fd → 7f0efd4/a2f2be4/8127e41.
+Complément #65 c6ead2c → 063d402 ; copie Claude c6ead2c active, rules.mjs identique
+à la source, gate/gateway 4311 conservés. Le lot CLAUDE-NEXT-PR63 est entièrement clos.
+
+Défaut de budget de lecture corrigé : état durable par source/code/empreinte,
+erreurs structurelles suspendues jusqu'au changement du lecteur, erreurs temporaires
+espacées (30 min puis 2 h), trois tentatives max. Filtre avant LIMIT : cent pages
+bloquées ne masquent pas la suivante. Diagnostic CHECK_SOURCE_READS persistant,
+sans texte de brouillon et sans masquer WAIT_DIGEST. 261 tests Node concernés passent.
+Lire SOURCE-READER-RECOVERY.md et REVIEW-CLAUDE-PILOT-FINAL.md.
+
+Preuve sur copie puis file réelle : deux pages échouent, zéro lecture au passage
+suivant après réouverture ; état d'échec restauré sur copie, trois reçus conservés.
+Zéro appel Jev/natif et zéro message dans ces vérifications. Activation du seul worker
+avec sauvegarde/rollback ; Jev, OpenClaw et réglages Claude inchangés.
+Santé finale : services/outil sains, planning chargé, exit 0 ; file 3 delivered,
+33 review, 9 skipped, 5 expired_unsent. Deux erreurs de lecture persistées visibles.
+Jev toujours 758 appels / 0,029308 EUR estimé / plafond 10 EUR, inconnus zéro.
+
+Preuves privées ~/.ivan-ai-os/mac-alerts-ab8d294/{worker-activation,
+reader-retry-qualification,live-reader-retry-proof,health-after-reader-proof}.json.
+Nouveau lot Claude : CLAUDE-NEXT-SOURCE-QUALITY-2026-10-06.md (revue ciblée,
+preuves de lecture de deux pages bloquées, état K09/K10), pas envoyé à l'extérieur.
+Reste Codex : couverture utile, qualité d'une vraie synthèse/fiche actuelle,
+coût natif si l'interface l'expose, nuit/reprise réelle ; usage quotidien et dix
+abstentions annotées par Ivan, puis Knowledge/Anakalypto. Career/OVH restent différés.
+
+## Historique — après #63 et reprise des lecteurs, 6 octobre 2026
+
+Code actif d35963e (worker/gateway/plugin), contexte v6 et mode E .75/.75
+inchangés. Branche Codex/PR #57 ; aucune fusion foundation/main. Claude #63
+84d92d7 repris en 1425e86. CI 11/11 ; 241 tests Node concernés, 22 Python.
+Lire CURRENT-RUNTIME-INVENTORY.md pour les autres plugins réellement épinglés,
+les producteurs, les PR empilées et leurs limites : ce relais couvre tout le projet.
+
+Livré et activé : lecteurs officiels Mistral/Cloudflare, date primaire plutôt
+que repost RSS, HTML class vide accepté, commandes/nav exclues ; reprise de
+candidats non lus après disparition RSS, dans le budget de lecture commun.
+Tests rouges puis verts. Aucun refus éditorial ni envoi tenté n'est ainsi réouvert.
+Diagnostic : toutes les actions et codes de flux/lecteur ; nouveaux refus factuels
+identifient citation/chiffre/identifiant/utilité/action, sans contenu de draft.
+
+Business v3-business-market : utilité sur le marché, hypothèse acheteur/besoin,
+test de recherche de preuves publiques distinctes avant prototype. Les deux
+avertissements Claude sont non bloquants et persistés dans businessEditorialWarnings.
+Finance : valeurs citées sans conversion, attribution générique si intervenant
+non nommé ; aucune exception de citation fondée seulement sur l'hôte éditeur.
+Revue et désaccords motivés : REVIEW-CODEX-PR63-2026-10-06.md.
+
+Deux passages réels : cinq pages lues (trois Simon, annonce Mistral, Cloudflare).
+Mistral reste review Jev ; Cloudflare primaire du 2 octobre devient stale sans
+appel. Deux autres lecteurs refusent date non vérifiée/corps trop volumineux.
+Quatre nouveaux Jev, 0,000254 EUR estimé ; aucun natif, aucune nouvelle livraison.
+Repassages idempotents : zéro appel supplémentaire et zéro message. Ne pas forcer
+un keep ni rejouer un corpus pour fabriquer une preuve de livraison fraîche.
+
+Santé finale : Jev/OpenClaw/outil sains, planning chargé, Career absent, source
+d35963e ; 3 delivered / 33 review / 9 skipped / 5 expired_unsent, zéro ready.
+758 Jev / 0,029308 EUR estimé / plafond 10 EUR / inconnus zéro. Catalogue Business
+prod zéro. Ancien Sentinelle disabled_manually ; export distant manuel, sans schedule.
+La Secrétaire, les autres rôles, la file, le budget et Obsidian sont conservés.
+
+Sauvegarde/restauration réelle sur copie : trois reçus conservés, rien réouvert,
+zéro appel/envoi. Catalogue Business WAL couvert par test. Journaux Mac consultés :
+aucune longue veille récente qualifiable ; nuit réelle, coût natif et utilité
+quotidienne restent ouverts. B03/reçu 61 est un test historique insuffisant selon
+Claude, pas une opportunité qualifiée. Ses huit générations/B01/B03 ne sont pas rejoués.
+
+Preuves : CURRENT-RUNTIME-INVENTORY.md et dossiers privés mac-alerts-e2446e5,
+mac-alerts-0066e49, mac-alerts-d35963e sous ~/.ivan-ai-os/. Dernier lot Claude ciblé
+préparé dans CLAUDE-NEXT-PR63-2026-10-06.md, pas envoyé comme message extérieur.
+Défaut d'import stdin dans son skill classify.mjs laissé à son périmètre ; la
+restauration a été vérifiée avec un fichier mjs, sans masquer l'erreur initiale.
+#65 reprise avec provenance : e40b866/76dedb6/1c91ce3 → 54c61c9/0264ea9/ad23aa2.
+Prose citée et backticks échappés corrigés ; 19/19 tests hook/adaptateur confirmés.
+Copie Claude active 1c91ce3 vérifiée identique à la PR, gate/gateway 4311 conservés.
+Pas de réinstallation par Codex. Quatre options Git valides restent mal classées :
+--no-optional-locks, --glob-pathspecs, --noglob-pathspecs, --icase-pathspecs ; quatre
+tests rouges sans exécution de stash. Hypothèses -C/dossier/-cclef=valeur retirées,
+Git les rejette. Revue REVIEW-CODEX-PR65-2026-10-06.md ; complément Claude ciblé demandé.
+
+Reste Codex : couverture de sources utile (19 non lues), cas de refus futurs
+précis, qualité d'une vraie synthèse actuelle/fiche Business, coût natif si
+interface disponible, nuit/reprise réelle, puis parcours final Knowledge/Anakalypto.
+Career en pause, OVH reporté. Ne pas annoncer le pilote entièrement terminé.
+
+## Historique vérifié — après #62, 6 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 ; aucune fusion foundation/main.
+Claude #62 repris avec provenance : 48a4611 → f91bcdf, 8a958a0 → 3861850.
+Runtime actif 33480ee (worker/gateway/plugin), contexte v6, mode E .75/.75 inchangé.
+323 tests ciblés au correctif du chargeur ; 148 concernés après ajustement Business.
+CI runtime 33480ee : 11/11 verte. Node 24.19.0 ; file/budget/Secrétaire conservés.
+
+Livré : fiche Business dans le même appel natif, preuves liées par code, problème
+dérivé du premier fait, acheteur hypothétique, objections, test réversible gratuit.
+Le vrai moteur recalcule les entrées publiques explicites ; génération exploratoire
+sans score inventé. Catalogue business_fiches enregistré dans la transaction ready ;
+reprise sans doublon et catalogue indépendant d'une archive source manquante testés.
+Tous les diagnostics actifs dans alerts.diagnoses ; compatibilité diagnosis.code.
+Le diagnostic et la bascule sondent réellement ivan_alert_synthesize, avant modèle.
+
+Défaut racine trouvé à l'activation 5518c34 : factory chargée avec require face à
+une dépendance CLI à top-level await. Gateway sain, outil absent. Corrigé b860b86 :
+imports différés, test rouge puis vert ERR_REQUIRE_ASYNC_MODULE, sonde obligatoire.
+La tentative 5518c34 est un RPC sans complétion native (l'ancien reçu nativeAttempts
+signifie seulement tentative client). Ne pas la compter comme appel modèle.
+B01, premier vrai natif b860b86 : refus VALIDATE, 31 s ; pas de draft disponible.
+Pas de cause précise inventée. 33480ee dérive le champ redondant et conserve
+validationChecks → validation_checks → nativeFailure.checks sans texte de modèle.
+
+B03 (autre capture publique historique), un seul natif sur 33480ee : VERIFIED,
+32 064 ms, fiche 1307 caractères, aucun appel Jev, pas de score/recommandation.
+Fait contrôlé contre sa citation : plainte sur prix/contacts, engagement annuel
+et accès d'essai. Source du 26 août : aucune fraîcheur ni sélection Jev revendiquée.
+Utilité et test proposés restent à relire par Claude ; un prototype fictif ne
+prouve pas une demande solvable. Essai Telegram distinct de la production, livraison confirmée reçu 61 (pas de renvoi).
+Reçus : ~/.ivan-ai-os/mac-alerts-33480ee/business-qualification/
+{result.json,telegram-attempt.json,telegram-result.json} et coordinated-activation.json.
+
+Dernière santé : outil disponible, Jev/worker/OpenClaw sains ; file prod
+3 delivered / 27 review / 7 skipped / 5 expired_unsent, zéro ready/pending.
+754 appels Jev / 0,029054 EUR estimé / plafond 10 EUR / inconnus 0.
+Aucune hausse pendant les bascules et la qualification Business. Coût natif inconnu.
+Catalogue Business prod zéro : la qualification historique n'est pas injectée en prod.
+Ne pas rejouer B01/B03, les anciens benchmarks ou les huit générations.
+
+Claude : CLAUDE-NEXT-PR62-2026-10-06.md (sortie Business, sources publiques non lues,
+deux traductions Finance testables, sans modèle ni activation). Codex poursuit les
+lecteurs/runtime et la vraie qualification quotidienne ; pas de nouveau seuil.
+Aucun recours sur abstentions ou digest hebdomadaire optionnel activé.
+Career en pause, OVH reporté, Knowledge/Anakalypto dernière étape commune.
+Lire BUSINESS-RUNTIME-INTEGRATION-2026-10-06.md, REVIEW-CODEX-PR62-2026-10-06.md,
+GUIDE-DIAGNOSTIC-V6.md, PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md,
+MAC-ALERTS-RECOVERY.md et la précédente qualification v6.
+
+## Historique — avant intégration #62
+
+## État courant vérifié — après #61, 6 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 empilée, aucune fusion foundation/main.
+Claude #61 reprise avec provenance : 4ee5189/b3e9cb2/34fe457/2171549/cd7324c.
+Worker, plugin System et gateway actifs 2a51fa1, même contexte v6 et mode E à .75.
+File/budget/Secrétaire/roster conservés ; activation réversible sans coût fournisseur.
+Services Jev, alertes et PID OpenClaw observés sur Node 24.19.0 ; terminal encore 23.9.0.
+
+Corrections de la sonde : noms GPT-6/GLM-5.3/HTTP/2 complets, alias économiques
+fermés, téléphones masqués avec le motif du gateway, incidents Codex/Claude,
+diagnostic CHECK_EDITORIAL_REJECTIONS et compteur/raisons toujours exposés.
+312 tests Node ciblés passent, lecteur Python 11/11 ; CI code 2a51fa1 11/11 verte.
+Les preuves refusées restent en review SQLite : elles ne disparaissent pas sans trace.
+
+Qualification six sources neuves : 4/6 exacts, bruit retenu 0, utile retrouvé 0/1.
+Six Jev, zéro rédaction en mode E ; coût estimé +0,000397 EUR, 747 appels au total,
+0,028596 EUR estimé ce mois, inconnus 0, plafond 10 EUR. Seuils inchangés.
+Deux premières complétions natives sur abstentions Engineering sans refaire Jev :
+M01 refus VALIDATE / ALERT_FACT_UNSUPPORTED ; M03 skip contre label keep de Claude.
+Recours non activé ; coûts natifs indisponibles dans le SDK text-only observé.
+Mesures sur captures historiques avec collecte simulée : pas de message v6 livré.
+File live reste 3 delivered / 17 review / 5 skipped / 3 expired_unsent ; zéro pending/ready.
+Preuves : ~/.ivan-ai-os/mac-alerts-2a51fa1/coordinated-activation.json et
+qualification-pr61-v6/{results.jsonl,native-review-fallback.jsonl,isolated.sqlite}.
+Ne pas refaire ce jeu, les anciens benchmarks ou les huit générations.
+
+Business #61 en source, non activé : son vérificateur accepte score arbitraire,
+citation vide, test non réversible et montant différent d'une citation avec devise.
+Claude corrige ces cas et relit le jugement des deux nouvelles sorties ; Codex
+prépare ensuite intégration Business et éventuel recours, après contrôle inédit.
+Career en pause, OVH reporté, Knowledge/Anakalypto dernière étape commune.
+Lire REVIEW-CODEX-PR61-2026-10-06.md, ALERT-V6-QUALIFICATION-2026-10-06.md,
+CLAUDE-NEXT-PR61-2026-10-06.md, PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md,
+MAC-ALERTS-RECOVERY.md, ARCHITECTURE-BENCHMARK-2026-10-05.md et les contrats.
+Reste : qualité/utilité quotidienne, coût natif, vraie veille Mac, inventaire urgence,
+hook Codex source non actif, puis Knowledge/Anakalypto avec Claude.
+
+## Historique — avant intégration #61
+
+## État courant vérifié — 6 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 empilée sur #48/#47 ; aucune
+fusion foundation/main. Claude #60 repris avec provenance jusqu'à 8549eac.
+Worker, plugin System et gateway actifs bf2d2e1 ; contexte mac-alerts-20261006-v6,
+mode jev-native-editorial, confiance keep/skip 0,75. Politique basse non active.
+Activation coordonnée réversible, Node 24.19.0, runner provenance cc1d2a5.
+File, budget/Trousseau, roster, personnalité/mémoire Secrétaire conservés.
+Career en pause, Knowledge/Anakalypto dernière étape, OVH différé.
+
+Six corrections Claude traitées : contexte projet/coûts exact, sigles/versions
+par citation, courte rumeur tenue par code, contacts publics masqués vers Jev,
+échecs COMPLETE/PARSE/VALIDATE conservés, interface HF exclue des extraits.
+366 tests Node et 19 Python passent ; CI source bf2d2e1 : état des 11 jobs à contrôler sur la PR.
+Relecture hors ligne reçus 59/60 : le message Next.js historique est désormais
+refusé (ALERT_FACT_UNSUPPORTED). Les contrôles mécaniques ne garantissent pas
+l'utilité Budget ni l'absence de faits répétés ThinkingBox. Aucun message renvoyé.
+Les cinq erreurs natives historiques n'ont pas de cause rétrospective connue.
+
+Probe du plugin réellement chargé : rumeur refusée avant toute complétion ;
+lecture HF réelle : 18 967 caractères, extrait 1196, aucun en-tête détecté.
+Zéro appel fournisseur et zéro envoi pour ces vérifications et la bascule.
+Skill rapport-telegram 2.1.0 installé avec sauvegardes chez Business, Finance,
+Knowledge et System ; pas de profil ajouté, pas de changement de rôle.
+Jev/calibration 0.5.0/0.3.0 intégrés en source pour Codex/Claude uniquement.
+Budget au contrôle : 741 appels / 0,028199 EUR estimé, inconnus 0, plafond 10 EUR.
+File : delivered 3 / review 17 / skipped 5 / expired_unsent 3 ; zéro pending/ready.
+Preuves privées : ~/.ivan-ai-os/mac-alerts-bf2d2e1/coordinated-activation.json,
+editorial-live-free-probe.json et rapport-telegram-2.1.0/proof.json.
+
+Les scores du benchmark v5 restent historiques ; aucune qualification v6 déduite.
+Pas de nouvelle passe des corpus ni des huit anciennes générations.
+Lire REVIEW-CODEX-EDITORIAL-FIXES-2026-10-06.md,
+CLAUDE-PILOT-QUALIFICATION-2026-10-06.md, PROJECT-CHECKLISTS.md,
+MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
+ARCHITECTURE-BENCHMARK-2026-10-05.md et les mesures éditoriales.
+Reste : prochains vrais messages, utilité quotidienne, coûts natifs, Business
+approfondi, vraie veille Mac, inventaire d'urgence, hook Codex source non actif,
+puis Knowledge/Anakalypto avec Claude. Rien de tout cela n'est déclaré terminé.
+
+## Historique — état antérieur conservé
+
+## État courant vérifié — 5 octobre 2026
+
+Branche agent/codex/alerts-integration, PR #57 sur #48/#47 ; aucune fusion foundation/main.
+Worker actif 9f7f653 ; plugin System et gateway Jev 1c769a3 (inchangés par le dernier correctif).
+Contexte mac-alerts-20261005-v5, mode jev-native-editorial, seuils de confiance 0,75.
+Code local : 223 tests passent ; CI du code 9f7f653 : 11/11. Node 24.19.0 pour les services ; runner provenance cc1d2a5.
+File/budget/Trousseau/Secrétaire/roster conservés, planning exclusif, Sentinelle distant arrêté.
+
+Trois synthèses réelles livrées : reçu 59 (Simon budget et HF ThinkingBox, mode natif précédent),
+puis reçu 60 (Next.js officiel, Jev keep 0,92 + validation native, mode conservateur courant).
+Le worker conservateur a évalué quatre éléments et rédigé seulement l'élément retenu.
+La page Next.js est datée du 30 septembre ; fenêtre sécurité explicite de sept jours.
+Après livraison 60 : zéro pending/ready, 3 delivered, 14 review, 5 skipped, 3 expired_unsent.
+Second passage digest : zéro renvoi. Budget : 740 appels, 0,028133 EUR estimé, inconnus 0.
+Preuve privée : ~/.ivan-ai-os/mac-alerts-9f7f653/qualified-runtime-and-delivery.json.
+Les pages devenues prêtes tardivement continuent le soir même, trois maximum ;
+un reçu incertain bloque la continuation. Le test échouait avant la correction.
+
+Benchmark Claude #60 @6c6e36a : une seule passe, 26 cas, 22 tentatives par fournisseur.
+Jev .75 : 4/5 utiles, zéro faux keep ; natif seul : 4/5 mais trois faux keep.
+Mode conservateur courant dérivé des mêmes sorties : 3/5, zéro faux keep ; rappel limité.
+Une erreur Jev et cinq natives sont comptées ; ni qualité universelle ni fraîcheur réelle prouvées.
+Coût benchmark Jev 0,001250 EUR estimé ; coût natif inconnu. Aucun label transmis.
+Erreurs de contenu distinguées des pannes, reprise native avec reçu payé préservé.
+Ne pas rejouer les benchmarks ni les huit exemples. Claude doit corriger #60 et
+noter les sorties existantes et les trois messages réels : mission précise dans
+CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md, terminal Cursor, son worktree et sa branche.
+
+Reste : qualité/utilité quotidienne et Business recommandations approfondies ;
+sommeil réel du Mac ; inventaire d'urgence ; hook Codex source untrusted, non actif.
+Career reste en pause, OVH différé, Knowledge/Anakalypto dernière étape commune.
+Lire PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
+REVIEW-CODEX-ARCHITECTURE-BENCHMARK-2026-10-05.md et les mesures éditoriales.
+
+## Historique immédiatement précédent — conservé pour provenance
+
+## Mise à jour — mode conservateur activé (2026-10-05, 20:30 Paris)
+
+Gateway, plugin et worker @1c769a3, contexte v5, selectionMode jev-native-editorial.
+Jev confidence 0,75 puis validation/rédaction native, seulement pour keep.
+Ce passage réel a évalué quatre éléments et préparé une synthèse Next.js officielle
+(30 septembre, fenêtre sécurité 7 jours), avec reçus Jev et natif liés à la même preuve.
+Budget après passage : 740 appels, 0,028133 EUR estimé ; aucun usage inconnu.
+Reçu 59 antérieur : deux articles réellement livrés par native-editorial.
+CI 1c769a3 : un test du benchmark dépendait du cwd du runner Linux ; corrigé
+avec le chemin de son module, testé depuis services/alerts-runtime.
+Correctif source suivant : les pages de digest prêtes après la première livraison
+peuvent continuer le même soir, au plus trois pages, jamais après un envoi incertain.
+221 tests passent avant ce correctif ; deux nouvelles régressions passent ensuite.
+La qualification de fidélité/utilité indépendante reste à Claude ; instruction courante
+CLAUDE-ARCHITECTURE-BENCHMARK-2026-10-05.md. Pas de nouvelles passes payantes.
+
+## Historique immédiatement précédent
+
+## État courant — pilote Mac et benchmark indépendant (2026-10-05)
+
+Codex : agent/codex/alerts-integration, PR #57 sur #48, elle-même sur #47.
+Runtime actif : a604aa6, CI 11/11 ; 212 tests locaux au moment de cette activation.
+Lire PROJECT-CHECKLISTS.md, MAC-ALERT-ORCHESTRATOR.md, MAC-ALERTS-RECOVERY.md,
+CLAUDE-NEXT-ACTIONS-2026-10-05.md, REVIEW-CODEX-JEV-CALIBRATION-2026-10-05.md,
+REVIEW-CODEX-ARCHITECTURE-BENCHMARK-2026-10-05.md et
+ALERT-EDITORIAL-GENERATION-MEASURE-2026-10-05.md. Le relais couvre le projet entier.
+
+Worker, plugin System et gateway Jev sont tous épinglés à a604aa6.
+Contexte mac-alerts-20261005-v5 ; sélection active native-editorial.
+Une complétion isolée juge l'utilité et rédige uniquement pour keep ; deux appels
+natifs maximum par passage. Jev n'est obligatoire ni pour les alertes ni pour
+le tri intermédiaire Business/Finance ; les autres API restent disponibles sur 4311.
+Le réglage probabiliste v5 reste en réserve, aucune politique keep prioritaire.
+Budget commun, Trousseau, file, mémoire/personnalité de la Secrétaire conservés.
+Runner Mac inchangé cc1d2a5 ; services sur Node 24.19.0. Planning exclusif,
+workflow Sentinelle distant arrêté. Pas de fusion foundation/main dans cette session.
+
+Parcours automatique réel vérifié le 5 octobre, reçu Telegram 59 : deux sources
+publiques effectivement lues, jugement natif, synthèses validées et digest livré.
+Articles : plafonds de dépenses (Simon Willison), ThinkingBox (Hugging Face).
+Processus 25 955 ms pour deux complétions ; digest 5 187 ms. Aucun KEEP simulé.
+Deux autres articles ont été écartés par le même jugement, sans prose livrée.
+Budget avant/après ces vérifications : 715 appels, 0,026624 EUR estimé, inconnus 0,
+plafond 10 EUR. Cela ne mesure pas le coût du modèle natif.
+Preuves privées : ~/.ivan-ai-os/mac-alerts-a604aa6/{coordinated-activation,
+native-editorial-cycle,native-editorial-cycle-followup}.json.
+Qualité indépendante et appréciation d'Ivan encore ouvertes : la synthèse des
+plafonds se focalise trop sur Jev ; son budget ne couvre pas les autres fournisseurs.
+
+Jev v5 : 10/14 utiles dev, zéro bruit, avec gestion des probabilités contradictoires ;
+à confiance 0,75 : 6/14, zéro bruit. Contrôle précédent : 11/12, positifs synthétiques.
+Ni ces résultats ni la stabilité observée ne prouvent une qualification universelle.
+Claude PR #60 : 26 cas nouveaux mesurés une seule fois avec v5 et natif,
+labels exclus des entrées, erreurs conservées et couverture complète obligatoire.
+B à confiance 0,75 : 4/5 utiles, aucun faux keep ; C/D : 4/5 mais trois faux keep.
+Mode conservateur E préparé : sélection Jev 0,75 puis validation/rédaction native,
+3/5 utiles sans faux keep sur ces mêmes sorties ; pas d'urgence automatique.
+22 tentatives par fournisseur, 1 erreur Jev et 5 natives ; zéro livraison de benchmark.
+Budget après passe : 736 appels, 0,027874 EUR estimé ; aucun coût natif inventé.
+Correctifs source : erreur de contenu distincte d'une panne, reprise avec reçu payé,
+scoreur strict/anti-rejeu et diagnostic selon le mode ; 221 tests locaux passent.
+Ne pas refaire les 94 cas, les 83 cas dev, les huit générations ni le contrôle précédent.
+Le benchmark sémantique historique ne prouve pas la fraîcheur des flux actuels.
+
+Career en pause ; OVH différé ; Knowledge/Anakalypto dernière étape commune.
+Claude #49 corrigée installée en gate projet uniquement ; hook Codex source untrusted,
+pas activé. Plans Engineering externes préservés. Business recommandations/notation
+approfondie, inventaire d'urgence, sommeil réel du Mac et usage quotidien restent ouverts.
+Prochaine mission Claude : corriger les calculs de #60 et relire les sorties déjà
+mesurées, les deux messages réels et le contexte actuel ; pas de répétition payante.
+
+## Historique — sélection active et Sentinelle retrouvé (2026-10-05)
+
+Cette section remplace les états historiques ci-dessous « endpoint non activé »
+et « producteur inconnu ». Branche agent/codex/mac-alerts-pilot, PR #48 sur #47.
+Lire docs/MAC-PILOT-OPERATIONS.md, docs/SENTINELLE-INTEGRATION.md et
+docs/ALERTS-RUNTIME.md ; poursuivre docs/PROJECT-CHECKLISTS.md.
+
+Jev /v1/alerts/select est actif sur 4311, LaunchAgent épinglé à la release
+alerts-59fbd7e : gateway 59fbd7e, runner Mac cc1d2a5. Token, Trousseau et
+compteur préservés ; zéro appel fournisseur à la bascule. Health et refus
+Career vérifiés. Deux cas Finance synthétiques atteignent le vrai Jev via le
+client du moteur ; aucun seuil réel ou conseil financier n'est revendiqué.
+Preuves privées : ~/.ivan-ai-os/background-alerts-59fbd7e/{activation,live-probe,finance-probe}.json.
+
+Sentinelle @sentinelleenginebot est produit par FreezyXV/sentinelle sur GitHub
+Actions, quatre passages par jour et digest hebdomadaire, MODE=ombre confirmé.
+Sa perte des dates RSS et l'absence de lecture des pages sont reproduites.
+PR Sentinelle #1, codex/collector-export : export public sans profil, décision
+ni message. Passage réel : 40 candidats récents, 139 anciens écartés, huit
+flux accessibles. Aucun changement du workflow existant, de main ou des secrets.
+
+Consommateur Mac : 40 ingestions, une première page réellement lue et une
+sélection Jev review, sans génération ni livraison automatique. Deux refus de
+date sont reproduits puis corrigés (classe HTML des notes courtes) ; un passage
+sans sélection met à jour ces deux doublons : trois pages lues au total,
+37 sources non supportées non lues, zéro appel Jev supplémentaire.
+Premier lecteur limité aux
+permaliens datés du blog Simon Willison ; date de la page et empreinte vérifiées.
+La file accepte maintenant une preuve de lecture pour un doublon RSS encore
+pending ou review/SOURCE_NOT_READ, sans rouvrir une tentative d'envoi.
+
+Une prévisualisation manuelle, rédigée et relue par Codex sur cette source,
+est reçue sur Secrétaire Ivan : reçu natif 57 et contrôle visuel Telegram.
+Elle annonce explicitement l'essai manuel et laisse la sélection en revue.
+Preuves privées : ~/.ivan-ai-os/alert-source-pilot-20261005/.
+Pour naviguer dans Telegram : Cmd+K, recherche, Entrée ; Cmd+flèche droite
+ouvre le profil. Les clics AX défaillants ne doivent plus être répétés.
+
+Tests : gateway 58, managers 18, file/adaptateurs 29, diagnostic 2, lecteur
+Python 4 : 111 passent. Export Sentinelle : 5 tests distincts passent.
+Les tests HTTP nécessitent une permission réseau locale ; le premier lancement
+sandbox a échoué sur listen EPERM, puis le relancement autorisé passe entièrement.
+
+Reste à livrer : contrat/corpus Claude K01/K02, lecteurs supplémentaires,
+récupération des exports et planning unique, générateur de synthèse, digest,
+test automatique avec reçu avant de couper l'ancien mode de Sentinelle.
+Career reste en pause, Workshop en propose ; Knowledge/Anakalypto à la fin,
+OVH reporté. Ne pas toucher au worktree Claude ni à ses trois hooks non commités.
+La prévisualisation manuelle ne constitue pas une preuve de ce parcours complet.
+
+## Historique — pauses durables et sélection préparée (2026-10-05)
+
+Lire docs/MAC-PILOT-OPERATIONS.md. Le registre natif révèle huit tâches après
+pause complète Career : six revues Workshop sont désormais désactivées en
+mode propose (runtime incompatible prouvé dans le code installé), heartbeat
+et consolidation mémoire restent actifs. Six rôles actifs, sept définis dans
+le projet ; définition/workspace Career conservés. Secrétaire inchangée.
+Preuves privées : ~/.ivan-ai-os/pause-career-complete-20261005/result.json et
+~/.ivan-ai-os/workshop-propose-20261005/result.json. Aucun nouveau modèle.
+scripts/inspect-mac-pilot.mjs vérifie santé/budget et tâches par API native,
+sans exposer les journaux ; ne plus déduire zéro tâche d'un ancien jobs.json absent.
+Lire docs/ALERTS-RUNTIME.md : endpoint candidat /v1/alerts/select, contexte fixe,
+même bearer/budget/audit ; client loopback, délais par étape, reçus conservés.
+58 tests gateway, 22 file/client, deux diagnostic, 18 managers : 100 tests OK.
+Sources candidat, endpoint non activé. Mac verrouillé pendant lecture
+Telegram ; Sentinelle montre calibrage/liens/scores, producteur toujours inconnu.
+Claude n'a pas encore publié telegram-syntheses ; ne pas toucher à ses trois
+fichiers hooks/claude non commités. Son skill jev-decision garde des passages
+obsolètes (« classify n'existe pas ») : à corriger dans son audit K05.
+Source commit 59fbd7e et release privée alerts-59fbd7e préparés ; runner
+cc1d2a5 conservé avec provenance distincte. Probe de la vraie copie figée :
+health, authentification et exclusion Career OK, zéro appel fournisseur.
+Candidate ~/.ivan-ai-os/background-alerts-59fbd7e/settings.json valide,
+settings/plist/jeton/budget live inchangés. Pas de lecture du Trousseau.
+Bascule encore à faire lorsque le Mac est déverrouillé ; ne pas reprovisionner.
+
+## Checklists et file des alertes — Codex (2026-10-05)
+
+Lire docs/PROJECT-CHECKLISTS.md : 25 tâches Codex et 10 tâches Claude avec
+critères de fin, dépendances et zones d'écriture. Codex pilote l'intégration,
+Claude démarre rapport-telegram/contrat/corpus sur sa branche séparée ;
+Knowledge/Anakalypto dernière étape commune, Career suspendu, OVH différé.
+Lire docs/ALERTS-RUNTIME.md : file SQLite candidate, 15 tests synthétiques,
+doublons interbots, baux et crash, envoi incertain retenu sans renvoi automatique.
+Sélection/synthèse/envoi injectés, aucune collecte ou livraison live raccordée.
+Finance : régression prouvée sur judge (0 appels au lieu de 2), valeurs publiques
+formatées désormais acceptées dans le gateway source, sans modifier le moteur
+Claude. Gateway complet 53/53 tests ; file alertes 15/15 tests, CI ajoutée.
+Ce lot ne remplace pas encore le service Jev actif.
+
+## Priorités Ivan — pilote Mac et alertes utiles (2026-10-05)
+
+Lire docs/MAC-PILOT-PRIORITIES.md et docs/HANDOFF-CLAUDE-ALERTS-2026-10-05.md.
+Career en pause pour plusieurs mois, données préservées. Finaliser Knowledge/
+Anakalypto à la toute fin avec Codex + Claude. OVH reporté pendant le pilote Mac.
+Priorité aux synthèses Telegram sourcées et utiles au contexte, pas aux liens seuls.
+Codex : pipeline/filtre/collectes/envoi ; Claude : rapport-telegram, contrat éditorial
+et évaluations. Pas de modification concurrente des fichiers de l'autre.
+Sentinelle non identifié dans le dépôt/LaunchAgents examinés ; ne pas annoncer
+un raccordement ou des nouvelles alertes actifs avant preuve. Pause Career appliquée : retiré des allowAgents du chef, config native validée,
+restart sain ; workspace Career et reste de config conservés. Préférences USER.md
+ajoutées sans remplacer le contenu existant. Preuve privée :
+~/.ivan-ai-os/pilot-mac-20261005/result.json. Synthèses live pas encore activées.
+
+## Reprise Codex — capacités et skills OpenClaw (2026-10-04)
+
+Lire docs/OPENCLAW-READ-SKILLS.md. Branche agent/codex/openclaw-capability-skills,
+base foundation/v1 @454b21e. Sources Claude intactes. Adaptations Business,
+Finance publique et Obsidian lecture via outils natifs ; sélection indisponible
+refusée explicitement, scripts inutilisables retirés des paquets. 14/14 tests.
+PR #47 : quatre paquets actifs, native config valide et restart contrôlé.
+Chargement éligible + outils des quatre managers confirmés par
+scripts/verify-openclaw-read-skills.mjs --installed ; main refusé en mémoire.
+Aucun changement de personnalité/mémoire main, des workspaces ou des outils.
+5756 caractères pour les quatre paquets ; aucun profil lu. Preuves privées dans
+~/.ivan-ai-os/activation-read-skills-7b4b7c4/. Essais managers réels sans --deliver : Finance 13,5 s (brief natif), System
+10,1 s (recherche/lecture mémoire, aussi route). Skills chargés dans les prompts
+confirmés. CI #47 10/10 verte. Collecte/planification et écriture restent distinctes.
+Le nouveau vérificateur utilise le client natif, qui résout les SecretRefs ; le
+RPC tools.invoke prend name et retourne output. Aucun bearer fabriqué depuis
+la référence de config. Un timeout de l'auto-review a été surmonté sans nouveau GO.
+PR #46 : release mac-resilience-cc1d2a5 active sur 4311, restart natif vérifié,
+jeton et compteur inchangés, zéro appel payant. CI 11/11 verte. Le timeout initial
+15 s provoquait un faux échec à cause du throttle launchd 60 s ; prévoir 75 s.
+Ne pas refaire de provisioning de clé. Source Mac en PR #45/#46, pas dans foundation.
+
 ## Reprise Codex — pilote mémoire et service Mac actifs (2026-09-29)
 
 Lire docs/MEMORY-PILOT-2026-09-29.md : snapshot 8151c01 activé sur GO précis d'Ivan.

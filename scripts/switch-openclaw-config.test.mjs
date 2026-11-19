@@ -4,7 +4,14 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { switchOpenClawConfig } from "./switch-openclaw-config.mjs";
+import { switchOpenClawConfig,checkConfiguredTools } from "./switch-openclaw-config.mjs";
+
+test('an enabled alert plugin must be invocable before an activation is healthy',async()=>{
+ const config={plugins:{entries:{'ivan-ai-os-alerts':{enabled:true}}}};
+ assert.equal(await checkConfiguredTools(config,async()=>({available:false})),false);
+ assert.equal(await checkConfiguredTools(config,async()=>({available:true})),true);
+ assert.equal(await checkConfiguredTools({},async()=>assert.fail()),true);
+});
 
 const digest = value => createHash("sha256").update(value).digest("hex");
 function fixture() {

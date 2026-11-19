@@ -6,29 +6,28 @@
 flowchart TB
   H["Ivan"] --> UI["Telegram / Mac"]
   UI --> OC["OpenClaw Chief of Staff"]
-  OC --> JDG["Jev Decision Gateway"]
-
-  JDG --> R{"Route by intent, risk, ROI"}
+  OC --> R{"Task metadata and active domains"}
+  OC --> Q["Priority research queue"]
   R --> B["Business Manager"]
-  R --> C["Career Manager"]
   R --> F["Finance Manager"]
-  R --> K["Knowledge / Anakalypto Manager"]
   R --> E["Engineering Manager"]
   R --> S["System Manager"]
 
   B --> W["Ephemeral workers"]
-  C --> W
   F --> W
-  K --> W
   E --> W
   S --> W
+  Q --> W
 
-  W --> G["Jev pre-action gate"]
+  W --> G["Deterministic checks and scoped authorization"]
+  G -. classification with measured value .-> JDG["Jev Decision Gateway"]
   G --> T["Tools / MCP / code"]
   T --> V["Post-action verification"]
-  V --> M["Memory + audit log"]
-  M --> JDG
+  V --> M["Obsidian and local receipts"]
+  V --> UI
 ```
+
+The Mac pilot now excludes Knowledge/Anakalypto from dispatch and collection. Career remains paused with its comparison workflow prepared. System retains targeted access to validated Obsidian notes. See [Jarvis on Mac](JARVIS-MISSIONS-MAC.md) for the operating contract and verification status.
 
 ## Decision cascade
 Use the cheapest reliable mechanism first:
@@ -46,7 +45,7 @@ metadata / deterministic filtering
         ↓
 semantic retrieval
         ↓
-Jev relevance selection
+measured relevance selection where needed
         ↓
 small evidence bundle
         ↓
@@ -59,7 +58,7 @@ Goal: **maximum relevant context per token**.
 They are peers, not duplicate writers.
 - one acts as primary builder;
 - the other independently reviews;
-- Jev classifies findings by severity/confidence;
+- the reviewer cites observable evidence and the severity of each finding;
 - disagreement triggers a focused second pass;
 - historical performance informs future routing.
 

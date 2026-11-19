@@ -6,7 +6,9 @@ import path from "node:path";
 import { PARSERS, SOURCES, alerts, collect, judge, privateDir, report, saveSnapshot, snapshots } from "../finance-engine/scripts/veille.mjs";
 
 const ecb = (date, value) => JSON.stringify({ dataSets: [{ series: { "0:0": { observations: { "0": [value] } } } }], structure: { dimensions: { observation: [{ values: [{ id: date }] }] } } });
-const kraken = (closes, start = Date.UTC(2026, 7, 29) / 1000) => JSON.stringify({ error: [], result: { XXBTZEUR: closes.map((c, i) => [start + i * 86400, "0", "0", "0", String(c)]), last: 0 } });
+// Kraken always returns the current, still-forming daily candle last (here 999); `last` is the
+// time of the last committed candle.
+const kraken = (closes, start = Date.UTC(2026, 7, 29) / 1000) => JSON.stringify({ error: [], result: { XXBTZEUR: [...closes, 999].map((c, i) => [start + i * 86400, "0", "0", "0", String(c)]), last: start + (closes.length - 1) * 86400 } });
 const closes = (last, sevenAgo) => [...Array(23).fill(100), sevenAgo, ...Array(6).fill(100), last];
 
 function fixtureFetch({ failing = [], dfr = 2.5 } = {}) {
@@ -99,4 +101,19 @@ test("Jev judges threshold alerts: routine ones become notes, an outage keeps th
   const down = await judge(alerts(current, previous), { classifyImpl: async () => { throw new Error("down"); } });
   assert.equal(down.filter(a => a.niveau === "important").length, 2, "fail open for alerts: never hidden by an outage");
   assert.doesNotMatch(report(current, previous, judged), /À surveiller[\s\S]*\+12 % sur 7 jours\.\n/);
+});
+
+test("ECB inflation series use HICP (ICP retired in February 2026) and Kraken's forming candle is not a close", () => {
+  for (const id of ["inflation_zone_euro", "inflation_sous_jacente"]) {
+    const url = SOURCES.find(s => s.id === id).url;
+    assert.match(url, /\/HICP\/M\.U2\.N\.[A-Z0-9]+\.4D0\.ANR\?/, id);
+  }
+  // 31 closed days then a forming candle at 999: the close and the 7-day change ignore it.
+  const parsed = PARSERS.kraken(kraken(closes(112, 100)));
+  assert.equal(parsed.valeur, 112);
+  assert.deepEqual(parsed.extra, { variation_7j_pct: 12, variation_30j_pct: 12 });
+  // Idempotent when a caller already removed the forming row (Codex runtime engines.js):
+  const prepopped = JSON.parse(kraken(closes(112, 100)));
+  prepopped.result.XXBTZEUR.pop();
+  assert.deepEqual(PARSERS.kraken(JSON.stringify(prepopped)), parsed, "no second candle is dropped");
 });

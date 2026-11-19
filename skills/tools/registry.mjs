@@ -15,6 +15,11 @@ const ENUMS = {
 // Ivan's decision (2026-09-29): clients and personal finances never reach OpenClaw.
 export const OPENCLAW_DROPPED_SECTIONS = ["Clients", "Cadre d'investissement"];
 export const OPENCLAW_EXCLUDED_MANAGERS = ["finance"];
+// Runtimes a skill can run on. OpenClaw managers have no shell (tools.deny exec): a skill whose
+// instructions run commands must say so, or give an explicit no-shell fallback.
+export const RUNTIMES = ["claude-code", "codex", "openclaw", "claude-ai"];
+export const SHELL_INSTRUCTION = /`(?:node|git|gh|npm|curl|python3|bash|openclaw) [^`]*`/;
+export const compatibilityOf = value => typeof value === "string" ? value.split(",").map(v => v.trim()).filter(Boolean) : undefined;
 const REQUIRED_METADATA = ["version", "famille", "manager", "risque", "profil", "statut", "provenance"];
 // Credentials and direct personal identifiers never belong in a shared skill.
 const FORBIDDEN = [
@@ -65,6 +70,10 @@ export function validateSkill(dir, { privateTerms = [] } = {}) {
   for (const key of REQUIRED_METADATA) if (!meta[key]) errors.push(`metadata.${key} required`);
   for (const [key, allowed] of Object.entries(ENUMS)) if (meta[key] && !allowed.includes(meta[key])) errors.push(`metadata.${key} must be one of ${allowed.join("|")}`);
   if (meta.version && !/^\d+\.\d+\.\d+$/.test(meta.version)) errors.push("metadata.version must be semver");
+  const compat = compatibilityOf(data.compatibility);
+  if (compat && (!compat.length || compat.some(r => !RUNTIMES.includes(r)))) errors.push(`compatibility must list runtimes among ${RUNTIMES.join("|")}`);
+  if (SHELL_INSTRUCTION.test(body) && !compat) errors.push("shell commands in the body: declare compatibility");
+  if (compat?.includes("openclaw") && SHELL_INSTRUCTION.test(body) && !body.includes("Sans shell (OpenClaw)")) errors.push("openclaw compatibility with shell commands needs a 'Sans shell (OpenClaw)' fallback");
   if (meta.profil === "oui" && !body.includes("profil.md")) errors.push("profile skill must say where profil.md is read");
   if (body.split("\n").length > 500) errors.push("body over 500 lines: move detail to reference files");
   for (const [pattern, label] of FORBIDDEN) if (pattern.test(text)) errors.push(`forbidden content: ${label}`);
@@ -74,7 +83,7 @@ export function validateSkill(dir, { privateTerms = [] } = {}) {
     if (!existsSync(path.join(dir, target))) errors.push(`broken link: ${target}`);
   }
   const evals = checkEvals(dir, name, errors);
-  return { errors, entry: { name, description: data.description, ...meta }, evals };
+  return { errors, entry: { name, description: data.description, ...(compat ? { compatibility: compat } : {}), ...meta }, evals };
 }
 
 // Optional trigger evaluations: 3 prompts that must select the skill, 2 near misses

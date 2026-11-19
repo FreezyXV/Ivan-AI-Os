@@ -9,6 +9,10 @@ metadata:
 ---
 # knowledge
 
+**Pilote Mac (2026-10-05)** : finalisation Knowledge/Anakalypto reportée à la dernière étape du
+projet, avec Codex (K08/C20–C22). Les fonctions existantes restent disponibles sur demande
+explicite d'Ivan ; la mémoire Obsidian utile à System reste active.
+
 **Mission** : Produire du savoir vérifiable, sourcé et au format, en lots économes.
 
 **Flux** : Sujet → `recherche-sourcee` → rédaction (`encyclopedie-anakalypto` ou `gros-document`) → validation automatique → livraison fichier.

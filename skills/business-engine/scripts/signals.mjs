@@ -13,6 +13,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { classify, pool } from "../../jev-decision/scripts/classify.mjs";
+import { isCliEntry } from "../../tools/cli.mjs";
 
 export const TYPES = ["douleur", "demande", "offre", "tendance"];
 export const CRITERES = ["demande", "paiement", "concurrence", "fit", "delai_mvp", "cout_acquisition"];
@@ -175,7 +176,7 @@ export function report(dir, top = 3) {
   return lines.join("\n");
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (isCliEntry(import.meta.url)) {
   const [command, ...args] = process.argv.slice(2);
   const opt = (flag, fallback) => { const i = args.indexOf(flag); return i < 0 ? fallback : Number(args[i + 1]); };
   try {

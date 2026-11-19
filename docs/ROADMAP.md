@@ -1,3 +1,11 @@
+# Priorités du pilote Mac — 2026-11-19
+
+Le parcours actuel couvre Business, Finance, Engineering et System. Career
+reste en pause, sa comparaison est préparée. Knowledge/Anakalypto est exclu
+du parcours et OVH reste reporté. Obsidian conserve la mémoire du pilote.
+Le contrat opératoire et les mesures figurent dans [Jarvis sur Mac](JARVIS-MISSIONS-MAC.md).
+Les phases ci-dessous conservent l’historique des livraisons.
+
 # Implementation Roadmap
 
 ## Phase 0 — Foundation
@@ -38,6 +46,8 @@
 - [x] Install nine reviewed career/knowledge/system skills for Telegram with reduced private profiles, outside Git
 - [x] Configure all seven roles and verify Telegram → Jev → Engineering → isolated worker → manager report → Telegram; test code proposed, not executed (2026-09-29)
 - [x] Activate manager-scoped, read-only prepared Business and Finance briefs; native RPC verifies both managers and denies main (PR #36)
+- [x] Adapt and activate Business/Finance public briefs and System/Knowledge memory skills against their native tools; explicit missing capabilities fail instead of silently omitting selected skills (PR #47, 14 tests and four native loaded-skill checks)
+- [x] Recover from temporary Keychain unavailability in the same Mac runner, with bounded private status and cancellable retry; live pinned cutover and restart preserve credentials/budget (PR #46, 9 tests)
 - [x] Replace the slow internal gateway restart in future config rollouts with a bounded launchd restart, health check and automatic config rollback (PR #36)
 - [ ] Measure useful workflows for the five other managers and the source-code builder/reviewer bridge
 - [x] Prepare seven private manager workspaces, including public Finance without a profile; native OpenClaw configuration validates in isolation
@@ -73,7 +83,7 @@ Task decomposition → Claude/Codex builder-reviewer → tests → branch/PR.
 - [x] Claude Code hook `gate`: level-0 rules, Jev for ambiguous calls, active in this project (#28, #31)
 - [ ] Codex hook on the same rules; Jev `tache.categorie` / `constat.severite`
 
-## Phase 8 — Anakalypto
+## Phase 8 — Anakalypto (historique, exclu du pilote)
 Topic → sources → claims → fact-check → pedagogy → visuals → interactive content → QA.
 - [x] Coded evidence rules and visual router (#25); v2 short visual cards, 19 domains, reconstruction series (#26)
 - [x] Topic discovery by code: Wikimedia trends + seven science feeds, deals dropped (#33)

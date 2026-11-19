@@ -1,6 +1,7 @@
 ---
 name: passation-session
 description: Passation compacte entre sessions ou entre agents (Claude Code, Codex, OpenClaw) pour reprendre un chantier sans relire tout l'historique - état vérifié, décisions, preuves, prochaine action, en moins de 30 lignes. Utiliser en fin de session, avant une compaction de contexte, quand Ivan dit "passe le relais", "fais le point", "on reprend demain", ou au début d'une reprise pour lire la passation existante.
+compatibility: "claude-code, codex, openclaw"
 metadata:
   version: "1.0.0"
   famille: system
@@ -11,6 +12,9 @@ metadata:
   provenance: "Ivan-AI-Os, pratique docs/SESSION_HANDOFF.md"
 ---
 # Passation de session
+
+Sans shell (OpenClaw) : ne pas inventer l'état du dépôt ; écrire « dépôt non vérifié » et
+rédiger la passation à partir des seuls résultats rapportés par les workers.
 
 ## En reprise (lire avant d'agir)
 1. Vérifier l'hôte et le dépôt : `pwd`, `git status --short --branch`, `git log --oneline -5`.

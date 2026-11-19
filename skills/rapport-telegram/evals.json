@@ -2,8 +2,8 @@
   "skill": "rapport-telegram",
   "version": 1,
   "positifs": [
-    "Préviens Ivan sur Telegram que le lot Anakalypto 12 est validé",
-    "Envoie-moi un résumé de la veille business de ce matin sur Telegram",
+    "Résume pour Telegram cet article de la veille Sentinelle sur les plafonds de budget des API",
+    "Envoie-moi le digest de veille business et finance de ce soir sur Telegram",
     "Le déploiement a échoué, notifie Ivan et demande-lui s'il faut revenir en arrière"
   ],
   "negatifs": [
@@ -16,5 +16,5 @@
       "attendu": "recruiter-outreach"
     }
   ],
-  "livrable": "Message ≤ 600 caractères, un seul sujet, statut en tête, action attendue explicite (→), aucun tableau ni donnée client."
+  "livrable": "Alerte : message autonome (faits étayés par l'extrait lu, utilité pour une priorité active, action ou « Rien à faire maintenant », limite, lien en dernière ligne), ≤ 2500 caractères, aucune donnée privée ; notification : ≤ 600 caractères, statut en tête, action attendue explicite."
 }

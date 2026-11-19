@@ -1,0 +1,69 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { fail,AlertError } from './context.js';
+
+const run = promisify(execFile);
+const messageId = value => typeof value === 'string' && /^[1-9]\d{0,19}$/.test(value);
+
+export function radarPresentation(ids) {
+  if (!Array.isArray(ids) || ids.length < 1 || ids.length > 2 || new Set(ids).size !== ids.length ||
+      ids.some(id => typeof id !== 'string' || !/^[a-f\d]{10}$/.test(id))) fail('ALERT_TELEGRAM_BUTTON_INVALID');
+  return {blocks: ids.map((id,index) => ({type:'buttons', buttons:[['Utile','utile'],['Inutile','inutile'],['Creuser','creuser']].map(([label,verb]) => ({
+    label: ids.length===1?label:`${index+1} · ${label}`,
+    action:{type:'command',command:`/avis ${id} ${verb}`}
+  }))}))};
+}
+
+// Contracts observed in OpenClaw 2026.9.5 register.message and Telegram send.
+// A dry-run, partial delivery or arbitrary top-level ID is never a receipt.
+export function parseTelegramReceipt(output, target) {
+  let result;
+  try {
+    if (typeof output !== 'string' || output.length > 1024 * 1024) throw Error();
+    result = JSON.parse(output.slice(output.indexOf('{')));
+  } catch { fail('ALERT_TELEGRAM_RECEIPT_INVALID'); }
+  const payload = result.payload;
+  const native = result.handledBy === 'core' ? payload?.result : payload;
+  const delivered = result.handledBy === 'core' ? payload?.deliveryStatus === 'sent' :
+    result.handledBy === 'plugin' && payload?.ok === true;
+  if (result.action !== 'send' || result.channel !== 'telegram' || result.dryRun !== false ||
+      result.ok === false || result.error || result.sentBeforeError || payload?.ok === false ||
+      (result.deliveryStatus !== undefined && result.deliveryStatus !== 'sent') ||
+      (payload?.deliveryStatus !== undefined && payload.deliveryStatus !== 'sent') || payload?.sentBeforeError ||
+      !delivered || !messageId(native?.messageId) || result.messageId !== native.messageId ||
+      String(native.chatId) !== target) fail('ALERT_TELEGRAM_RECEIPT_INVALID');
+  return { delivered: true, messageId: native.messageId };
+}
+
+export function createTelegramDelivery({ target, account, binary = 'openclaw',
+  timeoutMs = 40000, silent = true, runImpl = run } = {}) {
+  // The caller supplies Ivan's one authorized private chat from private config.
+  // No usernames, groups, model-selected recipients or caller-supplied command.
+  if (typeof target !== 'string' || !/^[1-9]\d{4,15}$/.test(target) ||
+      (account !== undefined && !/^[a-zA-Z0-9_-]{1,64}$/.test(account)) ||
+      typeof binary !== 'string' || !binary || typeof runImpl !== 'function' ||
+      !Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 45000 ||
+      typeof silent !== 'boolean') fail('ALERT_TELEGRAM_CONFIG_INVALID');
+  return async ({ text, signal, feedbackSubjects }) => {
+    if (typeof text !== 'string' || !text.trim() || text.length > 2500 || /\x00/.test(text))
+      fail('ALERT_TELEGRAM_MESSAGE_INVALID');
+    signal?.throwIfAborted();
+    const args = ['message', 'send', '--channel', 'telegram', '--target', target,
+      '--message', text, '--json', ...(account ? ['--account', account] : []),
+      ...(feedbackSubjects ? ['--presentation',JSON.stringify(radarPresentation(feedbackSubjects))] : []),
+      ...(silent ? ['--silent'] : [])];
+    const started=Date.now();let stage='NATIVE_EXIT';
+    try {
+      // Native CLI resolves SecretRefs and channel policies; no raw bot token.
+      const { stdout } = await runImpl(binary, args, {
+        timeout: timeoutMs, signal, maxBuffer: 1024 * 1024, windowsHide: true
+      });
+      stage='RECEIPT_INVALID';return parseTelegramReceipt(stdout, target);
+    } catch(error) {
+      const failure=new AlertError('ALERT_TELEGRAM_DELIVERY_UNKNOWN');
+      failure.deliveryFailure={stage:signal?.aborted?'ABORTED':error?.killed?'NATIVE_TIMEOUT':stage,
+        durationMs:Math.max(0,Date.now()-started)};
+      throw failure;
+    }
+  };
+}

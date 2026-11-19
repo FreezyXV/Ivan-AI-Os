@@ -90,20 +90,58 @@ test("query, scan and output limits bound local work and context", t => {
   writeFileSync(large.file, readFileSync(large.file, "utf8") + "z".repeat(65536));
   assert.throws(() => readNote(f.vault, large.id), /MEMORY_NOTE_UNAVAILABLE/);
 });
-test("tool factory permits only trusted system/knowledge identities and sanitizes errors", async t => {
+test("tool factory permits only the trusted system identity and sanitizes errors", async t => {
   const f = fixture(t), n = f.make("Approved decision");
-  for (const agentId of [undefined, "main", "ivan-finance", "ivan-engineering"]) assert.equal(createMemoryTools({ agentId }, { vaultPath: f.vault }), null);
-  for (const agentId of ["ivan-system", "ivan-knowledge"]) {
-    const tools = createMemoryTools({ agentId }, { vaultPath: f.vault });
-    assert.equal((await tools[0].execute("synthetic", { query: "Approved" })).details.notes.length, 1);
-    assert.equal((await tools[1].execute("synthetic", { id: n.id })).details.status, "valide");
-    const bad = await tools[1].execute("synthetic", { id: "inbox/missing.md" });
-    assert.equal(bad.details.error_code, "MEMORY_UNAVAILABLE"); assert.ok(!JSON.stringify(bad).includes(f.vault));
-    const spoof = await tools[0].execute("synthetic", { query: "Approved", agentId: "ivan-system" });
-    assert.equal(spoof.details.error_code, "MEMORY_ARGUMENTS_INVALID");
-    const disabled = createMemoryTools({ agentId }, {});
-    assert.equal((await disabled[0].execute("synthetic", { query: "Approved" })).details.error_code, "MEMORY_CONFIG_REQUIRED");
-  }
+  for (const agentId of [undefined, "main", "ivan-finance", "ivan-engineering", "ivan-knowledge"]) assert.equal(createMemoryTools({ agentId }, { vaultPath: f.vault }), null);
+  const identity = { agentId: "ivan-system" };
+  const tools = createMemoryTools(identity, { vaultPath: f.vault });
+  assert.equal((await tools[0].execute("synthetic", { query: "Approved" })).details.notes.length, 1);
+  assert.equal((await tools[1].execute("synthetic", { id: n.id })).details.status, "valide");
+  const bad = await tools[1].execute("synthetic", { id: "inbox/missing.md" });
+  assert.equal(bad.details.error_code, "MEMORY_UNAVAILABLE"); assert.ok(!JSON.stringify(bad).includes(f.vault));
+  const spoof = await tools[0].execute("synthetic", { query: "Approved", agentId: "ivan-system" });
+  assert.equal(spoof.details.error_code, "MEMORY_ARGUMENTS_INVALID");
+  const disabled = createMemoryTools(identity, {});
+  assert.equal((await disabled[0].execute("synthetic", { query: "Approved" })).details.error_code, "MEMORY_CONFIG_REQUIRED");
+});
+
+test("full-text mode finds an exact passage with note lines and provenance when the title does not match", async t => {
+  const f = fixture(t);
+  const n = f.make("Choix initial", { body: "Documents comparés.\nUn délai de rattrapage borne le réveil.\nDécision maintenue." });
+  const original = readFileSync(n.file, "utf8");
+  const context = { agentId: "ivan-system" };
+  const legacy = createMemoryTools(context, { vaultPath: f.vault })[0];
+  const fullText = createMemoryTools(context, { vaultPath: f.vault, searchMode: "full-text" })[0];
+  const args = { query: "Pourquoi le reveil a-t-il un delai de rattrapage ?", limit: 1 };
+  assert.deepEqual((await legacy.execute("synthetic", args)).details.notes, []);
+  const search = (await fullText.execute("synthetic", args)).details;
+  assert.equal(search.search_mode, "full-text");
+  const result = search.notes[0];
+  assert.equal(result.id, n.id);
+  assert.deepEqual(result.sources, ["https://example.com/source"]);
+  assert.equal(result.content_is_untrusted_data, true);
+  assert.match(result.passage.text, /délai de rattrapage/);
+  const lines = original.split("\n").slice(result.passage.start_line - 1, result.passage.end_line).join("\n");
+  assert.ok(lines.includes(result.passage.text));
+  assert.equal(readFileSync(n.file, "utf8"), original);
+});
+
+test("full-text mode revalidates permission each time and excludes unapproved notes from passage matches", async t => {
+  const f = fixture(t), query = "empreinte excentrique";
+  const body = `Une ${query} distingue les copies.`;
+  const note = f.make("Observation valide", { body });
+  f.make("Proposition", { status: "propose", body });
+  f.make("Confidentiel", { sensitivity: "confidentiel", body });
+  f.make("Journal d’opérateur", { type: "journal", body });
+  writeFileSync(path.join(f.vault, "private.md"), body);
+  const tool = createMemoryTools({ agentId: "ivan-system" }, { vaultPath: f.vault, searchMode: "full-text" })[0];
+  const ids = async () => (await tool.execute("synthetic", { query })).details.notes.map(n => n.id);
+  assert.deepEqual(await ids(), [note.id]);
+  const original = readFileSync(note.file, "utf8");
+  writeFileSync(note.file, original.replace("sensibilite: interne", "sensibilite: confidentiel"));
+  assert.deepEqual(await ids(), []);
+  writeFileSync(note.file, original.replace(query, "révision différente"));
+  assert.deepEqual(await ids(), []);
 });
 
 test("search scales past unreadable journals and prefers validated folders over the inbox", t => {
